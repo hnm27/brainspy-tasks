@@ -101,7 +101,7 @@ class RingClassifierValidator():
 
     def plot_validation_results(self, model_output, real_output, mask, save_dir=None, show_plot=False, name='validation_plot', extension='png'):
 
-        error = ((model_output[mask] - real_output[mask]) ** 2).mean()
+        error = ((model_output[mask][:, 0] - real_output[mask]) ** 2).mean()
         print(f'Total Error: {error}')
 
         plt.figure()
