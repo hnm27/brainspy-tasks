@@ -17,11 +17,12 @@ class AdvancedRingSearcher():
         inputs = TorchUtils.get_tensor_from_numpy(results['inputs'])
         targets = TorchUtils.get_tensor_from_numpy(results['targets'])
         TorchUtils.init_seed(results['seed'], deterministic=True)
-        new_results = self.task.run_task(inputs, targets, results['mask'])
+        new_results = self.task.run_task(inputs, targets, results['mask'], save_data=True)
 
         plt.figure()
-        plt.plot(results['best_output'])
-        plt.plot(new_results['best_output'])
+        plt.plot(results['best_output'], label='old_output')
+        plt.plot(new_results['best_output'], label='new_output')
+        plt.legend()
         plt.show()
 
 
