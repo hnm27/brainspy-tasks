@@ -33,7 +33,9 @@ class ArchitectureDebugger():
             result.append('bn_afterclip_' + str(i + 1) + '_1')
             result.append('bn_afterbatch_' + str(i + 1) + '_1')
             result.append('bn_aftercv_' + str(i + 1) + '_1')
-
+        result.append('device_layer_3')
+        result.append('bn_afterbatch_3')
+        result.append('output')
         return result
 
     def plot_comparison(self, a, b, name, mse, show=False):
@@ -60,8 +62,8 @@ class ArchitectureDebugger():
     def read(self, name, mask=None):
         a = np.load(os.path.join(self.debug_path_hardware, name + '.npy'))
         b = torch.load(os.path.join(self.debug_path_simulation, name + '.pt')).detach().cpu().numpy()
-        b = generate_waveform(b, self.configs['validation']['processor']['waveform']
-                              ['amplitude_lengths'], self.configs['validation']['processor']['waveform']['slope_lengths'])
+        # b = generate_waveform(b, self.configs['validation']['processor']['waveform']
+        #                       ['amplitude_lengths'], self.configs['validation']['processor']['waveform']['slope_lengths'])
         if mask is not None:
             a = a[mask]
             b = b[mask]

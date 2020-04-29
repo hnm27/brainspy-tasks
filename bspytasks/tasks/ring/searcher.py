@@ -49,7 +49,8 @@ class RingSearcher():
         self.init_dirs(gap)
 
         self.task.configs['ring_data']['gap'] = gap
-        inputs, targets, mask = self.data_loader.generate_new_data(self.configs['algorithm_configs']['processor'], gap=gap)
+        inputs, targets, mask = self.data_loader.get_data(self.configs['algorithm_configs']['processor'], gap=gap)
+
         self.reset(inputs.shape[0])
         for run in range(self.configs['runs']):
             print(f'########### RUN {run} ################')
@@ -61,7 +62,7 @@ class RingSearcher():
                 self.update_best_run(results, run)
                 self.task.plot_results(results)
 
-        self.close_search()
+        self.close_search(gap)
 
     def update_search_stats(self, results, run):
         self.accuracy_per_run[run] = results['accuracy']
@@ -77,8 +78,12 @@ class RingSearcher():
         self.best_run = results
         self.task.save_reproducibility_data(results)
 
-    def close_search(self):
-        np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, correlation=self.correlation_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run)
+    def close_search(self, gap):
+        if self.configs['ring_data']['generate_data']:
+            np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, correlation=self.correlation_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run)
+        else:
+            inputs_test, targets_test, mask_test = self.data_loader.get_data(self.configs['algorithm_configs']['processor'], gap=gap, istest=True)
+            np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, correlation=self.correlation_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run, inputs_test=inputs_test, targets_test=targets_test, mask_test=mask_test)
         self.plot_search_results()
 
     def plot_search_results(self, extension='png'):
@@ -123,8 +128,12 @@ if __name__ == '__main__':
     import torch
     import matplotlib.pyplot as plt
     from bspyalgo.utils.io import load_configs
+    from bspyproc.utils.pytorch import TorchUtils
+
+    TorchUtils.force_cpu = True
 
     # configs = load_configs('configs/tasks/ring/template_gd_architecture_cdaq_to_nidaq_validation2.json')
-    configs = load_configs('configs/tasks/ring/template_gd_architecture_3.json')
+    # configs = load_configs('configs/tasks/ring/template_gd_multiple_darwin_2.json')
+    configs = load_configs('configs/tasks/ring/template_gd_nn.json')
     searcher = RingSearcher(configs)
-    searcher.search_solution(0.2)
+    searcher.search_solution(0.00625)
