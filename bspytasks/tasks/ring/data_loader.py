@@ -62,7 +62,7 @@ class RingDataLoader():
                                           MAX_INPUT_VOLT[processor_configs['input_indices'][i]])
         # inputs[:, i] = generate_waveform(inputs[:, i], processor_configs['waveform']['amplitude_lengths'], slope_lengths=processor_configs['waveform']['slope_lengths'])
         # inputs = self.generate_data_waveform(inputs, processor_configs['waveform']['amplitude_lengths'], processor_configs['waveform']['slope_lengths'])
-        if processor_configs["processor_type"] == 'dnpu':
+        if processor_configs["processor_type"] == 'dnpu' or processor_configs["processor_type"] == 'nnring':
             return TorchUtils.get_tensor_from_numpy(inputs)
         return inputs
 
@@ -71,7 +71,7 @@ class RingDataLoader():
         targets[targets == 0] = 1
         targets[mask] = 0
         # targets = np.asarray(generate_waveform(targets, processor_configs['waveform']['amplitude_lengths'], processor_configs['waveform']['slope_lengths'])).T
-        if processor_configs["processor_type"] == 'dnpu':
+        if processor_configs["processor_type"] == 'dnpu' or processor_configs["processor_type"] == 'nnring':
             return TorchUtils.get_tensor_from_numpy(targets)
         return targets
 
