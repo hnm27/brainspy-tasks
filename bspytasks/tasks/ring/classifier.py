@@ -39,34 +39,34 @@ class RingClassificationTask():
     def reset(self):
         self.algorithm.reset()
 
-    def run_task(self, inputs, targets, mask, save_data=False):
+    def run_task(self, inputs, targets, mask, save_data=False, accuracy_plot_dir=None):
         algorithm_data = self.algorithm.optimize(inputs, targets, mask=mask, save_data=save_data)
-        return self.judge(algorithm_data)
+        return self.judge(algorithm_data, plot=accuracy_plot_dir)
 
     def save_reproducibility_data(self, result):
         save(mode='configs', file_path=os.path.join(self.reproducibility_dir, 'configs.json'), data=self.configs)
         save(mode='torch', file_path=os.path.join(self.reproducibility_dir, 'model.pt'), data=self.algorithm.processor)
         save(mode='pickle', file_path=os.path.join(self.reproducibility_dir, 'results.pickle'), data=result)
 
-    def judge(self, algorithm_data):
+    def judge(self, algorithm_data, plot=None):
 
         algorithm_data.judge()
         results = algorithm_data.get_results_as_numpy()
-        results = self.get_accuracy(results)
+        results = self.get_accuracy(results, plot=plot)
         results = self.get_correlation(results)
         return results
 
     def get_correlation(self, results):
         mask = results['mask']
-        results['correlation'] = corr_coeff(results['best_output'][mask].T, results['targets'][mask][:, np.newaxis].T)
+        results['correlation'] = corr_coeff(results['best_output'][mask][:, np.newaxis].T, results['targets'][mask][:, np.newaxis].T)
         return results
 
-    def get_accuracy(self, results):
+    def get_accuracy(self, results, plot=None):
         mask = results['mask']
         print('Calculating Accuracy ... ')
-        results['accuracy'] = accuracy(results['best_output'][mask],
-                                       results['targets'][mask],
-                                       plot=None)
+        results['accuracy'], results['accuracy_node'] = accuracy(results['best_output'][mask],
+                                                                 results['targets'][mask],
+                                                                 plot=plot, return_node=True)
         print(f"Accuracy: {results['accuracy']}")
         return results
 
