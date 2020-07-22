@@ -16,13 +16,13 @@
                           "algorithm": "genetic",
                           "processor": {
                                     "architecture": "device_architecture",
-                                    "architecture_type":"221",
+                                    "architecture_type":"221bn",
                                     "batch_norm":{
                                       "use_running_stats":true
                                     },
                                     "platform": "simulation",
-                                    "processor_type": "surrogate",
-                                    "torch_model_dict": "tmp/input/models/default_model.pt",
+                                    "processor_type": "dnpu",
+                                    "torch_model_dict": "tmp/input/models/model_nips.pt",
                                     "debug":false,
                                     "input_indices": [0, 1],
                                     "input_electrode_no": 35,
@@ -53,13 +53,13 @@
                 "validation":{
                   "processor": {
                     "architecture": "device_architecture",
-                    "architecture_type":"221",
+                    "architecture_type":"221bn",
                     "batch_norm":{
                       "use_running_stats":true
                     },
                     "platform": "simulation",
                     "processor_type": "surrogate",
-                    "torch_model_dict": "tmp/input/models/default_model.pt",
+                    "torch_model_dict": "tmp/input/models/model_nips.pt",
                     "debug":false,
                     "input_indices": [0, 1],
                     "input_electrode_no": 35,

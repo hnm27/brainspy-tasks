@@ -53,12 +53,19 @@ class RingClassificationTask():
         algorithm_data.judge()
         results = algorithm_data.get_results_as_numpy()
         results = self.get_accuracy(results, plot=plot)
-        results = self.get_correlation(results)
+        # results = self.get_correlation(results)
         return results
 
     def get_correlation(self, results):
         mask = results['mask']
-        results['correlation'] = corr_coeff(results['best_output'][mask][:, np.newaxis].T, results['targets'][mask][:, np.newaxis].T)
+        output = results['best_output'][mask]
+        target = results['targets'][mask]
+        if np.ndim(output) == 1:
+            output = output[:, np.newaxis]
+        if np.ndim(target) == 1:
+            target = target[:, np.newaxis]
+        results['correlation'] = corr_coeff(output, target)
+        #results['correlation'] = corr_coeff(results['best_output'][mask][:, np.newaxis].T, results['targets'][mask][:, np.newaxis].T)
         return results
 
     def get_accuracy(self, results, plot=None):

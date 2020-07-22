@@ -49,8 +49,8 @@ class BooleanGateTask():
             self.ignore_gate = self.ignore_gate_with_numpy
 
     def find_gate(self, encoded_inputs, gate, encoded_gate, mask, threshold):
-        min_threshold = (1 - 1 / len(gate)) * 100.0
-        assert threshold >= min_threshold, f"Threshold cannot be less or equal than {min_threshold}; it is now {threshold}"
+        #min_threshold = (1 - 1 / len(gate)) * 100.0
+        #assert threshold >= min_threshold, f"Threshold cannot be less or equal than {min_threshold}; it is now {threshold}"
         if len(np.unique(gate)) == 1:
             print('Label ', gate, ' ignored')
             excel_results = self.ignore_gate(encoded_gate)
@@ -90,7 +90,7 @@ class BooleanGateTask():
 
     def find_gate_with_numpy(self, encoded_inputs, encoded_gate, mask):
         excel_results = self.optimize(encoded_inputs, encoded_gate, mask)
-        excel_results['accuracy'], _, _ = perceptron(excel_results['best_output'][excel_results['mask']], encoded_gate[excel_results['mask']])
+        excel_results['accuracy'], _, _, _ = perceptron(excel_results['best_output'][excel_results['mask']], encoded_gate[excel_results['mask']])
         excel_results['encoded_gate'] = encoded_gate
         return excel_results
 

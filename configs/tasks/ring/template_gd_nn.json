@@ -1,0 +1,64 @@
+{
+    "results_base_dir": "tmp/output/ring/",
+    "steps": 1,
+    "show_plots": false,
+    "save_plots": true,
+    "runs":1000,
+    "start_gap":0.4,
+    "stop_gap": 0.00625,
+    "ring_data":{
+        "generate_data":false,
+        "data_dir":"tmp/input/ring",
+        "sample_no":2000
+    },
+    "algorithm_configs": {
+        "algorithm": "gradient_descent",
+        "hyperparameters": {
+            "nr_epochs": 400,
+            "batch_size": 8192,
+            "learning_rate": 0.0065,
+            "save_interval": 100,
+            "optimizer": "adam",
+            "loss_function": "fisher",
+            "stop_threshold": -99999999
+        },
+        "processor": { 
+            "platform": "simulation",
+            "processor_type": "nnring",
+            "architecture":"single_device",
+            "input_size":186,
+            "torch_model_dict": "tmp/input/models/model_nips.pt",
+            "input_indices": [1,2],
+            "waveform": {
+                "amplitude_lengths": 1,
+                "slope_lengths": 0,
+                "output_clipping_value": 4.0
+            }
+        },
+        "checkpoints": {
+            "use_checkpoints": false,
+            "save_interval": 5
+        }
+    },
+    "validation": {
+        "processor": {
+            "architecture": "single_device",
+            "noise": 1.97,
+            "debug":true,
+            "regularisation_factor":1e4,
+            "batch_norm": {
+                "use_running_stats" : false
+            },
+            "platform": "simulation",
+            "processor_type": "surrogate",
+            "torch_model_dict": "tmp/input/models/model_nips.pt",
+            "input_indices": [1,2],
+            "input_electrode_no": 7,
+            "waveform": {
+                "amplitude_lengths": 80,
+                "slope_lengths": 20,
+                "output_clipping_value": 4.0
+            }
+        }
+    }
+}

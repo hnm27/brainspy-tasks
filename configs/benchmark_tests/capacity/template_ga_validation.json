@@ -1,7 +1,7 @@
 {
   "capacity_test":{
       "from_dimension": 4,
-      "to_dimension":4,
+      "to_dimension":5,
       "results_base_dir": "tmp/output/ga/capacity_test_experiments",
       "vc_dimension_test":{
               "dimension":4,

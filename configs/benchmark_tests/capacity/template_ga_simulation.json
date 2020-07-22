@@ -2,7 +2,7 @@
 
   "capacity_test":{
       "from_dimension": 4,
-      "to_dimension":4,
+      "to_dimension":6,
       "results_base_dir": "tmp/output/ga/capacity_test_experiments",
       "vc_dimension_test":{
               "dimension":4,
@@ -31,12 +31,12 @@
                                       "architecture":"single_device",
                                       "platform": "simulation",
                                       "processor_type": "surrogate",
-                                      "torch_model_dict": "tmp/input/models/model_2020.pt",
+                                      "torch_model_dict": "tmp/input/models/model_nips.pt",
                                       "input_indices": [0, 1],
                                       "input_electrode_no": 7,
                                       "use_noise":false,
                                       "waveform":{
-                                          "amplitude_lengths": 1,
+                                          "amplitude_lengths": 10,
                                           "slope_lengths": 0,
                                           "output_clipping_value": 4.0
                                       }
@@ -51,17 +51,17 @@
                               "architecture":"single_device",
                               "platform": "simulation",
                               "processor_type": "surrogate",
-                              "torch_model_dict": "tmp/input/models/model_2020.pt",
+                              "torch_model_dict": "tmp/input/models/model_nips.pt",
                               "input_indices": [0, 1],
                               "input_electrode_no": 7,
                               "use_noise":false,
                               "waveform":{
-                                  "amplitude_lengths": 1,
+                                  "amplitude_lengths": 10,
                                   "slope_lengths": 0,
                                   "output_clipping_value": 4.0
                               }
-                            }
                           }
+                        }
               }
       }
   }

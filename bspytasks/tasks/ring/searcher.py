@@ -67,7 +67,7 @@ class RingSearcher():
     def update_search_stats(self, results, run):
         self.accuracy_per_run[run] = results['accuracy']
         self.performance_per_run[run] = results['best_performance']
-        self.correlation_per_run[run] = results['correlation']
+        # self.correlation_per_run[run] = results['correlation']
         self.outputs_per_run[run] = results['best_output'][:, 0]
         self.control_voltages_per_run[run] = results['control_voltages']
         self.seeds_per_run = results['seed']
@@ -80,23 +80,23 @@ class RingSearcher():
 
     def close_search(self, gap):
         if self.configs['ring_data']['generate_data']:
-            np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, correlation=self.correlation_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run)
+            np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run)
         else:
             inputs_test, targets_test, mask_test = self.data_loader.get_data(self.configs['algorithm_configs']['processor'], gap=gap, istest=True)
-            np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, correlation=self.correlation_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run, inputs_test=inputs_test, targets_test=targets_test, mask_test=mask_test)
+            np.savez(os.path.join(self.search_stats_dir, f"search_data_{self.configs['runs']}_runs.npz"), outputs=self.outputs_per_run, performance=self.performance_per_run, accuracy=self.accuracy_per_run, seed=self.seeds_per_run, control_voltages=self.control_voltages_per_run, inputs_test=inputs_test, targets_test=targets_test, mask_test=mask_test)
         self.plot_search_results()
 
     def plot_search_results(self, extension='png'):
         best_index = self.best_run['index']
         performance = self.best_run["best_performance"]
-        print(f"Best performance {performance} in run {best_index} with corr. {self.correlation_per_run[best_index]}")
+        print(f"Best performance {performance} in run {best_index}")
 
-        plt.figure()
-        plt.plot(self.correlation_per_run, self.performance_per_run, 'o')
-        plt.title('Correlation vs Fisher')
-        plt.xlabel('Correlation')
-        plt.ylabel('Fisher value')
-        plt.savefig(os.path.join(self.search_stats_dir, 'correlation_vs_fisher.' + extension))
+        # plt.figure()
+        #plt.plot(self.correlation_per_run, self.performance_per_run, 'o')
+        #plt.title('Correlation vs Fisher')
+        # plt.xlabel('Correlation')
+        #plt.ylabel('Fisher value')
+        #plt.savefig(os.path.join(self.search_stats_dir, 'correlation_vs_fisher.' + extension))
 
         plt.figure()
         plt.plot(self.accuracy_per_run, self.performance_per_run, 'o')
@@ -132,8 +132,8 @@ if __name__ == '__main__':
 
     TorchUtils.force_cpu = True
 
-    # configs = load_configs('configs/tasks/ring/template_gd_architecture_cdaq_to_nidaq_validation2.json')
-    # configs = load_configs('configs/tasks/ring/template_gd_multiple_darwin_2.json')
-    configs = load_configs('configs/tasks/ring/template_gd_nn.json')
+    # configs = load_configs('configs/tasks/ring/template_gd_simulation.json')
+    configs = load_configs('configs/tasks/ring/template_gd_multiple_simulation.json')
+
     searcher = RingSearcher(configs)
-    searcher.search_solution(0.00625)
+    searcher.search_solution(0.2)

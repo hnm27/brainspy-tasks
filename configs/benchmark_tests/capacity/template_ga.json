@@ -26,7 +26,7 @@
                                                                           "gene_trafo_index": null,
                                                                           "trafo_function": null
                                                           },
-                                                          "stop_threshold": 0.93
+                                                          "stop_threshold": 93.0
                                     }, 
                                     "processor": {
                                       "architecture":"single_device",

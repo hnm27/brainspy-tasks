@@ -87,7 +87,7 @@ class CapacityTest():
 
 if __name__ == '__main__':
     from bspyalgo.utils.io import load_configs
-    configs = load_configs('configs/benchmark_tests/capacity/template_ga_simulation_noVal.json')
+    configs = load_configs('configs/benchmark_tests/capacity/template_ga_simulation.json')
 
     test = CapacityTest(configs['capacity_test'])
     test.run_test(validate=False)
