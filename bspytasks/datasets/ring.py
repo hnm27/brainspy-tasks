@@ -11,7 +11,8 @@ class RingDataGenerator(Dataset):
         # The sample_no is related to the data that is going to be generated but it actually gets reduced when filtering the circles
         # TODO: Make the dataset generate the exact number of samples as requested by the user
         self.transforms = transforms
-        self.inputs, self.targets = self.generate_data(sample_no, gap)
+        self.inputs, targets = self.generate_data(sample_no, gap)
+        self.targets = targets[:, np.newaxis]
         assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
 
         if save_dir is not None:
@@ -22,7 +23,7 @@ class RingDataGenerator(Dataset):
         return len(self.inputs)
 
     def __getitem__(self, index):
-        sample = (self.inputs[index], self.targets[index])
+        sample = (self.inputs[index, :], self.targets[index, :])
 
         if self.transforms is not None:
             sample = self.transforms(sample)
