@@ -11,15 +11,24 @@ X = [-0.7, -0.7, 0.5, 0.5, -0.35, 0.25, 0.0, 0.0]
 Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25]
 
 
-class VCDimensionDataset(Dataset):
+class BooleanGateDataset(Dataset):
 
-    def __init__(self, vc_dimension, transforms=None, verbose=True):
+    def __init__(self, vc_dimension, target, transforms=None, verbose=True):
         self.transforms = transforms
         self.inputs = self.generate_inputs(vc_dimension)
-        self.targets = self.generate_targets(vc_dimension, verbose)
+        self.targets = target.T[:, np.newaxis]
 
     def __getitem__(self, index):
-        sample = (self.inputs, self.targets[index])
+        #index = np.random.permutation(self.inputs.shape[0])
+        inputs = self.inputs[index, :]
+        targets = self.targets[index, :]
+
+        # if len(inputs.shape) == 1:
+        #     inputs = inputs[np.newaxis, :]
+        # if len(targets.shape) == 1:
+        #     targets = targets[np.newaxis, :]
+
+        sample = (inputs, targets)
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -34,28 +43,29 @@ class VCDimensionDataset(Dataset):
         assert vc_dimension <= len(X), 'VC Dimension exceeds the current number of points'
         return np.array([X[:vc_dimension], Y[:vc_dimension]]).T
 
-    def generate_targets(self, vc_dimension, verbose=True):
-            # length of list, i.e. number of binary targets
-        binary_target_no = 2**vc_dimension
-        assignments = []
+
+def generate_targets(self, vc_dimension, verbose=True):
+        # length of list, i.e. number of binary targets
+    binary_target_no = 2**vc_dimension
+    assignments = []
+    list_buf = []
+
+    # construct assignments per element i
+    if verbose:
+        print('===' * vc_dimension)
+        print('ALL BINARY LABELS:')
+    level = int((binary_target_no / 2))
+    while level >= 1:
         list_buf = []
+        buf0 = [0] * level
+        buf1 = [1] * level
+        while len(list_buf) < binary_target_no:
+            list_buf += (buf0 + buf1)
+        assignments.append(list_buf)
+        level = int(level / 2)
 
-        # construct assignments per element i
-        if verbose:
-            print('===' * vc_dimension)
-            print('ALL BINARY LABELS:')
-        level = int((binary_target_no / 2))
-        while level >= 1:
-            list_buf = []
-            buf0 = [0] * level
-            buf1 = [1] * level
-            while len(list_buf) < binary_target_no:
-                list_buf += (buf0 + buf1)
-            assignments.append(list_buf)
-            level = int(level / 2)
-
-        binary_targets = np.array(assignments).T
-        if verbose:
-            print(binary_targets)
-            print('===' * vc_dimension)
-        return binary_targets[1:-1]  # Remove [0,0,0,0] and [1,1,1,1] gates
+    binary_targets = np.array(assignments).T
+    if verbose:
+        print(binary_targets)
+        print('===' * vc_dimension)
+    return binary_targets[1:-1]  # Remove [0,0,0,0] and [1,1,1,1] gates
