@@ -6,11 +6,12 @@ from torch.utils.data import Dataset
 
 class RingDataGenerator(Dataset):
 
-    def __init__(self, sample_no, gap, transforms=None, save_dir=None, verbose=True):
+    def __init__(self, sample_no, gap, transforms=None, save_dir=None, verbose=True, input_voltage_range=([-1.2, -1.2], [0.7, 0.7])):
         # The gap is a value between 0 and 1
         # The sample_no is related to the data that is going to be generated but it actually gets reduced when filtering the circles
         # TODO: Make the dataset generate the exact number of samples as requested by the user
         self.transforms = transforms
+        self.scale, self.offset = self.get_voltage_conversion_vars(input_voltage_range)
         self.inputs, targets = self.generate_data(sample_no, gap)
         self.targets = targets[:, np.newaxis]
         assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
@@ -34,19 +35,19 @@ class RingDataGenerator(Dataset):
         # Get information from the electrode ranges in order to calculate the linear transformation parameters for the inputs
         # min_voltage, max_voltage = load_voltage_ranges(configs)
         # i = configs['input_indices']
-        # scale, offset = get_map_to_voltage_vars(min_voltage[i], max_voltage[i])
-        #gap = transform_gap(gap, scale)
+        #scale, offset = get_map_to_voltage_vars(min_voltage[i], max_voltage[i])
+        gap = self.transform_gap(gap, self.scale)
 
         data, labels = self.ring(sample_no=sample_no, gap=gap)
         data, labels = self.process_dataset(data[labels == 0], data[labels == 1])
 
         # Transform dataset to control voltage range
-        # samples = (data * scale) + offset
-        # gap = gap * scale
+        samples = (data * self.scale) + self.offset
+        gap = gap * self.scale
         if verbose:
             print(f'The input ring dataset has a {gap}V gap.')
-            print(f'There are {len(data[labels == 0]) + len(data[labels == 1])} samples')
-        return data, labels
+            print(f'There are {len(samples[labels == 0]) + len(samples[labels == 1])} samples')
+        return samples, labels
 
     def ring(self, sample_no, inner_radius=0.25, gap=0.5, outer_radius=1):
         '''Generates labelled TorchUtilsdata of a ring with class 1 and the center with class 0'''
@@ -103,11 +104,18 @@ class RingDataGenerator(Dataset):
         class0, class1 = self.sort(class0, class1)
         return self.filter_and_reverse(class0, class1)
 
-        # The gap needs to be in a scale from -1 to 1. This function enables to transform the gap in volts to this scale.
+    # The gap needs to be in a scale from -1 to 1. This function enables to transform the gap in volts to this scale.
+    def transform_gap(self, gap_in_volts, scale):
+        assert (len(scale[scale == scale.mean()]) == len(scale)), "The GAP information is going to be inaccurate because the selected input electrodes have a different voltage range. In order for this data to be accurate, please make sure that the input electrodes have the same voltage ranges."
+        if len(scale) > 1:
+            scale = scale[0]
 
-    # def transform_gap(self, gap_in_volts, scale):
-    #     assert (len(scale[scale == scale.mean()]) == len(scale)), "The GAP information is going to be inaccurate because the selected input electrodes have a different voltage range. In order for this data to be accurate, please make sure that the input electrodes have the same voltage ranges."
-    #     if len(scale) > 1:
-    #         scale = scale[0]
+        return (gap_in_volts / scale)
 
-    #     return (gap_in_volts / scale)
+    def get_voltage_conversion_vars(self, input_voltage_range):
+        return self.get_map_to_voltage_vars(np.array(input_voltage_range[0]), np.array(input_voltage_range[1]), np.array([-1, -1]), np.array([1, 1]))
+
+    def get_map_to_voltage_vars(self, v_min, v_max, x_min, x_max):
+        scale = ((v_min - v_max) / (x_min - x_max))
+        offset = v_max - scale * x_max
+        return scale, offset
