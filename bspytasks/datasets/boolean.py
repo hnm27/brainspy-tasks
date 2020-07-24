@@ -23,11 +23,6 @@ class BooleanGateDataset(Dataset):
         inputs = self.inputs[index, :]
         targets = self.targets[index, :]
 
-        # if len(inputs.shape) == 1:
-        #     inputs = inputs[np.newaxis, :]
-        # if len(targets.shape) == 1:
-        #     targets = targets[np.newaxis, :]
-
         sample = (inputs, targets)
 
         if self.transforms is not None:
