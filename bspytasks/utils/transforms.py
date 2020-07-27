@@ -13,20 +13,18 @@ class ToTensor(object):
 
 
 class ToVoltageRange(object):
-    def __init__(self, v_min, v_max):
-        self.v_min = min
-        self.v_max = max
+    def __init__(self, v_min, v_max, x_min=-1, x_max=1):
+        self.scale, self.offset = self.get_map_to_voltage_vars(np.array(v_min), np.array(v_max), np.array(x_min), np.array(x_max))
 
     def __call__(self, inputs):
-        scale, offset = self.get_map_to_voltage_vars(self.v_min, self.v_max, inputs)
-        return self.map_to_voltage(inputs, v_min, v_max)
+        return (inputs * self.scale) + self.offset
 
-    def map_to_voltage(x, v_min, v_max):
-        a = ((v_min - v_max) / (x.min() - x.max()))
-        b = v_max - a * x.max()
-        return (a * x) + b
+    # def map_to_voltage(self, v_min, v_max, x=np.array([-1, 1])):
+    #     a = ((v_min - v_max) / (x.min() - x.max()))
+    #     b = v_max - a * x.max()
+    #     return (a * x) + b
 
-    def get_map_to_voltage_vars(v_min, v_max, x=np.array([-1, 1])):
-        scale = ((v_min - v_max) / (x.min() - x.max()))
-        offset = v_max - scale * x.max()
+    def get_map_to_voltage_vars(self, v_min, v_max, x_min, x_max):
+        scale = ((v_min - v_max) / (x_min - x_max))
+        offset = v_max - scale * x_max
         return scale, offset
