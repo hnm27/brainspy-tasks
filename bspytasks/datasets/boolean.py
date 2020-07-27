@@ -13,9 +13,9 @@ Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25]
 
 class BooleanGateDataset(Dataset):
 
-    def __init__(self, vc_dimension, target, transforms=None, verbose=True):
+    def __init__(self, target, transforms=None, verbose=True):
         self.transforms = transforms
-        self.inputs = self.generate_inputs(vc_dimension)
+        self.inputs = self.generate_inputs(len(target))
         self.targets = target.T[:, np.newaxis]
 
     def __getitem__(self, index):
@@ -39,7 +39,7 @@ class BooleanGateDataset(Dataset):
         return np.array([X[:vc_dimension], Y[:vc_dimension]]).T
 
 
-def generate_targets(self, vc_dimension, verbose=True):
+def generate_targets(vc_dimension, verbose=True):
         # length of list, i.e. number of binary targets
     binary_target_no = 2**vc_dimension
     assignments = []
