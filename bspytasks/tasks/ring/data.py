@@ -13,7 +13,7 @@ class RingDataLoader(Dataset):
         assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
         if verbose:
             print(f'There are a total of {len(self.inputs[self.targets == 0]) + len(self.inputs[self.targets == 1])} samples')
-            print(f'The input ring dataset has a {data['gap']} gap (In a range from -1 to 1).')
+            print(f"The input ring dataset has a {data['gap']} gap (In a range from -1 to 1).")
 
     def __len__(self):
         return len(self.inputs)
