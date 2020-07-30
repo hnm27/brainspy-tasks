@@ -5,11 +5,10 @@
 # results_path = find_single_gate('configs/benchmark_tests/capacity/template_ga_simulation.json', '[1 0 0 1]')
 # validate_single_gate('configs/benchmark_tests/capacity/template_ga_validation.json', results_path)
 from bspyalgo.algorithms.gradient.gd import GD
-from bspytasks.utils.transforms import ToTensor, ToVoltageRange
+
 
 from bspyproc.utils.pytorch import TorchUtils
 from bspytasks.tasks.boolean.data import BooleanGateDataset
-from bspytasks.datasets.ring import RingDataGenerator
 
 from torchvision import transforms
 
@@ -28,12 +27,12 @@ from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_percep
 import os
 
 
-def train_classifier(model, criterion, optimizer, epochs, target=np.array([0, 1, 1, 0]), threshold=0.8, transforms=None, logger=None, save_dir='tmp/output/fitter'):
+def train_classifier(model, criterion, optimizer, epochs, target=np.array([0, 1, 1, 0]), threshold=0.8, transforms=None, logger=None, save_dir='tmp/output/boolean'):
     veredict = False
     dataset = BooleanGateDataset(target=target, transforms=transforms)
     loader = torch.utils.data.DataLoader(dataset, batch_size=512, shuffle=True, pin_memory=False)
-    model, train_performance, dev_performance = train(model, (loader, None), epochs, criterion, optimizer, logger=logger, save_dir=save_dir)
-    return dataset, model, train_performance, dev_performance
+    model, performance = train(model, (loader, None), epochs, criterion, optimizer, logger=logger, save_dir=save_dir)
+    return dataset, model, performance
 
 
 def postprocess(gate_name, dataset, model, logger, threshold, save_dir=None):
@@ -82,9 +81,9 @@ def find_gate(gate, model, criterion, optimizer, epochs, threshold, transforms=N
     main_dir, reproducibility_dir = init_dirs(str(gate), base_dir, is_main)
     print('==========================================================================================')
     print("GATE: " + str(gate))
-    dataset, model, performance, _ = train_classifier(model, criterion, optimizer, epochs, target=gate, transforms=transforms, logger=logger, save_dir=reproducibility_dir)
+    dataset, model, performance = train_classifier(model, criterion, optimizer, epochs, target=gate, transforms=transforms, logger=logger, save_dir=reproducibility_dir)
     results = postprocess(str(gate), dataset, model, logger, threshold, main_dir)
-    results['performance'] = TorchUtils.format_tensor(torch.tensor(performance))
+    results['performance'] = performance[0]  # Dev performance is not relevant to the boolean gates problem
     print(results['summary'])
     if is_main:
         torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
@@ -113,6 +112,7 @@ if __name__ == "__main__":
     from bspyalgo.algorithms.gradient.core.losses import corrsig
     from bspyalgo.algorithms.gradient.core.logger import Logger
     from bspyproc.processors.dnpu import DNPU
+    from bspytasks.utils.transforms import ToTensor, ToVoltageRange
     import numpy as np
     import datetime as d
 
