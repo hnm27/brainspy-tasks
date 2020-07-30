@@ -6,120 +6,128 @@ The only difference to the measurement scripts are on lines where the device is 
 import torch
 import numpy as np
 import os
-from bspyalgo.algorithm_manager import get_algorithm
-from bspyproc.bspyproc import get_processor
+#from bspyalgo.algorithm_manager import get_algorithm
+#from bspyproc.bspyproc import get_processor
 from matplotlib import pyplot as plt
-from bspyalgo.utils.performance import accuracy, corr_coeff
+from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
 from bspyalgo.utils.io import create_directory, create_directory_timestamp, save
 from bspyproc.utils.pytorch import TorchUtils
 import matplotlib
-matplotlib.use('Agg')
+
+from bspytasks.tasks.ring.data import RingDataGenerator, RingDataLoader
+from bspyalgo.algorithms.gradient.fitter import train, split
 
 
-class RingClassificationTask():
+def get_ring_data(sample_no, gap, transforms, batch_size, num_workers, data_dir=None, save_dir=None):
+    # Returns dataloaders and split indices
+    if data_dir:
+        dataset = RingDataLoader(data_dir, transforms=transforms, save_dir=save_dir)
+    else:
+        dataset = RingDataGenerator(sample_no, gap, transforms=transforms, save_dir=save_dir)
+    dataloaders, split_indices = split(dataset, batch_size, num_workers=num_workers)
+    return dataset, dataloaders, split_indices
 
-    def __init__(self, configs, is_main=True):
-        self.configs = configs
-        if is_main:
-            self.init_dirs(configs['results_base_dir'], is_main)
 
-    def init_dirs(self, base_dir, is_main=False):
-        main_dir = 'ring_classification'
-        reproducibility_dir = 'reproducibility'
-        results_dir = 'results'
-        if is_main:
-            base_dir = create_directory_timestamp(base_dir, main_dir)
-        self.reproducibility_dir = os.path.join(base_dir, reproducibility_dir)
-        create_directory(self.reproducibility_dir)
-        self.configs['algorithm_configs']['results_base_dir'] = base_dir
-        self.algorithm = get_algorithm(self.configs['algorithm_configs'])
-        self.results_dir = os.path.join(base_dir, results_dir)
-        create_directory(self.results_dir)
+def train_classifier(gap, model, criterion, optimizer, epochs, transforms=None, logger=None, data_dir=None, save_dir=None):
+    veredict = False
 
-    def reset(self):
-        self.algorithm.reset()
+    #loader = torch.utils.data.DataLoader(dataset, batch_size=512, shuffle=True, pin_memory=False)
+    dataset, dataloaders, split_indices = get_ring_data(1000, gap, transforms=transforms, batch_size=512, num_workers=0, data_dir=data_dir, save_dir=save_dir)
+    model, performances = train(model, (dataloaders[0], dataloaders[1]), epochs, criterion, optimizer, logger=logger, save_dir=save_dir)
+    return dataset, model, performances, split_indices
 
-    def run_task(self, inputs, targets, mask, save_data=False, accuracy_plot_dir=None):
-        algorithm_data = self.algorithm.optimize(inputs, targets, mask=mask, save_data=save_data)
-        return self.judge(algorithm_data, plot=accuracy_plot_dir)
 
-    def save_reproducibility_data(self, result):
-        save(mode='configs', file_path=os.path.join(self.reproducibility_dir, 'configs.json'), data=self.configs)
-        save(mode='torch', file_path=os.path.join(self.reproducibility_dir, 'model.pt'), data=self.algorithm.processor)
-        save(mode='pickle', file_path=os.path.join(self.reproducibility_dir, 'results.pickle'), data=result)
+def postprocess(dataset, model, logger, threshold, save_dir=None):
+    results = {}
+    with torch.no_grad():
+        model.eval()
+        inputs, targets = dataset[:]
+        predictions = model(inputs)
 
-    def judge(self, algorithm_data, plot=None):
+    results['dev_inputs'] = inputs
+    results['dev_targets'] = targets
+    results['predictions'] = predictions
+    results['accuracy'] = perceptron(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    results['correlation'] = corr_coeff_torch(predictions.T, targets.T)
 
-        algorithm_data.judge()
-        results = algorithm_data.get_results_as_numpy()
-        results = self.get_accuracy(results, plot=plot)
-        # results = self.get_correlation(results)
-        return results
+    # if (results['accuracy']['accuracy_value'] >= threshold):
+    #     results['veredict'] = True
+    # else:
+    #     results['veredict'] = False
+    # results['summary'] = 'VC Dimension: ' + str(len(dataset)) + ' Gate: ' + gate_name + ' Veredict: ' + str(results['veredict']) + ' ACCURACY: ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(threshold)
+    # results['results_fig'] = plot_results(results, save_dir)
+    # results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
+    # if logger is not None:
+    #     logger.log.add_figure('Results/VCDim' + str(len(dataset)) + '/' + gate_name, results['results_fig'])
+    #     logger.log.add_figure('Accuracy/VCDim' + str(len(dataset)) + '/' + gate_name, results['accuracy_fig'])
+    return results
 
-    def get_correlation(self, results):
-        mask = results['mask']
-        output = results['best_output'][mask]
-        target = results['targets'][mask]
-        if np.ndim(output) == 1:
-            output = output[:, np.newaxis]
-        if np.ndim(target) == 1:
-            target = target[:, np.newaxis]
-        results['correlation'] = corr_coeff(output, target)
-        #results['correlation'] = corr_coeff(results['best_output'][mask][:, np.newaxis].T, results['targets'][mask][:, np.newaxis].T)
-        return results
 
-    def get_accuracy(self, results, plot=None):
-        mask = results['mask']
-        print('Calculating Accuracy ... ')
-        results['accuracy'], results['accuracy_node'] = accuracy(results['best_output'][mask],
-                                                                 results['targets'][mask],
-                                                                 plot=plot, return_node=True)
-        print(f"Accuracy: {results['accuracy']}")
-        return results
+def classify_ring(gap, model, criterion, optimizer, epochs, transforms=None, logger=None, base_dir='tmp/output/ring/', is_main=True):
 
-    def plot_results(self, results, extension='png'):
-        plt.figure()
-        plt.plot(results['best_output'][results['mask']])
-        plt.title(f"Output (nA) \n Performance: {results['best_performance'][0]} \n Accuracy: {results['accuracy']}", fontsize=12)
-        if self.configs['save_plots']:
-            plt.savefig(os.path.join(self.results_dir, f"output." + extension))
-        plt.figure()
-        plt.title(f'Learning profile', fontsize=12)
-        plt.plot(results['performance_history'])
-        if self.configs['save_plots']:
-            plt.savefig(os.path.join(self.results_dir, f"training_profile." + extension))
+    main_dir, results_dir, reproducibility_dir = init_dirs(str(gap), base_dir, is_main)
 
-        plt.figure()
-        plt.title(f"Inputs (V) \n {self.configs['ring_data']['gap']}mV gap", fontsize=12)
-        if type(results['inputs']) is torch.Tensor:
-            inputs = results['inputs'].cpu().numpy()
-            targets = results['targets'].cpu().numpy()
-        else:
-            inputs = results['inputs']
-            targets = results['targets']
-        plt.scatter(inputs[results['mask']][:, 0], inputs[results['mask']][:, 1], c=targets[results['mask']])
-        if self.configs['save_plots']:
-            plt.savefig(os.path.join(self.results_dir, f"input." + extension))
+    print('==========================================================================================')
+    print("GAP: " + str(gap))
+    dataset, model, performances, split_indices = train_classifier(gap, model, criterion, optimizer, epochs, transforms=transforms, logger=logger, save_dir=reproducibility_dir)
+    results = postprocess(dataset[split_indices[1]], model, logger, main_dir)
+    results['split_indices'] = split_indices
+    results['train_performance'] = performances[0]
+    results['dev_performance'] = performances[1]
+    # print(results['summary'])
+    if is_main:
+        torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
+    print('==========================================================================================')
+    return results
 
-        if self.configs['show_plots']:
-            plt.show()
-        plt.close('all')
+
+def init_dirs(gap, base_dir, is_main=False):
+    base_dir = os.path.join(base_dir, 'gap_' + gap)
+    main_dir = 'ring_classification'
+    reproducibility_dir = 'reproducibility'
+    results_dir = 'results'
+    if is_main:
+        base_dir = create_directory_timestamp(base_dir, main_dir)
+    reproducibility_dir = os.path.join(base_dir, reproducibility_dir)
+    create_directory(reproducibility_dir)
+    results_dir = os.path.join(base_dir, results_dir)
+    create_directory(results_dir)
+    return main_dir, results_dir, reproducibility_dir
+
+
+def validate_on_hardware(model):
+    pass
 
 
 if __name__ == '__main__':
-    import pandas as pd
-    import torch
-    import matplotlib.pyplot as plt
-    from bspyalgo.utils.io import load_configs
-    from bspytasks.tasks.ring.data_loader import RingDataLoader
+    from bspyalgo.algorithms.gradient.gd import GD
+    from bspyalgo.algorithms.gradient.core.losses import fisher
+    from bspyalgo.algorithms.gradient.core.logger import Logger
+    from bspyproc.processors.dnpu import DNPU
+    import numpy as np
+    import datetime as d
+    from bspytasks.utils.transforms import ToTensor, ToVoltageRange
+    from torchvision import transforms
 
-    gap = 0.2
+    configs = {}
+    configs['platform'] = 'simulation'
+    configs['torch_model_dict'] = '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
+    configs['input_indices'] = [0, 1]
+    configs['input_electrode_no'] = 7
+    # configs['waveform'] = {}
+    # configs['waveform']['amplitude_lengths'] = 80
+    # configs['waveform']['slope_lengths'] = 20
+    V_MIN = [-1.2, -1.2]
+    V_MAX = [0.7, 0.7]
+    X_MIN = [-1, -1]
+    X_MAX = [1, 1]
+    transforms = transforms.Compose([
+        ToVoltageRange(V_MIN, V_MAX, -1, 1),
+        ToTensor()
+    ])
 
-    configs = load_configs('configs/tasks/ring/template_gd_architecture_3.json')
-    configs['ring_data']['gap'] = gap
-    task = RingClassificationTask(configs)
-    data_loader = RingDataLoader(configs)
-    inputs, targets, mask = data_loader.generate_new_data(configs['algorithm_configs']['processor'], gap=gap)
-    result = task.run_task(inputs, targets, mask)
-    task.save_reproducibility_data(result)
-    task.plot_results(result)
+    model = TorchUtils.format_tensor(DNPU(configs))
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.01)
+    logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
+
+    classify_ring(0.004, model, fisher, optimizer, epochs=80, transforms=transforms, logger=logger)
