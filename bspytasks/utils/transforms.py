@@ -16,13 +16,10 @@ class ToVoltageRange(object):
     def __init__(self, v_min, v_max, x_min=-1, x_max=1):
         self.scale, self.offset = self.get_map_to_voltage_vars(np.array(v_min), np.array(v_max), np.array(x_min), np.array(x_max))
 
-    def __call__(self, inputs):
-        return (inputs * self.scale) + self.offset
-
-    # def map_to_voltage(self, v_min, v_max, x=np.array([-1, 1])):
-    #     a = ((v_min - v_max) / (x.min() - x.max()))
-    #     b = v_max - a * x.max()
-    #     return (a * x) + b
+    def __call__(self, data):
+        inputs = data[0]
+        inputs = (inputs * self.scale) + self.offset
+        return (inputs, data[1])
 
     def get_map_to_voltage_vars(self, v_min, v_max, x_min, x_max):
         scale = ((v_min - v_max) / (x_min - x_max))
