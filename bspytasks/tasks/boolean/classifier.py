@@ -8,7 +8,7 @@ from bspyalgo.algorithms.gradient.gd import GD
 from bspytasks.utils.transforms import ToTensor, ToVoltageRange
 
 from bspyproc.utils.pytorch import TorchUtils
-from bspytasks.tasks.boolean import BooleanGateDataset
+from bspytasks.tasks.boolean.data import BooleanGateDataset
 from bspytasks.datasets.ring import RingDataGenerator
 
 from torchvision import transforms
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     ])
 
     model = TorchUtils.format_tensor(DNPU(configs))
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.0065)
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.01)
     logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
 
     gate = np.array([0, 0, 0, 1])

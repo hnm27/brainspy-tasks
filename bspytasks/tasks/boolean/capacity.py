@@ -2,66 +2,65 @@ from bspytasks.tasks.boolean.vcdimension import vc_dimension_test
 import torch
 from bspyalgo.utils.io import create_directory_timestamp
 import os
+import matplotlib.pyplot as plt
+import numpy as np
+from bspyproc.utils.pytorch import TorchUtils
+import pickle
 
 
 def capacity_test(from_dimension, to_dimension, custom_model, configs, criterion, custom_optimizer, epochs, transforms, logger, base_dir='tmp/output/boolean/capacity'):
     print('*****************************************************************************************')
     print(f"CAPACITY TEST FROM VCDIM {from_dimension} TO VCDIM {to_dimension} ")
     print('*****************************************************************************************')
-    base_dir = init_dirs(base_dir)
+    base_dir = create_directory_timestamp(base_dir, 'capacity_test')
     # save(mode='configs', file_path=self.configs_dir, data=configs)
     summary_results = {'capacity_per_N': [],
-                       'accuracy_distib_per_N': [],
+                       'accuracy_distrib_per_N': [],
                        'performance_distrib_per_N': [],
                        'correlation_distrib_per_N': []}
     for i in range(from_dimension, to_dimension + 1):
         # capacity, accuracy_array, performance_array, correlation_array = vc_dimension_test(self.current_dimension, validate=validate)
         results = vc_dimension_test(i, custom_model, configs, criterion, custom_optimizer, epochs, transforms=transforms, logger=logger, base_dir=base_dir, is_main=False)
-        summary_results['capacity_per_N'].append(results['capacity'])
-        summary_results['accuracy_distib_per_N'].append(results['accuracies'])
-        summary_results['performance_distrib_per_N'].append(results['performances'])
-        summary_results['correlation_distrib_per_N'].append(results['correlations'])
-
+        summary_results['capacity_per_N'].append(TorchUtils.get_numpy_from_tensor(results['capacity']))
+        summary_results['accuracy_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['accuracies']))
+        summary_results['performance_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['performances'][:, -1]))
+        summary_results['correlation_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['correlations']))
+        del results
     # self.vcdimension_test.close_results_file()
     # self.plot_summary()
     # dict_loc = os.path.join(self.configs['vc_dimension_test']['results_base_dir'], 'summary_results.pkl')
-    # with open(dict_loc, 'wb') as fp:
-    # pickle.dump(self.summary_results, fp, protocol=pickle.HIGHEST_PROTOCOL)
-    torch.save(summary_results, os.path.join(base_dir, 'summary_results.pickle'))
+    with open(os.path.join(base_dir, 'summary_results.pickle'), 'wb') as fp:
+        pickle.dump(summary_results, fp, protocol=pickle.HIGHEST_PROTOCOL)
+    #torch.save(summary_results, os.path.join(base_dir, 'summary_results.pickle'))
+    plot_summary(summary_results, from_dimension, to_dimension, base_dir)
     print('*****************************************************************************************')
 
 
-def init_dirs(base_dir):
-    base_dir = create_directory_timestamp(base_dir, 'capacity_test')
-    #self.configs_dir = os.path.join(base_dir, 'capacity_configs.json')
-    return base_dir
-
-
-def plot_summary():
-    dimensions = np.arange(self.configs['from_dimension'], self.configs['to_dimension'] + 1)
+def plot_summary(results, from_dimension, to_dimension, base_dir=None):
+    dimensions = np.arange(from_dimension, to_dimension + 1)
     plt.figure()
-    plt.plot(dimensions, self.summary_results['capacity_per_N'])
+    plt.plot(dimensions, results['capacity_per_N'])
     plt.title('Capacity over N points')
     plt.xlabel('Nr. of points N')
     plt.ylabel('Capacity')
-    file_path = os.path.join(self.configs['vc_dimension_test']['results_base_dir'], "Capacity_over_N")
-    plt.savefig(file_path)
+    if base_dir:
+        plt.savefig(os.path.join(base_dir, "Capacity_over_N"))
 
-    self.plot_boxplot(dimensions, 'accuracy_distib_per_N', title='Accuracy over N points')
-    self.plot_boxplot(dimensions, 'performance_distrib_per_N', title='Performance over N points')
-    self.plot_boxplot(dimensions, 'correlation_distrib_per_N', title='Correlation over N points')
+    plot_boxplot(dimensions, results, 'accuracy_distrib_per_N', title='Accuracy over N points', base_dir=base_dir)
+    plot_boxplot(dimensions, results, 'performance_distrib_per_N', title='Performance over N points', base_dir=base_dir)
+    plot_boxplot(dimensions, results, 'correlation_distrib_per_N', title='Correlation over N points', base_dir=base_dir)
 
     plt.show()
 
 
-def plot_boxplot(pos, key, title=''):
+def plot_boxplot(pos, results, key, title='', base_dir=None):
     plt.figure()
     plt.title(title)
-    plt.boxplot(self.summary_results[key], positions=pos)
+    plt.boxplot(results[key], positions=pos)
     plt.xlabel('Nr. of points N')
     plt.ylabel(key.split('_')[0])
-    file_path = os.path.join(self.configs['vc_dimension_test']['results_base_dir'], key)
-    plt.savefig(file_path)
+    if base_dir:
+        plt.savefig(os.path.join(base_dir, key))
 
 
 if __name__ == "__main__":

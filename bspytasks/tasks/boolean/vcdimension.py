@@ -1,5 +1,5 @@
 from bspytasks.tasks.boolean.classifier import find_gate
-from bspytasks.datasets.boolean import generate_targets
+from bspytasks.tasks.boolean.data import generate_targets
 import torch
 from bspyproc.utils.pytorch import TorchUtils
 from bspyalgo.algorithms.gradient.gd import GD
@@ -15,7 +15,7 @@ from bspyalgo.utils.io import create_directory, create_directory_timestamp
 import matplotlib.pyplot as plt
 
 
-def vc_dimension_test(current_dimension, custom_model, configs, criterion, custom_optimizer, epochs, transforms, logger, attempts=3, threshold_parameter=0.5, base_dir='tmp/output/boolean/vc_dimension_test', is_main=True):
+def vc_dimension_test(current_dimension, custom_model, configs, criterion, custom_optimizer, epochs, transforms, logger, attempts=1, threshold_parameter=0.5, base_dir='tmp/output/boolean/vc_dimension_test', is_main=True):
     print('---------------------------------------------')
     print(f'    VC DIMENSION {str(current_dimension)} TEST')
     print('---------------------------------------------')
@@ -33,7 +33,7 @@ def vc_dimension_test(current_dimension, custom_model, configs, criterion, custo
         for j in range(attempts):
             logger.gate = str(targets[i])
             model = custom_model(configs)
-            optimizer = custom_optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
+            optimizer = custom_optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=0.00065)
             results = find_gate(np.array(targets[i]), model, corrsig, optimizer, epochs, threshold, transforms=transforms, logger=logger, base_dir=base_dir, is_main=False)
             accuracies[i] = results['accuracy']['accuracy_value']
             performances[i] = results['performance']
