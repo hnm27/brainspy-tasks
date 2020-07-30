@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 from bspyproc.utils.pytorch import TorchUtils
 from bspyalgo.utils.io import load_configs
-#from bspytasks.tasks.ring.classifier import RingClassificationTask as Task
-#from bspytasks.tasks.ring.data_loader import RingDataLoader
-from bspytasks.tasks.ring.classifier import classify_ring
+from bspytasks.tasks.ring.classifier import RingClassificationTask as Task
+from bspytasks.tasks.ring.data_loader import RingDataLoader
+
 from bspyalgo.utils.io import create_directory, create_directory_timestamp
 
 
@@ -18,7 +18,7 @@ class RingSearcher():
         self.configs = configs
         self.is_main = is_main
         self.base_dir = configs['results_base_dir']
-        #self.task = Task(configs, is_main=False)
+        self.task = Task(configs, is_main=False)
         self.data_loader = RingDataLoader(configs)
 
     def init_dirs(self, gap):
@@ -49,7 +49,7 @@ class RingSearcher():
         self.init_dirs(gap)
 
         self.task.configs['ring_data']['gap'] = gap
-        #inputs, targets, mask = self.data_loader.get_data(self.configs['algorithm_configs']['processor'], gap=gap)
+        inputs, targets, mask = self.data_loader.get_data(self.configs['algorithm_configs']['processor'], gap=gap)
 
         self.reset(inputs.shape[0])
         for run in range(self.configs['runs']):
