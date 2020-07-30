@@ -8,7 +8,7 @@ from bspyalgo.algorithms.gradient.gd import GD
 from bspytasks.utils.transforms import ToTensor, ToVoltageRange
 
 from bspyproc.utils.pytorch import TorchUtils
-from bspytasks.datasets.boolean import BooleanGateDataset
+from bspytasks.tasks.boolean import BooleanGateDataset
 from bspytasks.datasets.ring import RingDataGenerator
 
 from torchvision import transforms
