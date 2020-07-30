@@ -12,74 +12,100 @@ from bspytasks.datasets.boolean import BooleanGateDataset
 from bspytasks.datasets.ring import RingDataGenerator
 
 from torchvision import transforms
-import torch
+
+from bspyalgo.utils.io import save
+
 from bspyalgo.utils.performance import perceptron
-from bspyalgo.algorithms.gradient.fitter import train, test
+from bspyalgo.algorithms.gradient.fitter import train
 import numpy as np
 
 import matplotlib.pyplot as plt
 import torch
 
-from bspyalgo.utils.performance import accuracy
+from bspyalgo.utils.io import create_directory, create_directory_timestamp
+from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
+
+import os
 
 
-def train_classifier(model, criterion, optimizer, target=np.array([0, 1, 1, 0]), threshold=0.8, transforms=None, logger=None):
+def train_classifier(model, criterion, optimizer, epochs, target=np.array([0, 1, 1, 0]), threshold=0.8, transforms=None, logger=None, save_dir='tmp/output/fitter'):
     veredict = False
     dataset = BooleanGateDataset(target=target, transforms=transforms)
     loader = torch.utils.data.DataLoader(dataset, batch_size=512, shuffle=True, pin_memory=False)
-    model, _, _ = train(model, (loader, None), 100, criterion, optimizer, logger=logger)
-    return dataset, model
+    model, train_performance, dev_performance = train(model, (loader, None), epochs, criterion, optimizer, logger=logger, save_dir=save_dir)
+    return dataset, model, train_performance, dev_performance
 
 
-def postprocess(gate_name, dataset, model, logger, threshold):
-
+def postprocess(gate_name, dataset, model, logger, threshold, save_dir=None):
+    results = {}
     with torch.no_grad():
         model.eval()
         inputs, targets = dataset[:]
         predictions = model(inputs)
 
-    acc = accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    results['inputs'] = inputs
+    results['targets'] = targets
+    results['predictions'] = predictions
+    results['accuracy'] = perceptron(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    results['correlation'] = corr_coeff_torch(predictions.T, targets.T)
 
-    if (acc[0] >= threshold):
-        veredict = True
-        print('VEREDICT: PASS')
+    if (results['accuracy']['accuracy_value'] >= threshold):
+        results['veredict'] = True
     else:
-        veredict = False
-        print('VEREDICT: FAIL')
-    plot_gate(gate_name, veredict, predictions, targets, logger, show_plots=True)
-    return veredict, acc
+        results['veredict'] = False
+    results['summary'] = 'VC Dimension: ' + str(len(dataset)) + ' Gate: ' + gate_name + ' Veredict: ' + str(results['veredict']) + ' ACCURACY: ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(threshold)
+    results['results_fig'] = plot_results(results, save_dir)
+    results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
+    if logger is not None:
+        logger.log.add_figure('Results/VCDim' + str(len(dataset)) + '/' + gate_name, results['results_fig'])
+        logger.log.add_figure('Accuracy/VCDim' + str(len(dataset)) + '/' + gate_name, results['accuracy_fig'])
+    return results
 
 
-def plot_gate(gate_name, veredict, output, target, logger, show_plots=False):
+def plot_results(results, save_dir=None, show_plots=False):
     fig = plt.figure()
-    plt.title(gate_name + ' Veredict:' + str(veredict))
-    plt.plot(output.detach().cpu(), label='Prediction')
-    plt.plot(target.detach().cpu(), label='Target')
+    plt.title(results['summary'])
+    plt.plot(results['predictions'].detach().cpu(), label='Prediction')
+    plt.plot(results['targets'].detach().cpu(), label='Target')
     plt.ylabel('Current (nA)')
     plt.xlabel('Time')
     plt.legend()
-    # if save_dir is not None:
-    #     plt.savefig(save_dir)
-    if logger is not None:
-        logger.log.add_figure('Results/' + gate_name, fig)
+    if save_dir is not None:
+        plt.savefig(os.path.join(save_dir, 'results.jpg'))
     if show_plots:
         plt.show()
     plt.close()
+    return fig
 
 
-def find_gate(gate, model, criterion, optimizer, threshold, transforms=None, logger=None):
-
+def find_gate(gate, model, criterion, optimizer, epochs, threshold, transforms=None, logger=None, base_dir='tmp/output/boolean/gates', is_main=True):
+    main_dir, reproducibility_dir = init_dirs(str(gate), base_dir, is_main)
     print('==========================================================================================')
-    print(f"GATE: {gate} ")
-    dataset, model = train_classifier(model, criterion, optimizer, target=gate, transforms=transforms, logger=logger)
-    veredict, accuracy = postprocess(str(gate), dataset, model, logger, threshold)
-    print('ACCURACY: ' + str(accuracy[0]) + '/' + str(threshold))
+    print("GATE: " + str(gate))
+    dataset, model, performance, _ = train_classifier(model, criterion, optimizer, epochs, target=gate, transforms=transforms, logger=logger, save_dir=reproducibility_dir)
+    results = postprocess(str(gate), dataset, model, logger, threshold, main_dir)
+    results['performance'] = TorchUtils.format_tensor(torch.tensor(performance))
+    print(results['summary'])
+    if is_main:
+        torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
     print('==========================================================================================')
-    return dataset, model, accuracy[0], veredict
+    return results
 
 
 def validate_on_hardware(model):
     pass
+
+
+def init_dirs(gate_name, base_dir, is_main):
+    if is_main:
+        base_dir = create_directory_timestamp(base_dir, gate_name)
+        reproducibility_dir = os.path.join(base_dir, 'reproducibility')
+        create_directory(reproducibility_dir)
+    else:
+        base_dir = os.path.join(base_dir, gate_name)
+        reproducibility_dir = os.path.join(base_dir, 'reproducibility')
+        create_directory(reproducibility_dir)
+    return base_dir, reproducibility_dir
 
 
 if __name__ == "__main__":
@@ -112,4 +138,4 @@ if __name__ == "__main__":
 
     gate = np.array([0, 0, 0, 1])
 
-    find_gate(gate, model, corrsig, optimizer, 80.0, transforms=transforms, logger=logger)
+    find_gate(gate, model, corrsig, optimizer, epochs=80, threshold=87.5, transforms=transforms, logger=logger)
