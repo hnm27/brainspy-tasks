@@ -9,7 +9,7 @@ from bspyalgo.algorithms.gradient.gd import GD
 
 from bspyproc.utils.pytorch import TorchUtils
 from bspytasks.tasks.boolean.data import BooleanGateDataset
-
+from bspyalgo.manager import get_criterion, get_optimizer
 from torchvision import transforms
 
 from bspyalgo.utils.io import save
@@ -26,9 +26,10 @@ from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_percep
 
 import os
 
+from bspyalgo.utils.io import save
+
 
 def train_classifier(model, criterion, optimizer, epochs, target=np.array([0, 1, 1, 0]), threshold=0.8, transforms=None, logger=None, save_dir='tmp/output/boolean'):
-    veredict = False
     dataset = BooleanGateDataset(target=target, transforms=transforms)
     loader = torch.utils.data.DataLoader(dataset, batch_size=512, shuffle=True, pin_memory=False)
     model, performance = train(model, (loader, None), epochs, criterion, optimizer, logger=logger, save_dir=save_dir)
@@ -77,16 +78,27 @@ def plot_results(results, save_dir=None, show_plots=False):
     return fig
 
 
-def find_gate(gate, model, criterion, optimizer, epochs, threshold, transforms=None, logger=None, base_dir='tmp/output/boolean/gates', is_main=True):
-    main_dir, reproducibility_dir = init_dirs(str(gate), base_dir, is_main)
+def find_gate(configs, gate, custom_model, threshold, transforms=None, logger=None, is_main=True):
+
+    main_dir, reproducibility_dir = init_dirs(str(gate), configs['results_base_dir'], is_main)
+    gate = np.array(gate)
+    criterion = get_criterion(configs['algorithm'])
+    dataset = BooleanGateDataset(target=gate, transforms=transforms)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=configs['algorithm']['batch_size'], shuffle=True, pin_memory=False)
     print('==========================================================================================')
     print("GATE: " + str(gate))
-    dataset, model, performance = train_classifier(model, criterion, optimizer, epochs, target=gate, transforms=transforms, logger=logger, save_dir=reproducibility_dir)
-    results = postprocess(str(gate), dataset, model, logger, threshold, main_dir)
-    results['performance'] = performance[0]  # Dev performance is not relevant to the boolean gates problem
-    print(results['summary'])
-    if is_main:
-        torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
+    for i in range(configs['max_attempts'] + 1):
+        print('ATTEMPT: ' + str(i))
+        model = custom_model(configs['processor'])
+        optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
+        model, performance = train(model, (loader, None), configs['algorithm']['epochs'], criterion, optimizer, logger=logger, save_dir=reproducibility_dir)
+        results = postprocess(str(gate), dataset, model, logger, threshold, main_dir)
+        results['performance'] = performance[0]  # Dev performance is not relevant to the boolean gates problem
+        print(results['summary'])
+        if results['veredict']:
+            break
+    torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
+    save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
     print('==========================================================================================')
     return results
 
@@ -108,6 +120,7 @@ def init_dirs(gate_name, base_dir, is_main):
 
 
 if __name__ == "__main__":
+    from bspyalgo.utils.io import load_configs
     from bspyalgo.algorithms.gradient.gd import GD
     from bspyalgo.algorithms.gradient.core.losses import corrsig
     from bspyalgo.algorithms.gradient.core.logger import Logger
@@ -116,26 +129,23 @@ if __name__ == "__main__":
     import numpy as np
     import datetime as d
 
-    configs = {}
-    configs['platform'] = 'simulation'
-    configs['torch_model_dict'] = '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
-    configs['input_indices'] = [0, 1]
-    configs['input_electrode_no'] = 7
+    configs = load_configs('configs/boolean.yaml')
+
+    # configs = {}
+    # configs['platform'] = 'simulation'
+    # configs['torch_model_dict'] = '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
+    # configs['input_indices'] = [0, 1]
+    # configs['input_electrode_no'] = 7
     # configs['waveform'] = {}
     # configs['waveform']['amplitude_lengths'] = 80
     # configs['waveform']['slope_lengths'] = 20
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.7, 0.7]
-    X_MIN = [-1, -1]
-    X_MAX = [1, 1]
+
     transforms = transforms.Compose([
         ToTensor()
     ])
 
-    model = TorchUtils.format_tensor(DNPU(configs))
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.01)
     logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
 
-    gate = np.array([0, 0, 0, 1])
+    gate = [0, 0, 0, 1]
 
-    find_gate(gate, model, corrsig, optimizer, epochs=80, threshold=87.5, transforms=transforms, logger=logger)
+    find_gate(configs, gate, DNPU, threshold=0.8, transforms=transforms, logger=logger)

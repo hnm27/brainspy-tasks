@@ -1,0 +1,8 @@
+type: 'gradient'
+epochs: 750
+batch_size: 128
+worker_no: 0
+learning_rate: 0.01
+criterion: 'corrsig'
+optimizer: 'adam'
+stop_threshold: 0.001

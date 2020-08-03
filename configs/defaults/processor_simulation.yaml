@@ -1,0 +1,10 @@
+platform: 'simulation'
+torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
+input_indices:
+- 0
+- 1
+input_electrode_no: 7
+use_noise: false
+waveform:
+  amplitude_lengths: 1
+  slope_lengths: 0
