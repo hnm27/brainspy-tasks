@@ -16,37 +16,61 @@ import matplotlib
 
 from bspytasks.tasks.ring.data import RingDataGenerator, RingDataLoader
 from bspyalgo.algorithms.gradient.fitter import train, split
+from bspyalgo.manager import get_criterion, get_optimizer
+from bspyalgo.utils.io import save
+from matplotlib import cm
 
 
-def get_ring_data(sample_no, gap, transforms, batch_size, num_workers, data_dir=None, save_dir=None):
+def ring_task(dataloaders, custom_model, configs, transforms=None, logger=None, is_main=True):
+
+    main_dir, results_dir, reproducibility_dir = init_dirs(str(dataloaders[0].dataset.gap), configs['results_base_dir'], is_main)
+    criterion = get_criterion(configs['algorithm'])
+    print('==========================================================================================')
+    print("GAP: " + str(dataloaders[0].dataset.gap))
+    model = custom_model(configs['processor'])
+    optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
+
+    model, performances = train(model, (dataloaders[0], dataloaders[1]), configs['algorithm']['epochs'], criterion, optimizer, logger=logger, save_dir=reproducibility_dir)
+    results = {}
+    results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, main_dir)
+    results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, main_dir)
+    results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, main_dir)
+    results['gap'] = str(dataloaders[0].dataset.gap)
+    #results['split_indices'] = [dataloaders[i].sampler.indices for i in range(len(dataloaders))]
+    results['train_results']['performance'] = performances[0]
+    results['dev_results']['performance'] = performances[1]
+    # print(results['summary'])
+    plot_results(results, plots_dir=results_dir)
+    torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
+    save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
+    print('==========================================================================================')
+    return results
+
+
+def get_ring_data(gap, configs, transforms, data_dir=None):
     # Returns dataloaders and split indices
-    if data_dir:
-        dataset = RingDataLoader(data_dir, transforms=transforms, save_dir=save_dir)
+    if configs['data']['load']:
+        dataset = RingDataLoader(data_dir, transforms=transforms, save_dir=data_dir)
     else:
-        dataset = RingDataGenerator(sample_no, gap, transforms=transforms, save_dir=save_dir)
-    dataloaders, split_indices = split(dataset, batch_size, num_workers=num_workers)
+        dataset = RingDataGenerator(configs['data']['sample_no'], gap, transforms=transforms, save_dir=data_dir)
+    dataloaders, split_indices = split(dataset, configs['algorithm']['batch_size'], num_workers=configs['algorithm']['worker_no'], split_percentages=configs['data']['split_percentages'])
     return dataset, dataloaders, split_indices
 
 
-def train_classifier(gap, model, criterion, optimizer, epochs, transforms=None, logger=None, data_dir=None, save_dir=None):
-    veredict = False
-
-    #loader = torch.utils.data.DataLoader(dataset, batch_size=512, shuffle=True, pin_memory=False)
-    dataset, dataloaders, split_indices = get_ring_data(1000, gap, transforms=transforms, batch_size=512, num_workers=0, data_dir=data_dir, save_dir=save_dir)
-    model, performances = train(model, (dataloaders[0], dataloaders[1]), epochs, criterion, optimizer, logger=logger, save_dir=save_dir)
-    return dataset, model, performances, split_indices
-
-
-def postprocess(dataset, model, logger, threshold, save_dir=None):
+def postprocess(dataset, model, criterion, logger, save_dir=None):
     results = {}
     with torch.no_grad():
         model.eval()
         inputs, targets = dataset[:]
+        indices = torch.argsort(targets[:, 0], dim=0)
+        inputs, targets = inputs[indices], targets[indices]
         predictions = model(inputs)
+        results['best_performance'] = criterion(predictions, targets)
 
-    results['dev_inputs'] = inputs
-    results['dev_targets'] = targets
-    results['predictions'] = predictions
+    #results['gap'] = dataset.gap
+    results['inputs'] = inputs
+    results['targets'] = targets
+    results['best_output'] = predictions
     results['accuracy'] = perceptron(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results['correlation'] = corr_coeff_torch(predictions.T, targets.T)
 
@@ -60,24 +84,6 @@ def postprocess(dataset, model, logger, threshold, save_dir=None):
     # if logger is not None:
     #     logger.log.add_figure('Results/VCDim' + str(len(dataset)) + '/' + gate_name, results['results_fig'])
     #     logger.log.add_figure('Accuracy/VCDim' + str(len(dataset)) + '/' + gate_name, results['accuracy_fig'])
-    return results
-
-
-def classify_ring(gap, model, criterion, optimizer, epochs, transforms=None, logger=None, base_dir='tmp/output/ring/', is_main=True):
-
-    main_dir, results_dir, reproducibility_dir = init_dirs(str(gap), base_dir, is_main)
-
-    print('==========================================================================================')
-    print("GAP: " + str(gap))
-    dataset, model, performances, split_indices = train_classifier(gap, model, criterion, optimizer, epochs, transforms=transforms, logger=logger, save_dir=reproducibility_dir)
-    results = postprocess(dataset[split_indices[1]], model, logger, main_dir)
-    results['split_indices'] = split_indices
-    results['train_performance'] = performances[0]
-    results['dev_performance'] = performances[1]
-    # print(results['summary'])
-    if is_main:
-        torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
-    print('==========================================================================================')
     return results
 
 
@@ -95,6 +101,53 @@ def init_dirs(gap, base_dir, is_main=False):
     return main_dir, results_dir, reproducibility_dir
 
 
+def plot_results(results, plots_dir=None, show_plots=False, extension='png'):
+    plot_output(results['train_results'], 'Train', plots_dir=plots_dir, extension=extension)
+    plot_output(results['dev_results'], 'Dev', plots_dir=plots_dir, extension=extension)
+    plot_output(results['test_results'], 'Test', plots_dir=plots_dir, extension=extension)
+    plt.figure()
+    plt.title(f'Learning profile', fontsize=12)
+    plt.plot(results['train_performance'], label='Train')
+    if results['dev_performance'] is not []:
+        plt.plot(results['dev_performance'], label='Dev')
+    plt.legend()
+    if plots_dir is not None:
+        plt.savefig(os.path.join(plots_dir, f"training_profile." + extension))
+
+    plt.figure()
+    plt.title(f"Inputs (V) \n {results['gap']} gap (-1 to 1 scale)", fontsize=12)
+    plot_inputs(results['train_results'], 'Train', ['blue', 'cornflowerblue'])
+    plot_inputs(results['dev_results'], 'Dev', ['orange', 'bisque'])
+    plot_inputs(results['test_results'], 'Test', ['green', 'springgreen'])
+    plt.legend()
+    # if type(results['dev_inputs']) is torch.Tensor:
+    if plots_dir is not None:
+        plt.savefig(os.path.join(plots_dir, f"input." + extension))
+
+    if show_plots:
+        plt.show()
+    plt.close('all')
+
+
+def plot_output(results, label, plots_dir=None, extension='png'):
+    plt.figure()
+    plt.plot(results['best_output'].detach().cpu())
+    plt.title(f"{label} Output (nA) \n Performance: {results['best_performance']} \n Accuracy: {results['accuracy']['accuracy_value']}", fontsize=12)
+    if plots_dir is not None:
+        plt.savefig(os.path.join(plots_dir, label + "_output." + extension))
+
+
+def plot_inputs(results, label, colors=['b', 'r'], plots_dir=None, extension='png'):
+    # if type(results['dev_inputs']) is torch.Tensor:
+    inputs = results['inputs'].cpu().numpy()
+    targets = results['targets'][:, 0].cpu().numpy()
+    # else:
+    #     inputs = results['dev_inputs']
+    #     targets = results['dev_targets']
+    plt.scatter(inputs[targets == 0][:, 0], inputs[targets == 0][:, 1], c=colors[0], label='Class 0 (' + label + ')', cmap=colors)
+    plt.scatter(inputs[targets == 1][:, 0], inputs[targets == 1][:, 1], c=colors[1], label='Class 1 (' + label + ')', cmap=colors)
+
+
 def validate_on_hardware(model):
     pass
 
@@ -108,15 +161,9 @@ if __name__ == '__main__':
     import datetime as d
     from bspytasks.utils.transforms import ToTensor, ToVoltageRange
     from torchvision import transforms
+    from bspyalgo.utils.io import load_configs
 
-    configs = {}
-    configs['platform'] = 'simulation'
-    configs['torch_model_dict'] = '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
-    configs['input_indices'] = [0, 1]
-    configs['input_electrode_no'] = 7
-    # configs['waveform'] = {}
-    # configs['waveform']['amplitude_lengths'] = 80
-    # configs['waveform']['slope_lengths'] = 20
+    configs = load_configs('configs/ring.yaml')
     V_MIN = [-1.2, -1.2]
     V_MAX = [0.7, 0.7]
     X_MIN = [-1, -1]
@@ -125,9 +172,7 @@ if __name__ == '__main__':
         ToVoltageRange(V_MIN, V_MAX, -1, 1),
         ToTensor()
     ])
-
-    model = TorchUtils.format_tensor(DNPU(configs))
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.01)
+    gap = 0.4
     logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
-
-    classify_ring(0.004, model, fisher, optimizer, epochs=80, transforms=transforms, logger=logger)
+    dataset, dataloaders, split_indices = get_ring_data(gap, configs, transforms)
+    ring_task(dataloaders, DNPU, configs, logger=logger)

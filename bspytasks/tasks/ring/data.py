@@ -10,10 +10,11 @@ class RingDataLoader(Dataset):
         # self.scale, self.offset = get_voltage_conversion_vars(input_voltage_range)
         data = np.load(file_path)
         self.inputs, self.targets = data['inputs'], data['targets']
+        self.gap = data['gap']
         assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
         if verbose:
             print(f'There are a total of {len(self.inputs[self.targets == 0]) + len(self.inputs[self.targets == 1])} samples')
-            print(f"The input ring dataset has a {data['gap']} gap (In a range from -1 to 1).")
+            print(f"The input ring dataset has a {self.gap} gap (In a range from -1 to 1).")
 
     def __len__(self):
         return len(self.inputs)
@@ -37,6 +38,7 @@ class RingDataGenerator(Dataset):
         # self.scale, self.offset = get_voltage_conversion_vars(input_voltage_range)
         self.inputs, targets = self.generate_data(sample_no, gap, verbose=verbose)
         self.targets = targets[:, np.newaxis]
+        self.gap = gap
         assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
 
         if save_dir is not None:
