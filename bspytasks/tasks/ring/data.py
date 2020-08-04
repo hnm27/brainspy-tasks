@@ -5,12 +5,13 @@ import numpy as np
 from torch.utils.data import Dataset
 
 
-class RingDataLoader(Dataset):
+class RingDatasetLoader(Dataset):
     def __init__(self, file_path, transforms=None, save_dir=None, verbose=True):
         # self.scale, self.offset = get_voltage_conversion_vars(input_voltage_range)
         data = np.load(file_path)
         self.inputs, self.targets = data['inputs'], data['targets']
         self.gap = data['gap']
+        self.transforms = transforms
         assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
         if verbose:
             print(f'There are a total of {len(self.inputs[self.targets == 0]) + len(self.inputs[self.targets == 1])} samples')
@@ -28,7 +29,7 @@ class RingDataLoader(Dataset):
         return sample
 
 
-class RingDataGenerator(Dataset):
+class RingDatasetGenerator(Dataset):
 
     def __init__(self, sample_no, gap, transforms=None, save_dir=None, verbose=True):
         # The gap is a value between 0 and 1
