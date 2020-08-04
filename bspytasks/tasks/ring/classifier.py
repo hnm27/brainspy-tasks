@@ -22,7 +22,8 @@ from matplotlib import cm
 
 
 def ring_task(dataloaders, custom_model, configs, transforms=None, logger=None, is_main=True):
-
+    results = {}
+    results['gap'] = str(dataloaders[0].dataset.gap)
     main_dir, results_dir, reproducibility_dir = init_dirs(str(dataloaders[0].dataset.gap), configs['results_base_dir'], is_main)
     criterion = get_criterion(configs['algorithm'])
     print('==========================================================================================')
@@ -31,15 +32,15 @@ def ring_task(dataloaders, custom_model, configs, transforms=None, logger=None, 
     optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
 
     model, performances = train(model, (dataloaders[0], dataloaders[1]), configs['algorithm']['epochs'], criterion, optimizer, logger=logger, save_dir=reproducibility_dir)
-    results = {}
-    results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, main_dir)
-    results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, main_dir)
-    results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, main_dir)
-    results['gap'] = str(dataloaders[0].dataset.gap)
-    #results['split_indices'] = [dataloaders[i].sampler.indices for i in range(len(dataloaders))]
-    results['train_results']['performance'] = performances[0]
-    results['dev_results']['performance'] = performances[1]
-    # print(results['summary'])
+
+    if len(dataloaders[0]) > 0:
+        results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, main_dir)
+        results['train_results']['performance'] = performances[0]
+    if len(dataloaders[1]) > 0:
+        results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, main_dir)
+        results['dev_results']['performance'] = performances[1]
+    if len(dataloaders[2]) > 0:
+        results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, main_dir)
     plot_results(results, plots_dir=results_dir)
     torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
     save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
@@ -103,13 +104,15 @@ def init_dirs(gap, base_dir, is_main=False):
 
 def plot_results(results, plots_dir=None, show_plots=False, extension='png'):
     plot_output(results['train_results'], 'Train', plots_dir=plots_dir, extension=extension)
-    plot_output(results['dev_results'], 'Dev', plots_dir=plots_dir, extension=extension)
-    plot_output(results['test_results'], 'Test', plots_dir=plots_dir, extension=extension)
+    if 'dev_results' in results:
+        plot_output(results['dev_results'], 'Dev', plots_dir=plots_dir, extension=extension)
+    if 'test_results' in results:
+        plot_output(results['test_results'], 'Test', plots_dir=plots_dir, extension=extension)
     plt.figure()
     plt.title(f'Learning profile', fontsize=12)
-    plt.plot(results['train_performance'], label='Train')
-    if results['dev_performance'] is not []:
-        plt.plot(results['dev_performance'], label='Dev')
+    plt.plot(results['train_results']['performance'], label='Train')
+    if 'dev_results' in results:
+        plt.plot(results['dev_results']['performance'], label='Dev')
     plt.legend()
     if plots_dir is not None:
         plt.savefig(os.path.join(plots_dir, f"training_profile." + extension))
@@ -117,8 +120,10 @@ def plot_results(results, plots_dir=None, show_plots=False, extension='png'):
     plt.figure()
     plt.title(f"Inputs (V) \n {results['gap']} gap (-1 to 1 scale)", fontsize=12)
     plot_inputs(results['train_results'], 'Train', ['blue', 'cornflowerblue'])
-    plot_inputs(results['dev_results'], 'Dev', ['orange', 'bisque'])
-    plot_inputs(results['test_results'], 'Test', ['green', 'springgreen'])
+    if 'dev_results' in results:
+        plot_inputs(results['dev_results'], 'Dev', ['orange', 'bisque'])
+    if 'test_results' in results:
+        plot_inputs(results['test_results'], 'Test', ['green', 'springgreen'])
     plt.legend()
     # if type(results['dev_inputs']) is torch.Tensor:
     if plots_dir is not None:
