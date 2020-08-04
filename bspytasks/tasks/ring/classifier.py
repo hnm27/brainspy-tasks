@@ -14,7 +14,7 @@ from bspyalgo.utils.io import create_directory, create_directory_timestamp, save
 from bspyproc.utils.pytorch import TorchUtils
 import matplotlib
 
-from bspytasks.tasks.ring.data import RingDataGenerator, RingDataLoader
+from bspytasks.tasks.ring.data import RingDatasetGenerator, RingDatasetLoader
 from bspyalgo.algorithms.gradient.fitter import train, split
 from bspyalgo.manager import get_criterion, get_optimizer
 from bspyalgo.utils.io import save
@@ -51,9 +51,9 @@ def ring_task(dataloaders, custom_model, configs, transforms=None, logger=None, 
 def get_ring_data(gap, configs, transforms, data_dir=None):
     # Returns dataloaders and split indices
     if configs['data']['load']:
-        dataset = RingDataLoader(data_dir, transforms=transforms, save_dir=data_dir)
+        dataset = RingDatasetLoader(data_dir, transforms=transforms, save_dir=data_dir)
     else:
-        dataset = RingDataGenerator(configs['data']['sample_no'], gap, transforms=transforms, save_dir=data_dir)
+        dataset = RingDatasetGenerator(configs['data']['sample_no'], gap, transforms=transforms, save_dir=data_dir)
     dataloaders, split_indices = split(dataset, configs['algorithm']['batch_size'], num_workers=configs['algorithm']['worker_no'], split_percentages=configs['data']['split_percentages'])
     return dataset, dataloaders, split_indices
 
