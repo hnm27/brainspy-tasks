@@ -24,7 +24,7 @@ def capacity_test(custom_model, configs, transforms, logger):
         results = vc_dimension_test(i, custom_model, configs, transforms=transforms, logger=logger, is_main=False)
         summary_results['capacity_per_N'].append(TorchUtils.get_numpy_from_tensor(results['capacity']))
         summary_results['accuracy_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['accuracies']))
-        summary_results['performance_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['performances'][:, -1]))
+        summary_results['performance_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['performance_history'][:, -1]))
         summary_results['correlation_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['correlations']))
         del results
     # self.vcdimension_test.close_results_file()

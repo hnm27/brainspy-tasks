@@ -34,7 +34,7 @@ def vc_dimension_test(current_dimension, custom_model, configs, transforms, logg
         logger.gate = str(targets[i])
         results = find_gate(configs, targets[i], custom_model, threshold, transforms=transforms, logger=logger, is_main=False)
         accuracies[i] = results['accuracy']['accuracy_value']
-        performances[i] = results['performance']
+        performances[i] = results['performance_history']
         veredicts[i] = results['veredict']
         correlations[i] = results['correlation']
         del results
