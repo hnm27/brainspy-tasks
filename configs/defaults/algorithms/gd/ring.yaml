@@ -1,0 +1,7 @@
+type: 'gradient'
+epochs: 60
+batch_size: 256
+worker_no: 0
+learning_rate: 0.01
+criterion: 'fisher'
+optimizer: 'adam'

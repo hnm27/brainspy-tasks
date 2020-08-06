@@ -4,5 +4,5 @@ to_dimension: 5
 threshold_parameter: 0.5
 max_attempts : 3
 results_base_dir : "tmp/TEST/output/boolean"
-algorithm: !include defaults/gd.yaml
-processor: !include defaults/processor_simulation.yaml
+algorithm: !include defaults/algorithms/gd/boolean.yaml
+processor: !include defaults/processors/simulation.yaml
