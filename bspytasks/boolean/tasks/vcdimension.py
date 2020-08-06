@@ -9,7 +9,7 @@ from bspyalgo.utils.io import create_directory, create_directory_timestamp
 from bspyproc.utils.pytorch import TorchUtils
 
 
-def vc_dimension_task(current_dimension, custom_model, configs, transforms, logger, is_main=True):
+def vc_dimension_test(current_dimension, custom_model, configs, transforms, logger, is_main=True):
     print('---------------------------------------------')
     print(f'\tVC DIMENSION {str(current_dimension)}\t')
     print('---------------------------------------------')
