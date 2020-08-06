@@ -1,0 +1,11 @@
+runs: 1000
+data:
+  load: false # If load is false, it generates a new dataset. If load is a path to the data, it loads it to the data
+  sample_no: 1500
+  split_percentages: # The data is divided into training, validation and test datasets respectively
+    - 0.9 # Percentage of the data used for training
+    - 0.1 # Percentage of the data used for validation
+    - 0 # Percentage of the data used for test
+results_base_dir : "tmp/TEST/output/ring"
+algorithm: !include defaults/gd.yaml
+processor: !include defaults/processor_simulation.yaml
