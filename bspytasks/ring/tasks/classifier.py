@@ -41,12 +41,12 @@ def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logg
     return results
 
 
-def get_ring_data(gap, configs, transforms, data_dir=None):
+def get_ring_data(configs, transforms, data_dir=None):
     # Returns dataloaders and split indices
     if configs['data']['load']:
         dataset = RingDatasetLoader(data_dir, transforms=transforms, save_dir=data_dir)
     else:
-        dataset = RingDatasetGenerator(configs['data']['sample_no'], gap, transforms=transforms, save_dir=data_dir)
+        dataset = RingDatasetGenerator(configs['data']['sample_no'], configs['data']['gap'], transforms=transforms, save_dir=data_dir)
     dataloaders = split(dataset, configs['algorithm']['batch_size'], sampler=BalancedSubsetRandomSampler, num_workers=configs['algorithm']['worker_no'], split_percentages=configs['data']['split_percentages'])
     return dataloaders
 
@@ -158,8 +158,6 @@ if __name__ == '__main__':
         DataPointsToPlateau(configs['processor']['waveform'])
     ])
 
-    gap = 0.4
-
-    dataloaders = get_ring_data(gap, configs, data_transforms)
+    dataloaders = get_ring_data(configs, data_transforms)
 
     ring_task(dataloaders, DNPU, configs, waveform_transforms=waveform_transforms)
