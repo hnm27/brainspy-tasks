@@ -9,7 +9,7 @@ from bspyalgo.utils.io import create_directory, create_directory_timestamp
 from bspyproc.utils.pytorch import TorchUtils
 
 
-def vc_dimension_test(current_dimension, custom_model, configs, transforms, logger, is_main=True):
+def vc_dimension_test(current_dimension, custom_model, configs, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
     print('---------------------------------------------')
     print(f'\tVC DIMENSION {str(current_dimension)}\t')
     print('---------------------------------------------')
@@ -25,8 +25,9 @@ def vc_dimension_test(current_dimension, custom_model, configs, transforms, logg
     base_dir = init_dirs(current_dimension, configs['results_base_dir'], is_main=is_main)
     configs['results_base_dir'] = base_dir
     for i in range(len(targets)):
-        logger.gate = str(targets[i])
-        results = boolean_task(configs, targets[i], custom_model, threshold, transforms=transforms, logger=logger, is_main=False)
+        if logger is not None:
+            logger.gate = str(targets[i])
+        results = boolean_task(configs, targets[i], custom_model, threshold, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
         accuracies[i] = results['accuracy']['accuracy_value']
         performances[i] = results['performance_history']
         veredicts[i] = results['veredict']
@@ -73,14 +74,16 @@ if __name__ == "__main__":
 
     from bspytasks.boolean.logger import Logger
     from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import ToTensor, ToVoltageRange
+    from bspyalgo.utils.transforms import DataToTensor, DataPointsToPlateau
     from bspyproc.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')
-    transforms = transforms.Compose([
-        ToTensor()
+    data_transforms = transforms.Compose([
+        DataToTensor()
     ])
 
-    logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
+    waveform_transforms = transforms.Compose([
+        DataPointsToPlateau(configs['processor']['waveform'])
+    ])
 
-    results = vc_dimension_test(4, DNPU, configs, transforms=transforms, logger=logger)
+    results = vc_dimension_test(4, DNPU, configs, data_transforms=data_transforms, waveform_transforms=waveform_transforms)

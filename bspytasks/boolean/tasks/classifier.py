@@ -14,11 +14,11 @@ from bspyalgo.utils.io import create_directory, create_directory_timestamp
 from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
-def boolean_task(configs, gate, custom_model, threshold, transforms=None, logger=None, is_main=True):
+def boolean_task(configs, gate, custom_model, threshold, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
     main_dir, reproducibility_dir = init_dirs(str(gate), configs['results_base_dir'], is_main)
     gate = np.array(gate)
     criterion = get_criterion(configs['algorithm'])
-    dataset = BooleanGateDataset(target=gate, transforms=transforms)
+    dataset = BooleanGateDataset(target=gate, transforms=data_transforms)
     loader = torch.utils.data.DataLoader(dataset, batch_size=configs['algorithm']['batch_size'], shuffle=True, pin_memory=False)
     print('==========================================================================================')
     print("GATE: " + str(gate))
@@ -26,8 +26,8 @@ def boolean_task(configs, gate, custom_model, threshold, transforms=None, logger
         print('ATTEMPT: ' + str(i))
         model = custom_model(configs['processor'])
         optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
-        model, performance = train(model, (loader, None), configs['algorithm']['epochs'], criterion, optimizer, logger=logger, save_dir=reproducibility_dir)
-        results = evaluate_model(model, dataset)
+        model, performance = train(model, (loader, None), configs['algorithm']['epochs'], criterion, optimizer, waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
+        results = evaluate_model(model, dataset, transforms=waveform_transforms)
         results = postprocess(str(gate), results, model, threshold, logger=logger, save_dir=main_dir)
         results['performance_history'] = performance[0]  # Dev/Test performance is not relevant to the boolean gates task
         print(results['summary'])
@@ -58,11 +58,15 @@ def postprocess(gate_name, results, model, threshold, logger=None, node=None, sa
     return results
 
 
-def evaluate_model(model, dataset):
+def evaluate_model(model, dataset, transforms=None):
     results = {}
     with torch.no_grad():
         model.eval()
-        inputs, targets = dataset[:]
+        if transforms is None:
+            inputs, targets = dataset[:]
+        else:
+            inputs, targets = transforms(dataset[:])
+
         predictions = model(inputs)
     results['inputs'] = inputs
     results['targets'] = targets
@@ -106,17 +110,22 @@ if __name__ == "__main__":
 
     from bspytasks.boolean.logger import Logger
     from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import ToTensor, ToVoltageRange
+    from bspyalgo.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
     from bspyproc.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')
 
-    transforms = transforms.Compose([
-        ToTensor()
+    data_transforms = transforms.Compose([
+        # DataPointToPlateau(configs['processor']['waveform']),
+        DataToTensor()
+    ])
+
+    waveform_transforms = transforms.Compose([
+        DataPointsToPlateau(configs['processor']['waveform'])
     ])
 
     logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
 
     gate = [0, 0, 0, 1]
 
-    boolean_task(configs, gate, DNPU, threshold=0.8, transforms=transforms, logger=logger)
+    boolean_task(configs, gate, DNPU, threshold=0.8, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger)
