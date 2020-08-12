@@ -48,7 +48,7 @@ def init_all_results(dataloaders, runs):
 def search_solution(gap, custom_model, configs, transforms=None, logger=None, is_main=True):
     main_dir, search_stats_dir = init_dirs(gap, configs['results_base_dir'], is_main=is_main)
     configs['results_base_dir'] = main_dir
-    dataloaders = get_ring_data(gap, configs, transforms)
+    dataloaders = get_ring_data(configs, transforms)
     all_results = init_all_results(dataloaders, configs['runs'])
     best_run = None
 
@@ -144,15 +144,15 @@ if __name__ == '__main__':
     from torchvision import transforms
 
     from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import ToTensor, ToVoltageRange
+    from bspyalgo.utils.transforms import DataToTensor, DataToVoltageRange
     from bspyproc.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
     V_MAX = [0.7, 0.7]
 
     transforms = transforms.Compose([
-        ToVoltageRange(V_MIN, V_MAX, -1, 1),
-        ToTensor()
+        DataToVoltageRange(V_MIN, V_MAX, -1, 1),
+        DataToTensor()
     ])
 
     gap = 0.4
