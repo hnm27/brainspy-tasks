@@ -3,9 +3,9 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader
+from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader, BalancedSubsetRandomSampler, balanced_permutation, split
 
-from bspyalgo.algorithms.gradient.fitter import train, split
+from bspyalgo.algorithms.gradient.fitter import train
 from bspyalgo.manager import get_criterion, get_optimizer
 from bspyalgo.utils.io import save
 from bspyproc.utils.pytorch import TorchUtils
@@ -13,17 +13,17 @@ from bspyalgo.utils.io import create_directory, create_directory_timestamp, save
 from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
-def ring_task(dataloaders, custom_model, configs, transforms=None, logger=None, is_main=True):
+def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logger=None, is_main=True):
     results = {}
-    results['gap'] = str(dataloaders[0].dataset.gap)
-    main_dir, results_dir, reproducibility_dir = init_dirs(str(dataloaders[0].dataset.gap), configs['results_base_dir'], is_main)
+    results['gap'] = str(configs['data']['gap'])
+    main_dir, results_dir, reproducibility_dir = init_dirs(str(results['gap']), configs['results_base_dir'], is_main)
     criterion = get_criterion(configs['algorithm'])
     print('==========================================================================================')
-    print("GAP: " + str(dataloaders[0].dataset.gap))
+    print("GAP: " + str(results['gap']))
     model = custom_model(configs['processor'])
     optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
 
-    model, performances = train(model, (dataloaders[0], dataloaders[1]), configs['algorithm']['epochs'], criterion, optimizer, logger=logger, save_dir=reproducibility_dir)
+    model, performances = train(model, (dataloaders[0], dataloaders[1]), configs['algorithm']['epochs'], criterion, optimizer, waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
 
     if len(dataloaders[0]) > 0:
         results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, main_dir)
@@ -33,6 +33,7 @@ def ring_task(dataloaders, custom_model, configs, transforms=None, logger=None, 
         results['dev_results']['performance_history'] = performances[1]
     if len(dataloaders[2]) > 0:
         results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, main_dir)
+
     plot_results(results, plots_dir=results_dir)
     torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
     save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
@@ -46,7 +47,7 @@ def get_ring_data(gap, configs, transforms, data_dir=None):
         dataset = RingDatasetLoader(data_dir, transforms=transforms, save_dir=data_dir)
     else:
         dataset = RingDatasetGenerator(configs['data']['sample_no'], gap, transforms=transforms, save_dir=data_dir)
-    dataloaders = split(dataset, configs['algorithm']['batch_size'], num_workers=configs['algorithm']['worker_no'], split_percentages=configs['data']['split_percentages'])
+    dataloaders = split(dataset, configs['algorithm']['batch_size'], sampler=BalancedSubsetRandomSampler, num_workers=configs['algorithm']['worker_no'], split_percentages=configs['data']['split_percentages'])
     return dataloaders
 
 
@@ -139,19 +140,26 @@ if __name__ == '__main__':
     from torchvision import transforms
 
     from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import ToTensor, ToVoltageRange
+    from bspyalgo.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
+
     from bspyproc.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
     V_MAX = [0.7, 0.7]
 
-    transforms = transforms.Compose([
-        ToVoltageRange(V_MIN, V_MAX, -1, 1),
-        ToTensor()
+    configs = load_configs('configs/ring.yaml')
+
+    data_transforms = transforms.Compose([
+        DataToVoltageRange(V_MIN, V_MAX, -1, 1),
+        DataToTensor()
+    ])
+
+    waveform_transforms = transforms.Compose([
+        DataPointsToPlateau(configs['processor']['waveform'])
     ])
 
     gap = 0.4
-    configs = load_configs('configs/ring.yaml')
-    dataloaders = get_ring_data(gap, configs, transforms)
 
-    ring_task(dataloaders, DNPU, configs)
+    dataloaders = get_ring_data(gap, configs, data_transforms)
+
+    ring_task(dataloaders, DNPU, configs, waveform_transforms=waveform_transforms)

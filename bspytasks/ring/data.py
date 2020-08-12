@@ -1,32 +1,10 @@
 
 import os
+import torch
 import numpy as np
 
-from torch.utils.data import Dataset
-
-
-class RingDatasetLoader(Dataset):
-    def __init__(self, file_path, transforms=None, save_dir=None, verbose=True):
-
-        data = np.load(file_path)
-        self.inputs, self.targets = data['inputs'], data['targets']
-        self.gap = data['gap']
-        self.transforms = transforms
-        assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
-        if verbose:
-            print(f'There are a total of {len(self.inputs[self.targets == 0]) + len(self.inputs[self.targets == 1])} samples')
-            print(f"The input ring dataset has a {self.gap} gap (In a range from -1 to 1).")
-
-    def __len__(self):
-        return len(self.inputs)
-
-    def __getitem__(self, index):
-        sample = (self.inputs[index, :], self.targets[index, :])
-
-        if self.transforms is not None:
-            sample = self.transforms(sample)
-
-        return sample
+from torch.utils.data import Dataset, Sampler
+from torch.utils.data import random_split, SubsetRandomSampler
 
 
 class RingDatasetGenerator(Dataset):
@@ -70,6 +48,7 @@ class RingDatasetGenerator(Dataset):
         if verbose:
             print(f'There are a total of {len(data[labels == 0]) + len(data[labels == 1])} samples')
             print(f'The input ring dataset has a {gap} gap (In a range from -1 to 1).')
+
         return data, labels
 
     def ring(self, sample_no, inner_radius=0.25, gap=0.5, outer_radius=1):
@@ -122,12 +101,24 @@ class RingDatasetGenerator(Dataset):
         return inputs, targets
 
     def process_dataset(self, sample_no, class0, class1):
-
         class0, class1 = self.subsample(class0, class1)
         class0, class1 = self.reduce_length(sample_no, class0, class1)
         class0, class1 = self.sort(class0, class1)
+        inputs, targets = self.filter_and_reverse(class0, class1)
+        indices = self.get_balanced_distribution_indices(len(targets))
 
-        return self.filter_and_reverse(class0, class1)
+        return inputs[indices], targets[indices]
+
+    def get_balanced_distribution_indices(self, data_length):
+        permuted_indices = np.random.permutation(data_length)
+        class0 = permuted_indices[permuted_indices < int(data_length / 2)]
+        class1 = permuted_indices[permuted_indices >= int(data_length / 2)]
+        assert len(class0) == len(class1), 'Sampler only supports datasets with an even class distribution'
+        result = []
+        for i in range(len(class0)):
+            result.append(class0[i])
+            result.append(class1[i])
+        return np.array(result)
 
     def reduce_length(self, sample_no, class0, class1):
         max_index = int(sample_no / 2)
@@ -139,3 +130,88 @@ class RingDatasetGenerator(Dataset):
             scale = scale[0]
 
         return (gap_in_volts / scale)
+
+
+class RingDatasetLoader(Dataset):
+    def __init__(self, file_path, transforms=None, save_dir=None, verbose=True):
+
+        data = np.load(file_path)
+        self.inputs, self.targets = data['inputs'], data['targets']
+        self.gap = data['gap']
+        self.transforms = transforms
+        assert len(self.inputs) == len(self.targets), "Targets and inputs must have the same length"
+        if verbose:
+            print(f'There are a total of {len(self.inputs[self.targets == 0]) + len(self.inputs[self.targets == 1])} samples')
+            print(f"The input ring dataset has a {self.gap} gap (In a range from -1 to 1).")
+
+    def __len__(self):
+        return len(self.inputs)
+
+    def __getitem__(self, index):
+        sample = (self.inputs[index, :], self.targets[index, :])
+
+        if self.transforms is not None:
+            sample = self.transforms(sample)
+
+        return sample
+
+
+class BalancedSubsetRandomSampler(Sampler):
+    r"""Samples elements randomly from a given list of indices, without replacement.
+
+    Arguments:
+        indices (sequence): a sequence of indices
+    """
+
+    def __init__(self, indices, generator=None):
+        super().__init__(indices)
+        self.indices = indices
+        self.generator = generator
+
+    def __iter__(self):
+        return (self.indices[i] for i in balanced_permutation(len(self.indices)))
+
+    def __len__(self):
+        return len(self.indices)
+
+
+def split(dataset, batch_size, num_workers, sampler=SubsetRandomSampler, split_percentages=[0.8, 0.1, 0.1]):
+    # Split percentages are expected to be in the following format: [80,10,10]
+    percentages = np.array(split_percentages)
+    assert np.sum(percentages) == 1, 'Split percentage does not sum up to 1'
+    indices = list(range(len(dataset)))
+    indices = balanced_permutation(len(dataset))
+    max_train_index = int(np.floor(percentages[0] * len(dataset)))
+    max_dev_index = int(np.floor((percentages[0] + percentages[1]) * len(dataset)))
+    max_test_index = int(np.floor(np.sum(percentages) * len(dataset)))
+
+    train_index = indices[:max_train_index]
+    dev_index = indices[max_train_index:max_dev_index]
+    test_index = indices[max_dev_index:max_test_index]
+
+    train_sampler = sampler(train_index)
+    dev_sampler = sampler(dev_index)
+    test_sampler = sampler(test_index)
+
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=train_sampler, num_workers=num_workers)
+    dev_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=dev_sampler, num_workers=num_workers)
+    test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=test_sampler, num_workers=num_workers)
+
+    return [train_loader, dev_loader, test_loader]  # , [train_index, dev_index, test_loader]
+    # lengths = [int(len(dataset) * split_percentages[0]), int(len(dataset) * split_percentages[1]), int(len(dataset) * split_percentages[2])]
+    # datasets = random_split(dataset, lengths)
+    # samplers = [sampler(ds.indices) for ds in datasets]
+
+    # return [torch.utils.data.DataLoader(datasets[i], sampler=samplers[i], batch_size=batch_size, num_workers=num_workers) for i in range(len(datasets))]
+
+
+def balanced_permutation(len_indices):
+    permuted_indices = torch.randperm(len_indices)
+    class0 = permuted_indices[permuted_indices % 2 == 0]
+    class1 = permuted_indices[permuted_indices % 2 == 1]
+    assert len(class0) == len(class1), 'Sampler only supports datasets with an even class distribution'
+    result = []
+    for i in range(len(class0)):
+        result.append(class0[i])
+        result.append(class1[i])
+    return torch.tensor(result, dtype=torch.int64)
