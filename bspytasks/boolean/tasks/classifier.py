@@ -6,11 +6,9 @@ import matplotlib.pyplot as plt
 
 from bspytasks.boolean.data import BooleanGateDataset
 
-from bspyalgo.utils.io import save
-from bspyalgo.utils.performance import perceptron
-from bspyalgo.algorithms.gradient.fitter import train
-from bspyalgo.manager import get_criterion, get_optimizer
-from bspyalgo.utils.io import create_directory, create_directory_timestamp
+
+from bspyalgo.manager import get_criterion, get_optimizer, get_algorithm
+from bspyalgo.utils.io import save, create_directory, create_directory_timestamp
 from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
@@ -18,18 +16,18 @@ def boolean_task(configs, gate, custom_model, threshold, data_transforms=None, w
     main_dir, reproducibility_dir = init_dirs(str(gate), configs['results_base_dir'], is_main)
     gate = np.array(gate)
     criterion = get_criterion(configs['algorithm'])
-    dataset = BooleanGateDataset(target=gate, transforms=data_transforms)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=configs['algorithm']['batch_size'], shuffle=True, pin_memory=False)
+    algorithm = get_algorithm(configs['algorithm'])
+    loader = get_data(gate, data_transforms, configs)
     print('==========================================================================================')
     print("GATE: " + str(gate))
     for i in range(configs['max_attempts'] + 1):
         print('ATTEMPT: ' + str(i))
         model = custom_model(configs['processor'])
-        optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
-        model, performance = train(model, (loader, None), configs['algorithm']['epochs'], criterion, optimizer, waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
-        results = evaluate_model(model, dataset, transforms=waveform_transforms)
+        optimizer = get_optimizer(model, configs['algorithm'])
+        model, training_data = algorithm(model, (loader, None), criterion, optimizer, configs['algorithm'], waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
+        results = evaluate_model(model, loader.dataset, transforms=waveform_transforms)
         results = postprocess(str(gate), results, model, threshold, logger=logger, save_dir=main_dir)
-        results['performance_history'] = performance[0]  # Dev/Test performance is not relevant to the boolean gates task
+        results['training_data'] = training_data
         print(results['summary'])
         if results['veredict']:
             break
@@ -37,6 +35,15 @@ def boolean_task(configs, gate, custom_model, threshold, data_transforms=None, w
     save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
     print('==========================================================================================')
     return results
+
+
+def get_data(gate, data_transforms, configs):
+    dataset = BooleanGateDataset(target=gate, transforms=data_transforms)
+    if 'batch_size' in configs['algorithm']:
+        batch_size = configs['algorithm']['batch_size']
+    else:
+        batch_size = len(dataset)
+    return torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, pin_memory=False)
 
 
 def postprocess(gate_name, results, model, threshold, logger=None, node=None, save_dir=None):

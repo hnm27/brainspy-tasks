@@ -17,7 +17,7 @@ def capacity_test(custom_model, configs, data_transforms=None, waveform_transfor
     print(f"CAPACITY TEST FROM VCDIM {configs['from_dimension']} TO VCDIM {configs['to_dimension']} ")
     print('*****************************************************************************************')
     base_dir = create_directory_timestamp(configs['results_base_dir'], 'capacity_test')
-    configs['results_base_dir'] = base_dir
+
     # save(mode='configs', file_path=self.configs_dir, data=configs)
     summary_results = {'capacity_per_N': [],
                        'accuracy_distrib_per_N': [],
@@ -25,6 +25,7 @@ def capacity_test(custom_model, configs, data_transforms=None, waveform_transfor
                        'correlation_distrib_per_N': []}
     for i in range(configs['from_dimension'], configs['to_dimension'] + 1):
         # capacity, accuracy_array, performance_array, correlation_array = vc_dimension_test(self.current_dimension, validate=validate)
+        configs['results_base_dir'] = base_dir
         results = vc_dimension_test(i, custom_model, configs, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
         summary_results['capacity_per_N'].append(TorchUtils.get_numpy_from_tensor(results['capacity']))
         summary_results['accuracy_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['accuracies']))

@@ -29,7 +29,7 @@ def vc_dimension_test(current_dimension, custom_model, configs, data_transforms=
             logger.gate = str(targets[i])
         results = boolean_task(configs, targets[i], custom_model, threshold, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
         accuracies[i] = results['accuracy']['accuracy_value']
-        performances[i] = results['performance_history']
+        performances[i] = results['training_data']['performance_history'][0]  # Only training performance is relevant for the boolean task, at position [0]
         veredicts[i] = results['veredict']
         correlations[i] = results['correlation']
         del results
