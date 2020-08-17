@@ -3,8 +3,8 @@ import torch
 import matplotlib.pyplot as plt
 
 from bspyalgo.utils.io import load_configs
-from bspytasks.tasks.boolean.classifier import postprocess
-from bspytasks.tasks.boolean.classifier import plot_results
+from bspytasks.boolean.tasks.classifier import postprocess
+from bspytasks.boolean.tasks.classifier import plot_results
 
 from bspyalgo.utils.io import create_directory, create_directory_timestamp
 
@@ -70,9 +70,7 @@ def init_dirs(base_dir, is_main=True, gate=''):
 if __name__ == "__main__":
     from bspyalgo.algorithms.gradient.gd import GD
     from bspyalgo.algorithms.gradient.core.losses import corrsig
-    from bspyalgo.algorithms.gradient.core.logger import Logger
     from bspyproc.processors.dnpu import DNPU
-    from bspytasks.utils.transforms import ToTensor, ToVoltageRange
     import numpy as np
     import datetime as d
 
@@ -81,5 +79,5 @@ if __name__ == "__main__":
     # ])
 
     # find_gate(configs, gate, DNPU, threshold=0.8, transforms=transforms, logger=logger)
-    # validate_gate('tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_08_06_110916/reproducibility')
-    validate_vcdim('tmp/TEST/output/boolean/vc_dimension_4_2020_08_06_133047/')
+    validate_gate('tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_08_17_131228/reproducibility')
+    # validate_vcdim('tmp/TEST/output/boolean/vc_dimension_4_2020_08_06_133047/')
