@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bspytasks.boolean.tasks.vcdimension import vc_dimension_test
-from bspyalgo.utils.io import create_directory_timestamp
+from bspytasks.utils.io import create_directory_timestamp
 
 
 from bspyproc.utils.pytorch import TorchUtils
@@ -75,8 +75,8 @@ if __name__ == "__main__":
 
     from bspytasks.boolean.logger import Logger
 
-    from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import DataToTensor, DataPointsToPlateau
+    from bspytasks.utils.io import load_configs
+    from bspyalgo.algorithms.transforms import DataToTensor, DataPointsToPlateau
     from bspyproc.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')

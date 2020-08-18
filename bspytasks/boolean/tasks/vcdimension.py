@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from bspytasks.boolean.tasks.classifier import boolean_task
 from bspytasks.boolean.data import generate_targets
-from bspyalgo.utils.io import create_directory, create_directory_timestamp
+from bspytasks.utils.io import create_directory, create_directory_timestamp
 from bspyproc.utils.pytorch import TorchUtils
 
 
@@ -73,8 +73,8 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from bspytasks.boolean.logger import Logger
-    from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import DataToTensor, DataPointsToPlateau
+    from bspytasks.utils.io import load_configs
+    from bspyalgo.algorithms.transforms import DataToTensor, DataPointsToPlateau
     from bspyproc.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')

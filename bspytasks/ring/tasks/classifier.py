@@ -4,13 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader, BalancedSubsetRandomSampler, balanced_permutation, split
+from bspytasks.utils.io import create_directory, create_directory_timestamp, save
+from bspytasks.utils.manager import get_criterion, get_optimizer, get_algorithm
 
-from bspyalgo.algorithms.gradient.fitter import train
-from bspyalgo.manager import get_criterion, get_optimizer
-from bspyalgo.utils.io import save
+from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
 from bspyproc.utils.pytorch import TorchUtils
-from bspyalgo.utils.io import create_directory, create_directory_timestamp, save
-from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
 def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logger=None, is_main=True):
@@ -21,16 +19,17 @@ def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logg
     print('==========================================================================================')
     print("GAP: " + str(results['gap']))
     model = custom_model(configs['processor'])
-    optimizer = get_optimizer(filter(lambda p: p.requires_grad, model.parameters()), configs['algorithm'])
+    optimizer = get_optimizer(model, configs['algorithm'])
+    algorithm = get_algorithm(configs['algorithm'])
 
-    model, performances = train(model, (dataloaders[0], dataloaders[1]), configs['algorithm']['epochs'], criterion, optimizer, waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
+    model, train_data = algorithm(model, (dataloaders[0], dataloaders[1]), criterion, optimizer, configs['algorithm'], logger=logger, save_dir=reproducibility_dir, waveform_transforms=waveform_transforms)
 
     if len(dataloaders[0]) > 0:
         results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, main_dir)
-        results['train_results']['performance_history'] = performances[0]
+        results['train_results']['performance_history'] = train_data['performance_history'][0]
     if len(dataloaders[1]) > 0:
         results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, main_dir)
-        results['dev_results']['performance_history'] = performances[1]
+        results['dev_results']['performance_history'] = train_data['performance_history'][1]
     if len(dataloaders[2]) > 0:
         results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, main_dir)
 
@@ -139,8 +138,8 @@ def plot_inputs(results, label, colors=['b', 'r'], plots_dir=None, extension='pn
 if __name__ == '__main__':
     from torchvision import transforms
 
-    from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
+    from bspytasks.utils.io import load_configs
+    from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
 
     from bspyproc.processors.dnpu import DNPU
 

@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bspytasks.ring.tasks.classifier import get_ring_data, ring_task
-from bspyalgo.utils.io import load_configs
-from bspyalgo.utils.io import create_directory, create_directory_timestamp
+from bspytasks.utils.io import load_configs, create_directory, create_directory_timestamp
+
 from bspyproc.utils.pytorch import TorchUtils
 
 
@@ -143,8 +143,8 @@ if __name__ == '__main__':
 
     from torchvision import transforms
 
-    from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import DataToTensor, DataToVoltageRange
+    from bspytasks.utils.io import load_configs
+    from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange
     from bspyproc.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]

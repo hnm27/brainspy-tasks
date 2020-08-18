@@ -1,8 +1,9 @@
 import os
 import torch
 import matplotlib.pyplot as plt
-from bspyalgo.utils.performance import perceptron, corr_coeff_torch
-from bspyalgo.utils.io import create_directory, create_directory_timestamp
+
+from bspytasks.utils.io import create_directory, create_directory_timestamp
+from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch
 from bspyproc.utils.pytorch import TorchUtils
 
 
@@ -14,18 +15,18 @@ def load_reproducibility_results(base_dir, model_name='best_model.pt'):
     return model, results  # , configs
 
 
-def validate(model, results, criterion, results_dir, plot=None, transforms=None, is_main=True):
+def validate(model, results, configs, criterion, results_dir, plot=None, transforms=None, is_main=True):
 
     #results_dir = init_dirs(results_dir, is_main=is_main, gate=results['gap'])
     if 'train_results' in results:
         results['train_results'] = apply_transforms(results['train_results'], transforms=transforms)
-        results['train_results_hw'] = _validate(model, results['train_results'], criterion)
+        results['train_results_hw'] = _validate(model, results['train_results'], criterion, configs)
     if 'dev_results' in results:
         results['dev_results'] = apply_transforms(results['dev_results'], transforms=transforms)
-        results['dev_results_hw'] = _validate(model, results['dev_results'], criterion)
+        results['dev_results_hw'] = _validate(model, results['dev_results'], criterion, configs)
     if 'test_results' in results:
         results['test_results'] = apply_transforms(results['test_results'], transforms=transforms)
-        results['test_results_hw'] = _validate(model, results['test_results'], criterion)
+        results['test_results_hw'] = _validate(model, results['test_results'], criterion, configs)
 
     plot_all(results, save_dir=results_dir)
     torch.save(results, os.path.join(
@@ -72,9 +73,9 @@ def apply_transforms(results, transforms):
     return results
 
 
-def _validate(model, results, criterion):
+def _validate(model, results, criterion, hw_processor_configs):
     with torch.no_grad():
-        model.eval()
+        model.hw_eval(hw_processor_configs)
         predictions = model(results['inputs'])
         results['performance'] = criterion(predictions, results['targets'])
 
@@ -97,11 +98,11 @@ def init_dirs(base_dir, is_main=True, gate=''):
 if __name__ == "__main__":
     from torchvision import transforms
 
-    from bspyalgo.utils.transforms import PointsToPlateau
-    from bspyalgo.algorithms.gradient.core.losses import fisher
-    from bspyalgo.utils.io import load_configs
+    from bspytasks.utils.io import load_configs
+    from bspyalgo.algorithms.transforms import PointsToPlateau
+    from bspyalgo.algorithms.loss import fisher
 
-    base_dir = 'tmp/TEST/output/ring/gap_0.4/ring_classification_2020_08_12_154212'
+    base_dir = 'tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_08_17_125234/'
     model, results = load_reproducibility_results(base_dir)
 
     configs = load_configs('configs/ring.yaml')
@@ -110,4 +111,4 @@ if __name__ == "__main__":
     ])
 
     results_dir = init_dirs(os.path.join(base_dir, 'validation'))
-    validate(model, results, fisher, results_dir, transforms=waveform_transforms)
+    validate(model, results, configs['validation_processor'], fisher, results_dir, transforms=waveform_transforms)

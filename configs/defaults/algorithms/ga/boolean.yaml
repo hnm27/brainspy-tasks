@@ -1,0 +1,22 @@
+type: genetic
+optimizer: genetic
+criterion: corrsig_fit
+mutation_rate: 0.1
+epochs: 100
+# batch_size: 1
+# This is now automatically obtained from the model
+#generange:
+#- - -1.2
+#  - 0.6
+#- - -1.2
+#  - 0.6
+#- - -1.2
+#  - 0.6
+#- - -0.7
+#  - 0.3
+#- - -0.7
+#  - 0.3
+partition: # Genome partition
+- 4
+- 22
+stop_threshold: 0.93

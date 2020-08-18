@@ -192,10 +192,14 @@ def split(dataset, batch_size, num_workers, sampler=SubsetRandomSampler, split_p
     train_sampler = sampler(train_index)
     dev_sampler = sampler(dev_index)
     test_sampler = sampler(test_index)
+    if batch_size > 0:
+        batch_size = [batch_size, batch_size, batch_size]
+    else:
 
-    train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=train_sampler, num_workers=num_workers)
-    dev_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=dev_sampler, num_workers=num_workers)
-    test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=test_sampler, num_workers=num_workers)
+        batch_size = [get_batch_size(train_sampler), get_batch_size(dev_sampler), get_batch_size(test_sampler)]
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size[0], sampler=train_sampler, num_workers=num_workers)
+    dev_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size[1], sampler=dev_sampler, num_workers=num_workers)
+    test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size[2], sampler=test_sampler, num_workers=num_workers)
 
     return [train_loader, dev_loader, test_loader]  # , [train_index, dev_index, test_loader]
     # lengths = [int(len(dataset) * split_percentages[0]), int(len(dataset) * split_percentages[1]), int(len(dataset) * split_percentages[2])]
@@ -203,6 +207,13 @@ def split(dataset, batch_size, num_workers, sampler=SubsetRandomSampler, split_p
     # samplers = [sampler(ds.indices) for ds in datasets]
 
     # return [torch.utils.data.DataLoader(datasets[i], sampler=samplers[i], batch_size=batch_size, num_workers=num_workers) for i in range(len(datasets))]
+
+
+def get_batch_size(sampler):
+    if len(sampler) > 0:
+        return len(sampler)
+    else:
+        return 1
 
 
 def balanced_permutation(len_indices):

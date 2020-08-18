@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from bspytasks.boolean.data import BooleanGateDataset
 
 
-from bspyalgo.manager import get_criterion, get_optimizer, get_algorithm
-from bspyalgo.utils.io import save, create_directory, create_directory_timestamp
-from bspyalgo.utils.performance import perceptron, corr_coeff_torch, plot_perceptron
+from bspytasks.utils.manager import get_criterion, get_optimizer, get_algorithm
+from bspytasks.utils.io import save, create_directory, create_directory_timestamp
+from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
 def boolean_task(configs, gate, custom_model, threshold, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
@@ -116,8 +116,8 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from bspytasks.boolean.logger import Logger
-    from bspyalgo.utils.io import load_configs
-    from bspyalgo.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
+    from bspytasks.utils.io import load_configs
+    from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
     from bspyproc.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')

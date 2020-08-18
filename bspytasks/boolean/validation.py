@@ -2,11 +2,11 @@ import os
 import torch
 import matplotlib.pyplot as plt
 
-from bspyalgo.utils.io import load_configs
+from bspytasks.utils.io import load_configs
 from bspytasks.boolean.tasks.classifier import postprocess
 from bspytasks.boolean.tasks.classifier import plot_results
 
-from bspyalgo.utils.io import create_directory, create_directory_timestamp
+from bspytasks.utils.io import create_directory, create_directory_timestamp
 
 # TODO: Add possibility to validate multiple times
 
@@ -68,8 +68,7 @@ def init_dirs(base_dir, is_main=True, gate=''):
 
 
 if __name__ == "__main__":
-    from bspyalgo.algorithms.gradient.gd import GD
-    from bspyalgo.algorithms.gradient.core.losses import corrsig
+
     from bspyproc.processors.dnpu import DNPU
     import numpy as np
     import datetime as d

@@ -19,7 +19,7 @@ class BooleanGateDataset(Dataset):
         self.targets = target.T[:, np.newaxis]
 
     def __getitem__(self, index):
-        #index = np.random.permutation(self.inputs.shape[0])
+
         inputs = self.inputs[index, :]
         targets = self.targets[index, :]
 

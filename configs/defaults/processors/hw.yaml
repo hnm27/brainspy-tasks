@@ -1,0 +1,29 @@
+platform: 'hardware'
+torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
+processor_type: 'simulation_debug'
+setup_type: cdaq_to_nidaq
+activation_channels:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+readout_channels:
+- 0
+input_indices:
+- 1
+- 2
+sampling_frequency: 100
+amplification: 100
+shape: 33020
+output_clipping_value: 4
+waveform:
+  amplitude_lengths: 80
+  slope_lengths: 20
+conversion: -0.6
+driver:
+  driver_type: local
+amplitude: [0.9, 0.9, 0.9, 0.9, 0.9, 0.5, 0.5]
+offset: [-0.3,-0.3,-0.3,-0.3,-0.3,-0.2,-0.2]
