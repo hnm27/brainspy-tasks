@@ -12,17 +12,17 @@ from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch, plot_p
 from bspyproc.utils.pytorch import TorchUtils
 
 
-def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logger=None, is_main=True):
+def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform_transforms=None, logger=None, is_main=True):
     results = {}
     results['gap'] = str(configs['data']['gap'])
     print('==========================================================================================')
     print("GAP: " + str(results['gap']))
 
     main_dir, results_dir, reproducibility_dir = init_dirs(str(results['gap']), configs['results_base_dir'], is_main)
-    criterion = get_criterion(configs['algorithm'])
+    # criterion = get_criterion(configs['algorithm'])
     model = custom_model(configs['processor'])
     optimizer = get_optimizer(model, configs['algorithm'])
-    algorithm = get_algorithm(configs['algorithm'])
+    # algorithm = get_algorithm(configs['algorithm'])
 
     model, train_data = algorithm(model, (dataloaders[0], dataloaders[1]), criterion, optimizer, configs['algorithm'], logger=logger, save_dir=reproducibility_dir, waveform_transforms=waveform_transforms)
 
@@ -142,6 +142,7 @@ def plot_inputs(results, label, colors=['b', 'r'], plots_dir=None, extension='pn
 if __name__ == '__main__':
     from torchvision import transforms
 
+    from bspytasks.utils import manager
     from bspytasks.utils.io import load_configs
     from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
 
@@ -157,10 +158,14 @@ if __name__ == '__main__':
         DataToTensor()
     ])
 
+    # Add your custom transformations for the datapoints
     # waveform_transforms = transforms.Compose([
     #     DataPointsToPlateau(configs['processor']['waveform'])
     # ])
 
+    criterion = manager.get_criterion(configs['algorithm'])
+    algorithm = manager.get_algorithm(configs['algorithm'])
+
     dataloaders = get_ring_data(configs, data_transforms)
 
-    ring_task(dataloaders, DNPU, configs)  # , waveform_transforms=waveform_transforms)
+    ring_task(configs, dataloaders, DNPU, criterion, algorithm)  # , waveform_transforms=waveform_transforms)

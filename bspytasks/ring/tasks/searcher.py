@@ -45,8 +45,8 @@ def init_all_results(dataloaders, runs):
     return results
 
 
-def search_solution(gap, custom_model, configs, transforms=None, logger=None, is_main=True):
-    main_dir, search_stats_dir = init_dirs(gap, configs['results_base_dir'], is_main=is_main)
+def search_solution(configs, custom_model, criterion, algorithm, transforms=None, logger=None, is_main=True):
+    main_dir, search_stats_dir = init_dirs(configs['gap'], configs['results_base_dir'], is_main=is_main)
     configs['results_base_dir'] = main_dir
     dataloaders = get_ring_data(configs, transforms)
     all_results = init_all_results(dataloaders, configs['runs'])
@@ -56,14 +56,14 @@ def search_solution(gap, custom_model, configs, transforms=None, logger=None, is
         print(f'########### RUN {run} ################')
         all_results['seeds'][run] = TorchUtils.init_seed(None, deterministic=True)
 
-        results = ring_task(dataloaders, custom_model, configs, logger=logger, is_main=False)
+        results = ring_task(dataloaders, custom_model, configs, criterion, algorithm, logger=logger, is_main=False)
         all_results = update_all_search_stats(all_results, results, run)
         if is_best_run(results, best_run):
             results['best_index'] = run
             best_run = results
             torch.save(results, os.path.join(search_stats_dir, 'best_result.pickle'))
 
-    close_search(all_results, search_stats_dir, 'all_results_' + str(gap) + '_gap_' + str(configs['runs']) + '_runs')
+    close_search(all_results, search_stats_dir, 'all_results_' + str(configs['gap']) + '_gap_' + str(configs['runs']) + '_runs')
 
 
 def is_best_run(results, best_run):
@@ -143,6 +143,7 @@ if __name__ == '__main__':
 
     from torchvision import transforms
 
+    from bspytasks.utils import manager
     from bspytasks.utils.io import load_configs
     from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange
     from bspyproc.processors.dnpu import DNPU
@@ -155,7 +156,9 @@ if __name__ == '__main__':
         DataToTensor()
     ])
 
-    gap = 0.4
     configs = load_configs('configs/ring.yaml')
 
-    search_solution(0.2, DNPU, configs, transforms=transforms)
+    criterion = manager.get_criterion(configs['algorithm'])
+    algorithm = manager.get_algorithm(configs['algorithm'])
+
+    search_solution(configs, DNPU, criterion, algorithm, transforms=transforms)
