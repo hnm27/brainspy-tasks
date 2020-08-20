@@ -1,6 +1,7 @@
 import os
 import torch
 import numpy as np
+import pickle as p
 import matplotlib.pyplot as plt
 
 from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader, BalancedSubsetRandomSampler, balanced_permutation, split
@@ -14,10 +15,11 @@ from bspyproc.utils.pytorch import TorchUtils
 def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logger=None, is_main=True):
     results = {}
     results['gap'] = str(configs['data']['gap'])
-    main_dir, results_dir, reproducibility_dir = init_dirs(str(results['gap']), configs['results_base_dir'], is_main)
-    criterion = get_criterion(configs['algorithm'])
     print('==========================================================================================')
     print("GAP: " + str(results['gap']))
+
+    main_dir, results_dir, reproducibility_dir = init_dirs(str(results['gap']), configs['results_base_dir'], is_main)
+    criterion = get_criterion(configs['algorithm'])
     model = custom_model(configs['processor'])
     optimizer = get_optimizer(model, configs['algorithm'])
     algorithm = get_algorithm(configs['algorithm'])
@@ -25,16 +27,17 @@ def ring_task(dataloaders, custom_model, configs, waveform_transforms=None, logg
     model, train_data = algorithm(model, (dataloaders[0], dataloaders[1]), criterion, optimizer, configs['algorithm'], logger=logger, save_dir=reproducibility_dir, waveform_transforms=waveform_transforms)
 
     if len(dataloaders[0]) > 0:
-        results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, main_dir)
+        results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, results_dir, name='train')
         results['train_results']['performance_history'] = train_data['performance_history'][0]
     if len(dataloaders[1]) > 0:
-        results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, main_dir)
+        results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, results_dir, name='dev')
         results['dev_results']['performance_history'] = train_data['performance_history'][1]
     if len(dataloaders[2]) > 0:
-        results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, main_dir)
+        results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, results_dir, name='test')
 
     plot_results(results, plots_dir=results_dir)
-    torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
+    torch.save(model, os.path.join(reproducibility_dir, 'model.pt'))
+    torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'), pickle_protocol=p.HIGHEST_PROTOCOL)
     save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
     print('==========================================================================================')
     return results
@@ -50,7 +53,7 @@ def get_ring_data(configs, transforms, data_dir=None):
     return dataloaders
 
 
-def postprocess(dataset, model, criterion, logger, save_dir=None):
+def postprocess(dataset, model, criterion, logger, save_dir=None, name='train'):
     results = {}
     with torch.no_grad():
         model.eval()
@@ -60,12 +63,13 @@ def postprocess(dataset, model, criterion, logger, save_dir=None):
         predictions = model(inputs)
         results['performance'] = criterion(predictions, targets)
 
-    #results['gap'] = dataset.gap
+    # results['gap'] = dataset.gap
     results['inputs'] = inputs
     results['targets'] = targets
     results['best_output'] = predictions
     results['accuracy'] = perceptron(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results['correlation'] = corr_coeff_torch(predictions.T, targets.T)
+    results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
 
     return results
 
@@ -153,10 +157,10 @@ if __name__ == '__main__':
         DataToTensor()
     ])
 
-    waveform_transforms = transforms.Compose([
-        DataPointsToPlateau(configs['processor']['waveform'])
-    ])
+    # waveform_transforms = transforms.Compose([
+    #     DataPointsToPlateau(configs['processor']['waveform'])
+    # ])
 
     dataloaders = get_ring_data(configs, data_transforms)
 
-    ring_task(dataloaders, DNPU, configs, waveform_transforms=waveform_transforms)
+    ring_task(dataloaders, DNPU, configs)  # , waveform_transforms=waveform_transforms)
