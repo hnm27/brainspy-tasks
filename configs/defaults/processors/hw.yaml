@@ -13,15 +13,15 @@ activation_channels:
 readout_channels:
 - 0
 input_indices:
-- 1
-- 2
+- 3
+- 4
 sampling_frequency: 100
 amplification: 100
 shape: 33020
-output_clipping_value: 4
+output_clipping_range: [-4,4]
 waveform:
-  amplitude_lengths: 80
-  slope_lengths: 20
+  amplitude_lengths: 1
+  slope_lengths: 0
 conversion: -0.6
 driver:
   driver_type: local
