@@ -8,34 +8,34 @@ import torch_optimizer as torchoptim
 from bspyproc.utils.pytorch import TorchUtils
 
 
-def get_criterion(criterion_name):
+def get_criterion(configs):
     '''Gets the fitness function used in GA from the module FitnessFunctions
     The fitness functions must take two arguments, the outputs of the black-box and the target
     and must return a numpy array of scores of size len(outputs).
     '''
-    if criterion_name == 'corr_fit':
+    if configs['criterion'] == 'corr_fit':
         return loss.corr_fit
-    elif criterion_name == 'accuracy_fit':
+    elif configs['criterion'] == 'accuracy_fit':
         return loss.accuracy_fit
-    elif criterion_name == 'corrsig_fit':
+    elif configs['criterion'] == 'corrsig_fit':
         return loss.corrsig_fit
-    elif criterion_name == 'fisher':
+    elif configs['criterion'] == 'fisher':
         return loss.fisher
-    elif criterion_name == 'corrsig':
+    elif configs['criterion'] == 'corrsig':
         return loss.corrsig
-    elif criterion_name == 'sqrt_corrsig':
+    elif configs['criterion'] == 'sqrt_corrsig':
         return loss.sqrt_corrsig
-    elif criterion_name == 'fisher_added_corr':
+    elif configs['criterion'] == 'fisher_added_corr':
         return loss.fisher_added_corr
-    elif criterion_name == 'fisher_multipled_corr':
+    elif configs['criterion'] == 'fisher_multipled_corr':
         return loss.fisher_multipled_corr
-    elif criterion_name == 'bce':
+    elif configs['criterion'] == 'bce':
         bce = torch.nn.BCELoss()
         bce.cuda(TorchUtils.get_accelerator_type()).to(TorchUtils.data_type)
         return bce
 
     else:
-        raise NotImplementedError(f"Criterion {criterion_name} is not recognised.")
+        raise NotImplementedError(f"Criterion {configs['criterion']} is not recognised.")
 
 
 def get_optimizer(model, configs):
