@@ -5,7 +5,7 @@
 
 # from bspytasks.utils.manager import get_processor
 # from bspytasks.tasks.ring.classifier import RingClassificationTask as Task
-# from bspyproc.utils.pytorch import TorchUtils
+# from brainspy.utils.pytorch import TorchUtils
 
 
 # class AdvancedRingSearcher():
@@ -32,7 +32,7 @@
 #     import pickle
 #     import torch
 #     import matplotlib.pyplot as plt
-#     from bspyalgo.utils.io import load_configs
+#     from brainspy.utils.io import load_configs
 #     from bspytasks.utils.datasets import load_data
 
 #     folder_name = 'searcher_0.2mV_2020_02_26_231845'

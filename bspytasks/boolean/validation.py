@@ -69,7 +69,7 @@ def init_dirs(base_dir, is_main=True, gate=''):
 
 if __name__ == "__main__":
 
-    from bspyproc.processors.dnpu import DNPU
+    from brainspy.processors.dnpu import DNPU
     import numpy as np
     import datetime as d
 

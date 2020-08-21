@@ -26,7 +26,7 @@ from bspytasks.utils.io import create_directory, create_directory_timestamp
 
 # if __name__ == '__main__':
 #     import matplotlib.pyplot as plt
-#     from bspyalgo.utils.io import load_configs
+#     from brainspy.utils.io import load_configs
 #     from bspytasks.tasks.ring.capacity import RingClassifierCapacity
 
 #     configs = load_configs('configs/tasks/ring/template_gd_architecture_3.json')

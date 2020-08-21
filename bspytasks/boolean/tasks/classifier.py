@@ -9,7 +9,7 @@ from bspytasks.boolean.data import BooleanGateDataset
 
 from bspytasks.utils.manager import get_criterion, get_optimizer, get_algorithm
 from bspytasks.utils.io import save, create_directory, create_directory_timestamp
-from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
+from brainspy.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
 def boolean_task(configs, custom_model, criterion, algorithm, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
@@ -116,8 +116,8 @@ if __name__ == "__main__":
     from bspytasks.utils import manager
     from bspytasks.boolean.logger import Logger
     from bspytasks.utils.io import load_configs
-    from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
-    from bspyproc.processors.dnpu import DNPU
+    from brainspy.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
+    from brainspy.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')
 

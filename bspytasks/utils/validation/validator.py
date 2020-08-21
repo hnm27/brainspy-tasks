@@ -1,10 +1,10 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-# from bspyalgo.utils.io import create_directory, create_directory_timestamp
-from bspyproc.bspyproc import get_processor
-from bspyproc.utils.control import get_control_voltage_indices
-from bspyproc.utils.waveform import generate_slopped_plato
+# from brainspy.utils.io import create_directory, create_directory_timestamp
+from brainspy.brainspy import get_processor
+from brainspy.utils.control import get_control_voltage_indices
+from brainspy.utils.waveform import generate_slopped_plato
 # TODO: put these params in processors
 MAX_CLIPPING_VALUE = np.array([1.5])
 MIN_CLIPPING_VALUE = np.array([-1.5])

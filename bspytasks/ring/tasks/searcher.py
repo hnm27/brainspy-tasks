@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from bspytasks.ring.tasks.classifier import get_ring_data, ring_task
 from bspytasks.utils.io import load_configs, create_directory, create_directory_timestamp
 
-from bspyproc.utils.pytorch import TorchUtils
+from brainspy.utils.pytorch import TorchUtils
 
 
 def init_dirs(gap, base_dir, is_main=True):
@@ -145,8 +145,8 @@ if __name__ == '__main__':
 
     from bspytasks.utils import manager
     from bspytasks.utils.io import load_configs
-    from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange
-    from bspyproc.processors.dnpu import DNPU
+    from brainspy.algorithms.transforms import DataToTensor, DataToVoltageRange
+    from brainspy.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
     V_MAX = [0.7, 0.7]

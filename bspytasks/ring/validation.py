@@ -3,8 +3,8 @@ import torch
 import matplotlib.pyplot as plt
 
 from bspytasks.utils.io import create_directory, create_directory_timestamp
-from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch
-from bspyproc.utils.pytorch import TorchUtils
+from brainspy.algorithms.performance import perceptron, corr_coeff_torch
+from brainspy.utils.pytorch import TorchUtils
 
 
 def load_reproducibility_results(base_dir, model_name='model.pt'):
@@ -99,8 +99,8 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from bspytasks.utils.io import load_configs
-    from bspyalgo.algorithms.transforms import PointsToPlateau
-    from bspyalgo.algorithms.loss import fisher
+    from brainspy.algorithms.transforms import PointsToPlateau
+    from brainspy.algorithms.loss import fisher
 
     base_dir = 'tmp/TEST/output/ring/gap_0.4/ring_classification_2020_08_20_083508'
     model, results = load_reproducibility_results(base_dir)

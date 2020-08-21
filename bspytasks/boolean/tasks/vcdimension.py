@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from bspytasks.boolean.tasks.classifier import boolean_task
 from bspytasks.boolean.data import generate_targets
 from bspytasks.utils.io import create_directory, create_directory_timestamp
-from bspyproc.utils.pytorch import TorchUtils
+from brainspy.utils.pytorch import TorchUtils
 
 
 def vc_dimension_test(configs, custom_model, criterion, algorithm, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
@@ -76,8 +76,8 @@ if __name__ == "__main__":
     from bspytasks.utils import manager
     from bspytasks.boolean.logger import Logger
     from bspytasks.utils.io import load_configs
-    from bspyalgo.algorithms.transforms import DataToTensor, DataPointsToPlateau
-    from bspyproc.processors.dnpu import DNPU
+    from brainspy.algorithms.transforms import DataToTensor, DataPointsToPlateau
+    from brainspy.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')
     data_transforms = transforms.Compose([

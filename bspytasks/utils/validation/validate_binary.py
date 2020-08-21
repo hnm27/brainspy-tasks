@@ -1,6 +1,6 @@
 from bspytasks.validation.validator import Hardware_Validator
-from bspyalgo.utils.io import load_configs
-from bspyalgo.utils.performance import perceptron, corr_coeff
+from brainspy.utils.io import load_configs
+from brainspy.utils.performance import perceptron, corr_coeff
 import numpy as np
 import os
 import copy

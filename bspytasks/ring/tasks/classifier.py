@@ -8,8 +8,8 @@ from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader, Balance
 from bspytasks.utils.io import create_directory, create_directory_timestamp, save
 from bspytasks.utils.manager import get_criterion, get_optimizer, get_algorithm
 
-from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
-from bspyproc.utils.pytorch import TorchUtils
+from brainspy.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
+from brainspy.utils.pytorch import TorchUtils
 
 
 def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform_transforms=None, logger=None, is_main=True):
@@ -144,9 +144,9 @@ if __name__ == '__main__':
 
     from bspytasks.utils import manager
     from bspytasks.utils.io import load_configs
-    from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
+    from brainspy.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
 
-    from bspyproc.processors.dnpu import DNPU
+    from brainspy.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
     V_MAX = [0.7, 0.7]

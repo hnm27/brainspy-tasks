@@ -1,11 +1,11 @@
 import torch
-import bspyalgo.algorithms.criterion as criterion
-import bspyalgo.algorithms.optim as bspyoptim
-from bspyalgo.algorithms.ga import train as train_ga
-from bspyalgo.algorithms.gd import train as train_gd
+import brainspy.algorithms.criterion as criterion
+import brainspy.algorithms.optim as bspyoptim
+from brainspy.algorithms.ga import train as train_ga
+from brainspy.algorithms.gd import train as train_gd
 import torch_optimizer as torchoptim
 
-from bspyproc.utils.pytorch import TorchUtils
+from brainspy.utils.pytorch import TorchUtils
 
 
 def get_criterion(configs):
