@@ -1,7 +1,14 @@
 type: 'gradient'
-epochs: 60
+epochs: 2
 batch_size: 32
 worker_no: 0
 learning_rate: 0.006
 criterion: 'fisher'
 optimizer: 'adam'
+accuracy: # Configurations for the perceptron
+  epochs: 40
+  learning_rate: 0.0007
+  betas: 
+    !!python/tuple [0.999, 0.999]
+  split: [1,0] # Training and validation data split in a range from 0 to 1
+  mini_batch: 256
