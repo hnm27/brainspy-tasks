@@ -27,9 +27,8 @@ def boolean_task(configs, custom_model, criterion, algorithm, data_transforms=No
         results = evaluate_model(model, loader.dataset, transforms=waveform_transforms)
         results['threshold'] = configs['threshold']
         results['gate'] = str(gate)
-        results = postprocess(results, model, logger=logger, save_dir=main_dir)
-        results['training_data'] = training_data
-        print(results['summary'])
+        results = postprocess(results, model, configs['algorithm']['accuracy'], training_data, logger=logger, save_dir=main_dir)
+
         if results['veredict']:
             break
     torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'))
@@ -47,8 +46,12 @@ def get_data(gate, data_transforms, configs):
     return torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, pin_memory=False)
 
 
-def postprocess(results, model, logger=None, node=None, save_dir=None):
-    results['accuracy'] = get_accuracy(results['predictions'], results['targets'], node)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+def postprocess(results, model, configs, training_data, logger=None, node=None, save_dir=None):
+    if torch.isnan(results['predictions']).all():
+        print('Nan values detected in the predictions. It is likely that the gradients of the model exploded. Skipping..')
+        results['veredict'] = False
+        return results
+    results['accuracy'] = get_accuracy(results['predictions'], results['targets'], configs, node)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results['correlation'] = corr_coeff(results['predictions'].T, results['targets'].T)
 
     if (results['accuracy']['accuracy_value'] >= results['threshold']):
@@ -58,6 +61,8 @@ def postprocess(results, model, logger=None, node=None, save_dir=None):
     results['summary'] = 'VC Dimension: ' + str(len(results['targets'])) + ' Gate: ' + results['gate'] + ' Veredict: ' + str(results['veredict']) + '\n Accuracy (Simulation): ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(results['threshold'])
     results['results_fig'] = plot_results(results, save_dir)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
+    results['training_data'] = training_data
+    print(results['summary'])
     if logger is not None:
         logger.log.add_figure('Results/VCDim' + str(len(results['targets'])) + '/' + results['gate'], results['results_fig'])
         logger.log.add_figure('Accuracy/VCDim' + str(len(results['targets'])) + '/' + results['gate'], results['accuracy_fig'])

@@ -4,4 +4,14 @@ threshold_parameter: 0.5
 max_attempts : 3
 results_base_dir : "tmp/TEST/output/boolean"
 algorithm: !include defaults/algorithms/gd/boolean.yaml
-processor: !include defaults/processors/simulation.yaml
+processor: 
+  platform: 'simulation'
+  torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
+  input_indices:
+  - 3
+  - 4
+  input_electrode_no: 7
+  use_noise: false
+  waveform:
+    amplitude_lengths: 3 # The perceptron accuracy requires to have at least 10 values to operate (4 x 3 = 12)
+    slope_lengths: 0
