@@ -76,7 +76,7 @@ if __name__ == "__main__":
     from bspytasks.utils import manager
     from bspytasks.boolean.logger import Logger
     from bspytasks.utils.io import load_configs
-    from brainspy.algorithms.transforms import DataToTensor, DataPointsToPlateau
+    from brainspy.utils.transforms import DataToTensor, DataPointsToPlateau
     from brainspy.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')

@@ -12,7 +12,7 @@ from bspytasks.utils.io import create_directory_timestamp
 from brainspy.utils.pytorch import TorchUtils
 
 
-def capacity_test(custom_model, configs, data_transforms=None, waveform_transforms=None, logger=None):
+def capacity_test(configs, custom_model, criterion, algorithm, data_transforms=None, waveform_transforms=None, logger=None):
     print('*****************************************************************************************')
     print(f"CAPACITY TEST FROM VCDIM {configs['from_dimension']} TO VCDIM {configs['to_dimension']} ")
     print('*****************************************************************************************')
@@ -26,7 +26,8 @@ def capacity_test(custom_model, configs, data_transforms=None, waveform_transfor
     for i in range(configs['from_dimension'], configs['to_dimension'] + 1):
         # capacity, accuracy_array, performance_array, correlation_array = vc_dimension_test(self.current_dimension, validate=validate)
         configs['results_base_dir'] = base_dir
-        results = vc_dimension_test(i, custom_model, configs, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
+        configs['current_dimension'] = i
+        results = vc_dimension_test(configs, custom_model, criterion, algorithm, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
         summary_results['capacity_per_N'].append(TorchUtils.get_numpy_from_tensor(results['capacity']))
         summary_results['accuracy_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['accuracies']))
         summary_results['performance_distrib_per_N'].append(TorchUtils.get_numpy_from_tensor(results['performances'][:, -1]))
@@ -72,11 +73,12 @@ def plot_boxplot(pos, results, key, title='', base_dir=None):
 if __name__ == "__main__":
     import datetime as d
     from torchvision import transforms
+    from bspytasks.utils import manager
 
     from bspytasks.boolean.logger import Logger
 
     from bspytasks.utils.io import load_configs
-    from brainspy.algorithms.transforms import DataToTensor, DataPointsToPlateau
+    from brainspy.utils.transforms import DataToTensor, DataPointsToPlateau
     from brainspy.processors.dnpu import DNPU
 
     configs = load_configs('configs/boolean.yaml')
@@ -88,5 +90,8 @@ if __name__ == "__main__":
         DataPointsToPlateau(configs['processor']['waveform'])
     ])
 
+    criterion = manager.get_criterion(configs['algorithm'])
+    algorithm = manager.get_algorithm(configs['algorithm'])
+
     logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
-    capacity_test(DNPU, configs, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger)
+    capacity_test(configs, DNPU, criterion, algorithm, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger)
