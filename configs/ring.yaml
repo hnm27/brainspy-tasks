@@ -1,5 +1,7 @@
 results_base_dir : "tmp/TEST/output/ring"
 runs: 3
+start_gap: 0.4
+stop_gap: 0.00625
 data:
   gap: 0.4
   load: false # If load is false, it generates a new dataset. If load is a path to the data, it loads it to the data

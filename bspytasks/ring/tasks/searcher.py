@@ -27,26 +27,26 @@ def init_dirs(gap, base_dir, is_main=True):
 
 def init_results(runs, output_shape):
     results = {}
-    results['performance_per_run'] = torch.zeros(configs['runs'])
-    results['correlation_per_run'] = torch.zeros(configs['runs'])
-    results['accuracy_per_run'] = torch.zeros(configs['runs'])
-    results['outputs_per_run'] = torch.zeros((configs['runs'], output_shape))
+    results['performance_per_run'] = torch.zeros(runs)
+    results['correlation_per_run'] = torch.zeros(runs)
+    results['accuracy_per_run'] = torch.zeros(runs)
+    results['outputs_per_run'] = torch.zeros((runs, output_shape))
     return results
 
 
 def init_all_results(dataloaders, runs):
     results = {}
-    results['seeds'] = torch.zeros(configs['runs'])
-    results['train_results'] = init_results(configs['runs'], len(dataloaders[0].sampler.indices))
+    results['seeds'] = torch.zeros(runs)
+    results['train_results'] = init_results(runs, len(dataloaders[0].sampler.indices))
     if len(dataloaders[1]) > 0:
-        results['dev_results'] = init_results(configs['runs'], len(dataloaders[1].sampler.indices))
+        results['dev_results'] = init_results(runs, len(dataloaders[1].sampler.indices))
     if len(dataloaders[2]) > 0:
-        results['test_results'] = init_results(configs['runs'], len(dataloaders[2].sampler.indices))
+        results['test_results'] = init_results(runs, len(dataloaders[2].sampler.indices))
     return results
 
 
 def search_solution(configs, custom_model, criterion, algorithm, transforms=None, logger=None, is_main=True):
-    main_dir, search_stats_dir = init_dirs(configs['gap'], configs['results_base_dir'], is_main=is_main)
+    main_dir, search_stats_dir = init_dirs(configs['data']['gap'], configs['results_base_dir'], is_main=is_main)
     configs['results_base_dir'] = main_dir
     dataloaders = get_ring_data(configs, transforms)
     all_results = init_all_results(dataloaders, configs['runs'])
@@ -56,14 +56,14 @@ def search_solution(configs, custom_model, criterion, algorithm, transforms=None
         print(f'########### RUN {run} ################')
         all_results['seeds'][run] = TorchUtils.init_seed(None, deterministic=True)
 
-        results = ring_task(dataloaders, custom_model, configs, criterion, algorithm, logger=logger, is_main=False)
+        results = ring_task(configs, dataloaders, custom_model, criterion, algorithm, logger=logger, is_main=False)
         all_results = update_all_search_stats(all_results, results, run)
         if is_best_run(results, best_run):
             results['best_index'] = run
             best_run = results
             torch.save(results, os.path.join(search_stats_dir, 'best_result.pickle'))
 
-    close_search(all_results, search_stats_dir, 'all_results_' + str(configs['gap']) + '_gap_' + str(configs['runs']) + '_runs')
+    close_search(all_results, search_stats_dir, 'all_results_' + str(configs['data']['gap']) + '_gap_' + str(configs['runs']) + '_runs')
 
 
 def is_best_run(results, best_run):
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     from bspytasks.utils import manager
     from bspytasks.utils.io import load_configs
-    from brainspy.algorithms.transforms import DataToTensor, DataToVoltageRange
+    from brainspy.utils.transforms import DataToTensor, DataToVoltageRange
     from brainspy.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]

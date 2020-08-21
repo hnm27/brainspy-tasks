@@ -1,3 +1,4 @@
+from brainspy.utils.pytorch import TorchUtils
 import os
 import torch
 import numpy as np
@@ -8,8 +9,8 @@ from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader, Balance
 from bspytasks.utils.io import create_directory, create_directory_timestamp, save
 from bspytasks.utils.manager import get_criterion, get_optimizer, get_algorithm
 
-from brainspy.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
-from brainspy.utils.pytorch import TorchUtils
+from brainspy.algorithms.modules.performance.accuracy import get_accuracy, plot_perceptron
+from brainspy.algorithms.modules.signal import corr_coeff
 
 
 def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform_transforms=None, logger=None, is_main=True):
@@ -18,7 +19,7 @@ def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform
     print('==========================================================================================')
     print("GAP: " + str(results['gap']))
 
-    main_dir, results_dir, reproducibility_dir = init_dirs(str(results['gap']), configs['results_base_dir'], is_main)
+    results_dir, reproducibility_dir = init_dirs(str(results['gap']), configs['results_base_dir'], is_main)
     # criterion = get_criterion(configs['algorithm'])
     model = custom_model(configs['processor'])
     optimizer = get_optimizer(model, configs['algorithm'])
@@ -67,8 +68,8 @@ def postprocess(dataset, model, criterion, logger, save_dir=None, name='train'):
     results['inputs'] = inputs
     results['targets'] = targets
     results['best_output'] = predictions
-    results['accuracy'] = perceptron(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    results['correlation'] = corr_coeff_torch(predictions.T, targets.T)
+    results['accuracy'] = get_accuracy(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    results['correlation'] = corr_coeff(predictions.T, targets.T)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
 
     return results
@@ -85,7 +86,7 @@ def init_dirs(gap, base_dir, is_main=False):
     create_directory(reproducibility_dir)
     results_dir = os.path.join(base_dir, results_dir)
     create_directory(results_dir)
-    return main_dir, results_dir, reproducibility_dir
+    return results_dir, reproducibility_dir
 
 
 def plot_results(results, plots_dir=None, show_plots=False, extension='png'):
@@ -144,7 +145,7 @@ if __name__ == '__main__':
 
     from bspytasks.utils import manager
     from bspytasks.utils.io import load_configs
-    from brainspy.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
+    from brainspy.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
 
     from brainspy.processors.dnpu import DNPU
 
