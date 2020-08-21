@@ -4,11 +4,11 @@ from bspytasks.utils.io import create_directory_timestamp
 
 def capacity_test(configs, custom_model, criterion, algorithm, transforms=None):
     base_dir = create_directory_timestamp(configs['results_base_dir'], 'capacity')
-    configs['results_base_dir'] = base_dir
     gap = configs['start_gap']
     while gap >= configs['stop_gap']:
         print(f'********* GAP {gap} **********')
         configs['data']['gap'] = gap
+        configs['results_base_dir'] = base_dir
         search_solution(configs, DNPU, criterion, algorithm, transforms=transforms, is_main=False)
         gap = gap / 2
         print(f'*****************************')

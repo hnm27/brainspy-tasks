@@ -28,13 +28,13 @@ def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform
     model, train_data = algorithm(model, (dataloaders[0], dataloaders[1]), criterion, optimizer, configs['algorithm'], logger=logger, save_dir=reproducibility_dir, waveform_transforms=waveform_transforms)
 
     if len(dataloaders[0]) > 0:
-        results['train_results'] = postprocess(dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, results_dir, name='train')
+        results['train_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, results_dir, name='train')
         results['train_results']['performance_history'] = train_data['performance_history'][0]
     if len(dataloaders[1]) > 0:
-        results['dev_results'] = postprocess(dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, results_dir, name='dev')
+        results['dev_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, results_dir, name='dev')
         results['dev_results']['performance_history'] = train_data['performance_history'][1]
     if len(dataloaders[2]) > 0:
-        results['test_results'] = postprocess(dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, results_dir, name='test')
+        results['test_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, results_dir, name='test')
 
     plot_results(results, plots_dir=results_dir)
     torch.save(model, os.path.join(reproducibility_dir, 'model.pt'))
@@ -54,7 +54,7 @@ def get_ring_data(configs, transforms, data_dir=None):
     return dataloaders
 
 
-def postprocess(dataset, model, criterion, logger, save_dir=None, name='train'):
+def postprocess(configs, dataset, model, criterion, logger, save_dir=None, name='train'):
     results = {}
     with torch.no_grad():
         model.eval()
@@ -68,7 +68,7 @@ def postprocess(dataset, model, criterion, logger, save_dir=None, name='train'):
     results['inputs'] = inputs
     results['targets'] = targets
     results['best_output'] = predictions
-    results['accuracy'] = get_accuracy(predictions, targets)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    results['accuracy'] = get_accuracy(predictions, targets, configs)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results['correlation'] = corr_coeff(predictions.T, targets.T)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
 
@@ -76,8 +76,7 @@ def postprocess(dataset, model, criterion, logger, save_dir=None, name='train'):
 
 
 def init_dirs(gap, base_dir, is_main=False):
-    base_dir = os.path.join(base_dir, 'gap_' + gap)
-    main_dir = 'ring_classification'
+    main_dir = 'ring_classification_gap_' + gap
     reproducibility_dir = 'reproducibility'
     results_dir = 'results'
     if is_main:
