@@ -1,9 +1,10 @@
 import torch
-import brainspy.algorithms.criterion as criterion
-import brainspy.algorithms.optim as bspyoptim
+import torch_optimizer as torchoptim
+
+import brainspy.algorithms.modules.signal as criterion
+import brainspy.algorithms.modules.optim as bspyoptim
 from brainspy.algorithms.ga import train as train_ga
 from brainspy.algorithms.gd import train as train_gd
-import torch_optimizer as torchoptim
 
 from brainspy.utils.pytorch import TorchUtils
 
