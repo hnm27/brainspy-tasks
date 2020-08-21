@@ -9,33 +9,34 @@ from bspytasks.utils.io import create_directory, create_directory_timestamp
 from bspyproc.utils.pytorch import TorchUtils
 
 
-def vc_dimension_test(current_dimension, custom_model, configs, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
+def vc_dimension_test(configs, custom_model, criterion, algorithm, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
     print('---------------------------------------------')
-    print(f'\tVC DIMENSION {str(current_dimension)}\t')
+    print(f"\tVC DIMENSION {str(configs['current_dimension'])}\t")
     print('---------------------------------------------')
     # REMOVE THIS
 
-    threshold = (1 - (configs['threshold_parameter'] / current_dimension)) * 100.0
-    targets = generate_targets(current_dimension)
+    configs['threshold'] = (1 - (configs['threshold_parameter'] / configs['current_dimension'])) * 100.0
+    targets = generate_targets(configs['current_dimension'])
     accuracies = torch.zeros(len(targets))
     performances = torch.zeros(len(targets), configs['algorithm']['epochs'])
     veredicts = torch.zeros(len(targets))
     correlations = torch.zeros(len(targets))
 
-    base_dir = init_dirs(current_dimension, configs['results_base_dir'], is_main=is_main)
+    base_dir = init_dirs(configs['current_dimension'], configs['results_base_dir'], is_main=is_main)
     configs['results_base_dir'] = base_dir
     for i in range(len(targets)):
         if logger is not None:
             logger.gate = str(targets[i])
-        results = boolean_task(configs, targets[i], custom_model, threshold, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
+        configs['gate'] = targets[i]
+        results = boolean_task(configs, custom_model, criterion, algorithm, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
         accuracies[i] = results['accuracy']['accuracy_value']
         performances[i] = results['training_data']['performance_history'][0]  # Only training performance is relevant for the boolean task, at position [0]
         veredicts[i] = results['veredict']
         correlations[i] = results['correlation']
         del results
-    results = {'capacity': torch.mean(veredicts), 'threshold': threshold, 'targets': targets, 'accuracies': accuracies, 'performances': performances, 'veredicts': veredicts, 'correlations': correlations}
+    results = {'capacity': torch.mean(veredicts), 'threshold': configs['threshold'], 'targets': targets, 'accuracies': accuracies, 'performances': performances, 'veredicts': veredicts, 'correlations': correlations}
     plot_results(results, base_dir=base_dir)
-    torch.save(results, os.path.join(base_dir, 'vcdim_' + str(current_dimension) + '.pickle'))
+    torch.save(results, os.path.join(base_dir, 'vcdim_' + str(configs['current_dimension']) + '.pickle'))
     return results
 
 
@@ -72,6 +73,7 @@ if __name__ == "__main__":
     import datetime as d
     from torchvision import transforms
 
+    from bspytasks.utils import manager
     from bspytasks.boolean.logger import Logger
     from bspytasks.utils.io import load_configs
     from bspyalgo.algorithms.transforms import DataToTensor, DataPointsToPlateau
@@ -86,4 +88,8 @@ if __name__ == "__main__":
         DataPointsToPlateau(configs['processor']['waveform'])
     ])
 
-    results = vc_dimension_test(4, DNPU, configs, data_transforms=data_transforms, waveform_transforms=waveform_transforms)
+    criterion = manager.get_criterion(configs['algorithm'])
+    algorithm = manager.get_algorithm(configs['algorithm'])
+
+    configs['current_dimension'] = 4
+    results = vc_dimension_test(configs, DNPU, criterion, algorithm, data_transforms=data_transforms, waveform_transforms=waveform_transforms)

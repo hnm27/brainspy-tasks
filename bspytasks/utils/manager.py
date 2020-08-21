@@ -1,5 +1,5 @@
 import torch
-import bspyalgo.algorithms.loss as loss
+import bspyalgo.algorithms.criterion as criterion
 import bspyalgo.algorithms.optim as bspyoptim
 from bspyalgo.algorithms.ga import train as train_ga
 from bspyalgo.algorithms.gd import train as train_gd
@@ -14,21 +14,21 @@ def get_criterion(configs):
     and must return a numpy array of scores of size len(outputs).
     '''
     if configs['criterion'] == 'corr_fit':
-        return loss.corr_fit
+        return criterion.corr_fit
     elif configs['criterion'] == 'accuracy_fit':
-        return loss.accuracy_fit
+        return criterion.accuracy_fit
     elif configs['criterion'] == 'corrsig_fit':
-        return loss.corrsig_fit
+        return criterion.corrsig_fit
     elif configs['criterion'] == 'fisher':
-        return loss.fisher
+        return criterion.fisher
     elif configs['criterion'] == 'corrsig':
-        return loss.corrsig
+        return criterion.corrsig
     elif configs['criterion'] == 'sqrt_corrsig':
-        return loss.sqrt_corrsig
+        return criterion.sqrt_corrsig
     elif configs['criterion'] == 'fisher_added_corr':
-        return loss.fisher_added_corr
+        return criterion.fisher_added_corr
     elif configs['criterion'] == 'fisher_multipled_corr':
-        return loss.fisher_multipled_corr
+        return criterion.fisher_multipled_corr
     elif configs['criterion'] == 'bce':
         bce = torch.nn.BCELoss()
         bce.cuda(TorchUtils.get_accelerator_type()).to(TorchUtils.data_type)

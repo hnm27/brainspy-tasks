@@ -1,6 +1,6 @@
 type: genetic
 optimizer: genetic
-criterion: fisher
+criterion: corrsig
 mutation_rate: 0.1
 epochs: 100
 batch_size: 256

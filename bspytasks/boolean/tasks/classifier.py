@@ -12,11 +12,9 @@ from bspytasks.utils.io import save, create_directory, create_directory_timestam
 from bspyalgo.algorithms.performance import perceptron, corr_coeff_torch, plot_perceptron
 
 
-def boolean_task(configs, gate, custom_model, threshold, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
-    main_dir, reproducibility_dir = init_dirs(str(gate), configs['results_base_dir'], is_main)
-    gate = np.array(gate)
-    criterion = get_criterion(configs['algorithm'])
-    algorithm = get_algorithm(configs['algorithm'])
+def boolean_task(configs, custom_model, criterion, algorithm, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
+    main_dir, reproducibility_dir = init_dirs(str(configs['gate']), configs['results_base_dir'], is_main)
+    gate = np.array(configs['gate'])
     loader = get_data(gate, data_transforms, configs)
     print('==========================================================================================')
     print("GATE: " + str(gate))
@@ -26,7 +24,9 @@ def boolean_task(configs, gate, custom_model, threshold, data_transforms=None, w
         optimizer = get_optimizer(model, configs['algorithm'])
         model, training_data = algorithm(model, (loader, None), criterion, optimizer, configs['algorithm'], waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
         results = evaluate_model(model, loader.dataset, transforms=waveform_transforms)
-        results = postprocess(str(gate), results, model, threshold, logger=logger, save_dir=main_dir)
+        results['threshold'] = configs['threshold']
+        results['gate'] = str(gate)
+        results = postprocess(results, model, logger=logger, save_dir=main_dir)
         results['training_data'] = training_data
         print(results['summary'])
         if results['veredict']:
@@ -46,22 +46,20 @@ def get_data(gate, data_transforms, configs):
     return torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, pin_memory=False)
 
 
-def postprocess(gate_name, results, model, threshold, logger=None, node=None, save_dir=None):
+def postprocess(results, model, logger=None, node=None, save_dir=None):
     results['accuracy'] = perceptron(results['predictions'], results['targets'], node)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results['correlation'] = corr_coeff_torch(results['predictions'].T, results['targets'].T)
 
-    if (results['accuracy']['accuracy_value'] >= threshold):
+    if (results['accuracy']['accuracy_value'] >= results['threshold']):
         results['veredict'] = True
     else:
         results['veredict'] = False
-    results['threshold'] = threshold
-    results['gate'] = gate_name
-    results['summary'] = 'VC Dimension: ' + str(len(results['targets'])) + ' Gate: ' + gate_name + ' Veredict: ' + str(results['veredict']) + '\n Accuracy (Simulation): ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(threshold)
+    results['summary'] = 'VC Dimension: ' + str(len(results['targets'])) + ' Gate: ' + results['gate'] + ' Veredict: ' + str(results['veredict']) + '\n Accuracy (Simulation): ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(results['threshold'])
     results['results_fig'] = plot_results(results, save_dir)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
     if logger is not None:
-        logger.log.add_figure('Results/VCDim' + str(len(results['targets'])) + '/' + gate_name, results['results_fig'])
-        logger.log.add_figure('Accuracy/VCDim' + str(len(results['targets'])) + '/' + gate_name, results['accuracy_fig'])
+        logger.log.add_figure('Results/VCDim' + str(len(results['targets'])) + '/' + results['gate'], results['results_fig'])
+        logger.log.add_figure('Accuracy/VCDim' + str(len(results['targets'])) + '/' + results['gate'], results['accuracy_fig'])
     return results
 
 
@@ -115,6 +113,7 @@ if __name__ == "__main__":
     import datetime as d
     from torchvision import transforms
 
+    from bspytasks.utils import manager
     from bspytasks.boolean.logger import Logger
     from bspytasks.utils.io import load_configs
     from bspyalgo.algorithms.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
@@ -133,6 +132,10 @@ if __name__ == "__main__":
 
     logger = Logger(f'tmp/output/logs/experiment' + str(d.datetime.now().timestamp()))
 
-    gate = [0, 0, 0, 1]
+    configs['gate'] = [0, 0, 0, 1]
+    configs['threshold'] = 0.8
 
-    boolean_task(configs, gate, DNPU, threshold=0.8, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger)
+    criterion = manager.get_criterion(configs['algorithm'])
+    algorithm = manager.get_algorithm(configs['algorithm'])
+
+    boolean_task(configs, DNPU, criterion, algorithm, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger)
