@@ -29,7 +29,8 @@ def vc_dimension_test(configs, custom_model, criterion, algorithm, data_transfor
             logger.gate = str(targets[i])
         configs['gate'] = targets[i]
         results = boolean_task(configs, custom_model, criterion, algorithm, data_transforms=data_transforms, waveform_transforms=waveform_transforms, logger=logger, is_main=False)
-        accuracies[i] = results['accuracy']['accuracy_value']
+        if 'accuracy' in results:
+            accuracies[i] = results['accuracy']['accuracy_value']
         performances[i] = results['training_data']['performance_history'][0]  # Only training performance is relevant for the boolean task, at position [0]
         veredicts[i] = results['veredict']
         correlations[i] = results['correlation']
