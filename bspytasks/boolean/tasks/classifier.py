@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from bspytasks.boolean.data import BooleanGateDataset
 
 
-from bspytasks.utils.manager import get_optimizer
-from bspytasks.utils.io import save, create_directory, create_directory_timestamp
+from brainspy.utils.manager import get_optimizer
+from brainspy.utils.io import save, create_directory, create_directory_timestamp
 from brainspy.algorithms.modules.performance.accuracy import get_accuracy, plot_perceptron
 from brainspy.algorithms.modules.signal import corr_coeff
 
@@ -119,9 +119,9 @@ if __name__ == "__main__":
     import datetime as d
     from torchvision import transforms
 
-    from bspytasks.utils import manager
+    from brainspy.utils import manager
     from bspytasks.boolean.logger import Logger
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils.io import load_configs
     from brainspy.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
     from brainspy.processors.dnpu import DNPU
 

@@ -2,11 +2,11 @@ import os
 import torch
 import matplotlib.pyplot as plt
 
-from bspytasks.utils.io import load_configs
+from brainspy.utils.io import load_configs
 from bspytasks.boolean.tasks.classifier import postprocess
 from bspytasks.boolean.tasks.classifier import plot_results
 
-from bspytasks.utils.io import create_directory, create_directory_timestamp
+from brainspy.utils.io import create_directory, create_directory_timestamp
 
 # TODO: Add possibility to validate multiple times
 

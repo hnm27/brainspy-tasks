@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bspytasks.boolean.tasks.vcdimension import vc_dimension_test
-from bspytasks.utils.io import create_directory_timestamp
+from brainspy.utils.io import create_directory_timestamp
 
 
 from brainspy.utils.pytorch import TorchUtils
@@ -73,11 +73,11 @@ def plot_boxplot(pos, results, key, title='', base_dir=None):
 if __name__ == "__main__":
     import datetime as d
     from torchvision import transforms
-    from bspytasks.utils import manager
+    from brainspy.utils import manager
 
     from bspytasks.boolean.logger import Logger
 
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils.io import load_configs
     from brainspy.utils.transforms import DataToTensor, DataPointsToPlateau
     from brainspy.processors.dnpu import DNPU
 

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from bspytasks.boolean.tasks.classifier import boolean_task
 from bspytasks.boolean.data import generate_targets
-from bspytasks.utils.io import create_directory, create_directory_timestamp
+from brainspy.utils.io import create_directory, create_directory_timestamp
 from brainspy.utils.pytorch import TorchUtils
 
 
@@ -74,9 +74,9 @@ if __name__ == "__main__":
     import datetime as d
     from torchvision import transforms
 
-    from bspytasks.utils import manager
+    from brainspy.utils import manager
     from bspytasks.boolean.logger import Logger
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils.io import load_configs
     from brainspy.utils.transforms import DataToTensor, DataPointsToPlateau
     from brainspy.processors.dnpu import DNPU
 

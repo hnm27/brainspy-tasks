@@ -6,8 +6,8 @@ import pickle as p
 import matplotlib.pyplot as plt
 
 from bspytasks.ring.data import RingDatasetGenerator, RingDatasetLoader, BalancedSubsetRandomSampler, balanced_permutation, split
-from bspytasks.utils.io import create_directory, create_directory_timestamp, save
-from bspytasks.utils.manager import get_criterion, get_optimizer, get_algorithm
+from brainspy.utils.io import create_directory, create_directory_timestamp, save
+from brainspy.utils.manager import get_criterion, get_optimizer, get_algorithm
 
 from brainspy.algorithms.modules.performance.accuracy import get_accuracy, plot_perceptron
 from brainspy.algorithms.modules.signal import corr_coeff
@@ -142,8 +142,8 @@ def plot_inputs(results, label, colors=['b', 'r'], plots_dir=None, extension='pn
 if __name__ == '__main__':
     from torchvision import transforms
 
-    from bspytasks.utils import manager
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils import manager
+    from brainspy.utils.io import load_configs
     from brainspy.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau
 
     from brainspy.processors.dnpu import DNPU

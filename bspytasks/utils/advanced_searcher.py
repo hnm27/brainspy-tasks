@@ -3,7 +3,7 @@
 # import torch
 # import matplotlib.pyplot as plt
 
-# from bspytasks.utils.manager import get_processor
+# from brainspy.utils.manager import get_processor
 # from bspytasks.tasks.ring.classifier import RingClassificationTask as Task
 # from brainspy.utils.pytorch import TorchUtils
 

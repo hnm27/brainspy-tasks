@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bspytasks.ring.tasks.classifier import get_ring_data, ring_task
-from bspytasks.utils.io import load_configs, create_directory, create_directory_timestamp
+from brainspy.utils.io import load_configs, create_directory, create_directory_timestamp
 
 from brainspy.utils.pytorch import TorchUtils
 
@@ -143,8 +143,8 @@ if __name__ == '__main__':
 
     from torchvision import transforms
 
-    from bspytasks.utils import manager
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils import manager
+    from brainspy.utils.io import load_configs
     from brainspy.utils.transforms import DataToTensor, DataToVoltageRange
     from brainspy.processors.dnpu import DNPU
 

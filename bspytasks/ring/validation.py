@@ -2,7 +2,7 @@ import os
 import torch
 import matplotlib.pyplot as plt
 
-from bspytasks.utils.io import create_directory, create_directory_timestamp
+from brainspy.utils.io import create_directory, create_directory_timestamp
 from brainspy.algorithms.performance import perceptron, corr_coeff_torch
 from brainspy.utils.pytorch import TorchUtils
 
@@ -98,7 +98,7 @@ def init_dirs(base_dir, is_main=True, gate=''):
 if __name__ == "__main__":
     from torchvision import transforms
 
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils.io import load_configs
     from brainspy.algorithms.transforms import PointsToPlateau
     from brainspy.algorithms.loss import fisher
 

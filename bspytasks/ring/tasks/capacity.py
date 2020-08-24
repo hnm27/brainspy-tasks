@@ -1,5 +1,5 @@
 from bspytasks.ring.tasks.searcher import search_solution
-from bspytasks.utils.io import create_directory_timestamp
+from brainspy.utils.io import create_directory_timestamp
 
 
 def capacity_test(configs, custom_model, criterion, algorithm, transforms=None):
@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     from torchvision import transforms
 
-    from bspytasks.utils import manager
-    from bspytasks.utils.io import load_configs
+    from brainspy.utils import manager
+    from brainspy.utils.io import load_configs
     from brainspy.utils.transforms import DataToTensor, DataToVoltageRange
     from brainspy.processors.dnpu import DNPU
 
