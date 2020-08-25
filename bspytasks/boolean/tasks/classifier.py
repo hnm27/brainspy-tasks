@@ -24,7 +24,9 @@ def boolean_task(configs, custom_model, criterion, algorithm, data_transforms=No
         model = custom_model(configs['processor'])
         optimizer = get_optimizer(model, configs['algorithm'])
         model, training_data = algorithm(model, (loader, None), criterion, optimizer, configs['algorithm'], waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
+
         results = evaluate_model(model, loader.dataset, transforms=waveform_transforms)
+        results['train_results'] = training_data
         results['threshold'] = configs['threshold']
         results['gate'] = str(gate)
         results = postprocess(results, model, configs['algorithm']['accuracy'], training_data, logger=logger, save_dir=main_dir)
@@ -61,6 +63,7 @@ def postprocess(results, model, configs, training_data, logger=None, node=None, 
     results['summary'] = 'VC Dimension: ' + str(len(results['targets'])) + ' Gate: ' + results['gate'] + ' Veredict: ' + str(results['veredict']) + '\n Accuracy (Simulation): ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(results['threshold'])
     results['results_fig'] = plot_results(results, save_dir)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
+    results['performance_fig'] = plot_performance(results['train_results']['performance_history'], save_dir=save_dir)
     results['training_data'] = training_data
     print(results['summary'])
     if logger is not None:
@@ -69,8 +72,7 @@ def postprocess(results, model, configs, training_data, logger=None, node=None, 
     return results
 
 
-def evaluate_model(model, dataset, transforms=None):
-    results = {}
+def evaluate_model(model, dataset, results={}, transforms=None):
     with torch.no_grad():
         model.eval()
         if transforms is None:
@@ -111,6 +113,16 @@ def plot_results(results, save_dir=None, fig=None, show_plots=False):
     if show_plots:
         plt.show()
     plt.close()
+    return fig
+
+
+def plot_performance(performance, save_dir=None, fig=None, show_plots=False):
+    if fig is None:
+        plt.figure()
+    plt.title(f'Learning profile', fontsize=12)
+    plt.plot(performance)
+    if save_dir is not None:
+        plt.savefig(os.path.join(save_dir, f"training_profile"))
     return fig
 
 
