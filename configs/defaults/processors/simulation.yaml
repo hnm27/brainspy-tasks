@@ -1,8 +1,8 @@
 platform: 'simulation'
 torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
 input_indices:
-- 3
-- 4
+- 1
+- 2
 input_electrode_no: 7
 use_noise: false
 waveform:

@@ -13,8 +13,8 @@ activation_channels:
 readout_channels:
 - 0
 input_indices:
-- 3
-- 4
+- 1
+- 2
 sampling_frequency: 100
 amplification: 100
 shape: 33020
