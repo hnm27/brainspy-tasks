@@ -10,7 +10,7 @@ from brainspy.utils.io import create_directory, create_directory_timestamp, save
 from brainspy.utils.manager import get_criterion, get_optimizer, get_algorithm
 
 from brainspy.algorithms.modules.performance.accuracy import get_accuracy, plot_perceptron
-from brainspy.algorithms.modules.signal import corr_coeff
+from brainspy.algorithms.modules.signal import pearsons_correlation
 
 
 def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform_transforms=None, logger=None, is_main=True):
@@ -69,7 +69,7 @@ def postprocess(configs, dataset, model, criterion, logger, save_dir=None, name=
     results['targets'] = targets
     results['best_output'] = predictions
     results['accuracy'] = get_accuracy(predictions, targets, configs)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    results['correlation'] = corr_coeff(predictions.T, targets.T)
+    results['correlation'] = pearsons_correlation(predictions, targets)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
 
     return results

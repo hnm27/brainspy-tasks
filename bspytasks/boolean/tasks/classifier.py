@@ -10,7 +10,7 @@ from bspytasks.boolean.data import BooleanGateDataset
 from brainspy.utils.manager import get_optimizer
 from brainspy.utils.io import save, create_directory, create_directory_timestamp
 from brainspy.algorithms.modules.performance.accuracy import get_accuracy, plot_perceptron
-from brainspy.algorithms.modules.signal import corr_coeff
+from brainspy.algorithms.modules.signal import pearsons_correlation
 
 
 def boolean_task(configs, custom_model, criterion, algorithm, data_transforms=None, waveform_transforms=None, logger=None, is_main=True):
@@ -49,12 +49,12 @@ def get_data(gate, data_transforms, configs):
 
 
 def postprocess(results, model, configs, training_data, logger=None, node=None, save_dir=None):
-    if torch.isnan(results['predictions']).all():
+    if torch.isnan(results['predictions']).any() or torch.isinf(results['predictions']).any():
         print('Nan values detected in the predictions. It is likely that the gradients of the model exploded. Skipping..')
         results['veredict'] = False
         return results
     results['accuracy'] = get_accuracy(results['predictions'], results['targets'], configs, node)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    results['correlation'] = corr_coeff(results['predictions'].T, results['targets'].T)
+    results['correlation'] = pearsons_correlation(results['predictions'], results['targets'])
 
     if (results['accuracy']['accuracy_value'] >= results['threshold']):
         results['veredict'] = True
@@ -123,6 +123,7 @@ def plot_performance(performance, save_dir=None, fig=None, show_plots=False):
     plt.plot(performance)
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, f"training_profile"))
+    plt.close()
     return fig
 
 
