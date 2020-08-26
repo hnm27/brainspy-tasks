@@ -26,10 +26,10 @@ def boolean_task(configs, custom_model, criterion, algorithm, data_transforms=No
         model, training_data = algorithm(model, (loader, None), criterion, optimizer, configs['algorithm'], waveform_transforms=waveform_transforms, logger=logger, save_dir=reproducibility_dir)
 
         results = evaluate_model(model, loader.dataset, transforms=waveform_transforms)
-        results['train_results'] = training_data
+        results['training_data'] = training_data
         results['threshold'] = configs['threshold']
         results['gate'] = str(gate)
-        results = postprocess(results, model, configs['algorithm']['accuracy'], training_data, logger=logger, save_dir=main_dir)
+        results = postprocess(results, model, configs['algorithm']['accuracy'], logger=logger, save_dir=main_dir)
 
         if results['veredict']:
             break
@@ -48,7 +48,7 @@ def get_data(gate, data_transforms, configs):
     return torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, pin_memory=False)
 
 
-def postprocess(results, model, configs, training_data, logger=None, node=None, save_dir=None):
+def postprocess(results, model, configs, logger=None, node=None, save_dir=None):
     if torch.isnan(results['predictions']).any() or torch.isinf(results['predictions']).any():
         print('Nan values detected in the predictions. It is likely that the gradients of the model exploded. Skipping..')
         results['veredict'] = False
@@ -63,8 +63,7 @@ def postprocess(results, model, configs, training_data, logger=None, node=None, 
     results['summary'] = 'VC Dimension: ' + str(len(results['targets'])) + ' Gate: ' + results['gate'] + ' Veredict: ' + str(results['veredict']) + '\n Accuracy (Simulation): ' + str(results['accuracy']['accuracy_value'].item()) + '/' + str(results['threshold'])
     results['results_fig'] = plot_results(results, save_dir)
     results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir)
-    results['performance_fig'] = plot_performance(results['train_results']['performance_history'], save_dir=save_dir)
-    results['training_data'] = training_data
+    results['performance_fig'] = plot_performance(results['training_data']['performance_history'], save_dir=save_dir)
     print(results['summary'])
     if logger is not None:
         logger.log.add_figure('Results/VCDim' + str(len(results['targets'])) + '/' + results['gate'], results['results_fig'])
