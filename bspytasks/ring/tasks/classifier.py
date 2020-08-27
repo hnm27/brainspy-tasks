@@ -26,14 +26,13 @@ def ring_task(configs, dataloaders, custom_model, criterion, algorithm, waveform
     # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(model, (dataloaders[0], dataloaders[1]), criterion, optimizer, configs['algorithm'], logger=logger, save_dir=reproducibility_dir, waveform_transforms=waveform_transforms)
 
-    if len(dataloaders[0]) > 0:
-        results['train_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, results_dir, name='train')
-        results['train_results']['performance_history'] = train_data['performance_history'][0]
+    results['train_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[0].dataset[dataloaders[0].sampler.indices], model, criterion, logger, save_dir=results_dir, name='train')
+    results['train_results']['performance_history'] = train_data['performance_history'][0]
     if len(dataloaders[1]) > 0:
-        results['dev_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, results_dir, name='dev')
+        results['dev_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[1].dataset[dataloaders[1].sampler.indices], model, criterion, logger, node=results['train_results']['accuracy']['node'], save_dir=results_dir, name='dev')
         results['dev_results']['performance_history'] = train_data['performance_history'][1]
     if len(dataloaders[2]) > 0:
-        results['test_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, results_dir, name='test')
+        results['test_results'] = postprocess(configs['algorithm']['accuracy'], dataloaders[2].dataset[dataloaders[2].sampler.indices], model, criterion, logger, node=results['train_results']['accuracy']['node'], save_dir=results_dir, name='test')
     if save_data:
         plot_results(results, plots_dir=results_dir)
         torch.save(model, os.path.join(reproducibility_dir, 'model.pt'))
@@ -53,7 +52,7 @@ def get_ring_data(configs, transforms, data_dir=None):
     return dataloaders
 
 
-def postprocess(configs, dataset, model, criterion, logger, save_dir=None, name='train'):
+def postprocess(configs, dataset, model, criterion, logger, node=None, save_dir=None, name='train'):
     results = {}
     with torch.no_grad():
         model.eval()
@@ -67,7 +66,7 @@ def postprocess(configs, dataset, model, criterion, logger, save_dir=None, name=
     results['inputs'] = inputs
     results['targets'] = targets
     results['best_output'] = predictions
-    results['accuracy'] = get_accuracy(predictions, targets, configs)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    results['accuracy'] = get_accuracy(predictions, targets, configs, node=node)  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results['correlation'] = pearsons_correlation(predictions, targets)
     # results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir, name=name)
 
