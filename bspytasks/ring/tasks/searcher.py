@@ -1,12 +1,11 @@
 
 import os
 import torch
-import pickle
-import numpy as np
+import pickle as p
 import matplotlib.pyplot as plt
 
-from bspytasks.ring.tasks.classifier import get_ring_data, ring_task
-from brainspy.utils.io import load_configs, create_directory, create_directory_timestamp
+from bspytasks.ring.tasks.classifier import get_ring_data, ring_task, plot_results
+from brainspy.utils.io import load_configs, create_directory, create_directory_timestamp, save
 
 from brainspy.utils.pytorch import TorchUtils
 
@@ -14,6 +13,8 @@ from brainspy.utils.pytorch import TorchUtils
 def init_dirs(gap, base_dir, is_main=True):
     main_dir = f'searcher_{gap}mV'
     search_stats_dir = 'search_stats'
+    results_dir = 'results'
+    reproducibility_dir = 'reproducibility'
 
     if is_main:
         base_dir = create_directory_timestamp(base_dir, main_dir)
@@ -21,8 +22,12 @@ def init_dirs(gap, base_dir, is_main=True):
         base_dir = os.path.join(base_dir, main_dir)
         create_directory(base_dir)
     search_stats_dir = os.path.join(base_dir, search_stats_dir)
+    results_dir = search_stats_dir = os.path.join(base_dir, results_dir)
+    reproducibility_dir = search_stats_dir = os.path.join(base_dir, reproducibility_dir)
     create_directory(search_stats_dir)
-    return base_dir, search_stats_dir
+    create_directory(results_dir)
+    create_directory(reproducibility_dir)
+    return base_dir, search_stats_dir, results_dir, reproducibility_dir
 
 
 def init_results(runs, output_shape):
@@ -46,7 +51,7 @@ def init_all_results(dataloaders, runs):
 
 
 def search_solution(configs, custom_model, criterion, algorithm, transforms=None, logger=None, is_main=True):
-    main_dir, search_stats_dir = init_dirs(configs['data']['gap'], configs['results_base_dir'], is_main=is_main)
+    main_dir, search_stats_dir, results_dir, reproducibility_dir = init_dirs(configs['data']['gap'], configs['results_base_dir'], is_main=is_main)
     configs['results_base_dir'] = main_dir
     dataloaders = get_ring_data(configs, transforms)
     all_results = init_all_results(dataloaders, configs['runs'])
@@ -56,11 +61,15 @@ def search_solution(configs, custom_model, criterion, algorithm, transforms=None
         print(f'########### RUN {run} ################')
         all_results['seeds'][run] = TorchUtils.init_seed(None, deterministic=True)
 
-        results = ring_task(configs, dataloaders, custom_model, criterion, algorithm, logger=logger, is_main=False)
+        results, model = ring_task(configs, dataloaders, custom_model, criterion, algorithm, logger=logger, is_main=False, save_data=False)
         all_results = update_all_search_stats(all_results, results, run)
         if is_best_run(results, best_run):
             results['best_index'] = run
             best_run = results
+            plot_results(results, plots_dir=results_dir)
+            torch.save(model, os.path.join(reproducibility_dir, 'model.pt'))
+            torch.save(results, os.path.join(reproducibility_dir, 'results.pickle'), pickle_protocol=p.HIGHEST_PROTOCOL)
+            save('configs', os.path.join(reproducibility_dir, 'configs.yaml'), data=configs)
             torch.save(results, os.path.join(search_stats_dir, 'best_result.pickle'))
 
     close_search(all_results, search_stats_dir, 'all_results_' + str(configs['data']['gap']) + '_gap_' + str(configs['runs']) + '_runs')
