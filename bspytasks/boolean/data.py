@@ -6,9 +6,12 @@ from torch.utils.data import Dataset
 # ZERO = -0.5
 # ONE = 0.5
 # QUARTER =  (abs(ZERO) + abs(ONE)) / 4
-# TODO: Include this is the __init__ of the dataset
-X = [-0.7, -0.7, 0.5, 0.5, -0.35, 0.25, 0.0, 0.0]
-Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25]
+# TODO: Automatic generation of VC dimension points within the range -1, 1
+# VC dimension points in the range -1, 1
+X = [-1., -1., 1., 1., -0.41666667, 0.58333333, 0.16666667, 0.16666667]
+Y = [-1., 1., -1., 1., 0.16666667, 0.16666667, -0.41666667, 0.58333333]
+# X = [-0.7, -0.7, 0.5, 0.5, -0.35, 0.25, 0.0, 0.0]
+# Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25]
 
 
 class BooleanGateDataset(Dataset):
