@@ -47,8 +47,8 @@ class RingDatasetGenerator(Dataset):
         class0_targets = np.zeros(sample_no)
         class1_points = self.get_class_points(sample_no, 1 - limit, 1)
         class1_targets = np.ones(sample_no)
-        points = np.append(class0_points, class1_points)[:, np.newaxis]
-        targets = np.append(class0_targets, class1_targets)[:, np.newaxis]
+        points = np.vstack((class0_points, class1_points))
+        targets = np.hstack((class0_targets, class1_targets))[:, np.newaxis]
 
         if verbose:
             print(f'There are a total of {len(points)} samples')
