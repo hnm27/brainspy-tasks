@@ -1,15 +1,15 @@
 results_base_dir : "tmp/TEST/output/ring"
-runs: 3
+runs: 100
 start_gap: 0.4
-stop_gap: 0.00625
+stop_gap: 0.00825
 data:
-  gap: 0.4
+  gap: 0.00625
   load: false # If load is false, it generates a new dataset. If load is a path to the data, it loads it to the data
-  sample_no: 1500
+  sample_no: 1000
   split_percentages: # The data is divided into training, validation and test datasets respectively
-    - 0.9 # Percentage of the data used for training
+    - 0.8 # Percentage of the data used for training
     - 0.1 # Percentage of the data used for validation
-    - 0 # Percentage of the data used for test
+    - 0.1 # Percentage of the data used for test
 algorithm: !include defaults/algorithms/gd/ring.yaml
 processor: !include defaults/processors/simulation.yaml
 validation_processor: !include defaults/processors/hw.yaml

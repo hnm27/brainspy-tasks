@@ -4,7 +4,9 @@ input_indices:
 - 1
 - 2
 input_electrode_no: 7
-use_noise: false
+#noise: 
+#  type: 'gaussian'
+#  mse: 1.97
 waveform:
-  amplitude_lengths: 1
+  plateau_lengths: 1
   slope_lengths: 0

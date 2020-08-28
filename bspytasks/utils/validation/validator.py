@@ -21,9 +21,9 @@ class Hardware_Validator:
         self.nr_electrodes = configs['processor']["input_electrode_no"]
         self.cv_indices = get_control_voltage_indices(self.input_indices, self.nr_electrodes)
         self.slope_length = configs["processor"]["waveform"]["slope_lengths"]
-        self.amplitude_lengths = configs["processor"]["waveform"]["amplitude_lengths"]
+        self.plateau_lengths = configs["processor"]["waveform"]["plateau_lengths"]
         assert self.slope_length > 0, f"Slopes cannot be zero! slope_length=={self.slope_length}"
-        assert self.amplitude_lengths > 10, f"Input plateaus cannot be zero! amplitude_lengths=={self.amplitude_lengths}"
+        assert self.plateau_lengths > 10, f"Input plateaus cannot be zero! plateau_lengths=={self.plateau_lengths}"
 
     def clip(self, x, max_value, min_value):
         x[x > max_value] = max_value

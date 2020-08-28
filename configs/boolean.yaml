@@ -1,7 +1,7 @@
 from_dimension: 4
-to_dimension: 5
+to_dimension: 10
 threshold_parameter: 0.5
-max_attempts : 3
+max_attempts : 5
 results_base_dir : "tmp/TEST/output/boolean"
 algorithm: !include defaults/algorithms/ga/boolean.yaml
 processor: 
@@ -13,5 +13,5 @@ processor:
   input_electrode_no: 7
   use_noise: false
   waveform:
-    amplitude_lengths: 3 # The perceptron accuracy requires to have at least 10 values to operate (4 x 3 = 12)
+    plateau_lengths: 3 # The perceptron accuracy requires to have at least 10 values to operate (4 x 3 = 12)
     slope_lengths: 0

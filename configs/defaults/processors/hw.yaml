@@ -20,7 +20,7 @@ amplification: 100
 shape: 33020
 output_clipping_range: [-4,4]
 waveform:
-  amplitude_lengths: 1
+  plateau_lengths: 1
   slope_lengths: 0
 conversion: -0.6
 driver:

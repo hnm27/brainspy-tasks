@@ -1,6 +1,6 @@
 type: genetic
 optimizer: genetic
-criterion: corrsig
+criterion: fisher
 mutation_rate: 0.1
 epochs: 100
 batch_size: 256
@@ -21,3 +21,10 @@ partition: # Genome partition
 - 4
 - 22
 stop_threshold: 0.93
+accuracy: # Configurations for the perceptron
+  epochs: 100
+  learning_rate: 0.0007
+  betas: 
+    !!python/tuple [0.999, 0.999]
+  split: [1,0] # Training and validation data split in a range from 0 to 1
+  mini_batch: 256

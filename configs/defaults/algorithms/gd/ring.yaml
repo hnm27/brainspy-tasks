@@ -2,11 +2,11 @@ type: 'gradient'
 epochs: 100
 batch_size: 256
 worker_no: 0
-learning_rate: 0.00065
+learning_rate: 0.007
 criterion: 'fisher'
 optimizer: 'adam'
 accuracy: # Configurations for the perceptron
-  epochs: 100
+  epochs: 40
   learning_rate: 0.0007
   betas: 
     !!python/tuple [0.999, 0.999]
