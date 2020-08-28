@@ -8,10 +8,15 @@ from torch.utils.data import Dataset
 # QUARTER =  (abs(ZERO) + abs(ONE)) / 4
 # TODO: Automatic generation of VC dimension points within the range -1, 1
 # VC dimension points in the range -1, 1
-X = [-1., -1., 1., 1., -0.41666667, 0.58333333, 0.16666667, 0.16666667]
-Y = [-1., 1., -1., 1., 0.16666667, 0.16666667, -0.41666667, 0.58333333]
-# X = [-0.7, -0.7, 0.5, 0.5, -0.35, 0.25, 0.0, 0.0]
-# Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25]
+
+
+# Original set of points
+# X = [-0.7, -0.7, 0.5, 0.5, -0.35, 0.25, 0.0, 0.0, -1.1, 0.35]
+# Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25, 0.35, -1.1]
+
+# Set of points in a scale from -1 to 1
+X = [-0.5, -0.5, 1., 1., -0.0625, 0.6875, 0.375, 0.375, -1., 0.8125]
+Y = [-0.5, 1., -0.5, 1., 0.375, 0.375, -0.0625, 0.6875, 0.8125, -1.]
 
 
 class BooleanGateDataset(Dataset):
