@@ -9,13 +9,7 @@ setup(name='brainspy-tasks',
       license='GPL-3.0',
       packages=find_packages(),
       install_requires=[
-      'pandas',
       'numpy',
-      'matplotlib',
-      'openpyxl',
-      'xlsxwriter',
-      'scipy',
-      'more_itertools'
+      'matplotlib'
       ],
-      python_requires='~=3.6',
       zip_safe=False)
