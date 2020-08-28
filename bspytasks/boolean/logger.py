@@ -2,11 +2,11 @@ import torchvision
 from torch.utils.tensorboard import SummaryWriter
 
 
-class Logger():
-    def __init__(self, log_dir, comment='DEFAULT_LOGGER'):
+class Logger:
+    def __init__(self, log_dir, comment="DEFAULT_LOGGER"):
         # TODO: LOG HIPERPARAMETERS IN THE COMMENT e.g. "LR_0.1_BATCH_16"
         self.log = SummaryWriter(log_dir, comment=comment)
-        self.gate = ''
+        self.gate = ""
 
     def log_train_inputs(self, inputs, targets):
         # self.log.add_graph(net, images)
@@ -41,10 +41,13 @@ class Logger():
 
     def log_performance(self, train_losses, val_losses, epoch):
         if val_losses == []:
-            self.log.add_scalar('Cost/train/' + self.gate, train_losses[-1], epoch)
+            self.log.add_scalar("Cost/train/" + self.gate, train_losses[-1], epoch)
         else:
             self.log.add_scalars(
-                'Cost/' + self.gate, {'train': train_losses[-1], 'dev': val_losses[-1]}, epoch)
+                "Cost/" + self.gate,
+                {"train": train_losses[-1], "dev": val_losses[-1]},
+                epoch,
+            )
 
     def log_outputs(self, outputs):
         # self.log.add_histogram(
