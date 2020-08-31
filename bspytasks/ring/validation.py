@@ -3,7 +3,8 @@ import torch
 import matplotlib.pyplot as plt
 
 from brainspy.utils.io import create_directory, create_directory_timestamp
-from brainspy.algorithms.performance import perceptron, corr_coeff_torch
+from brainspy.algorithms.modules.performance.accuracy import get_accuracy
+from brainspy.algorithms.modules.signal import pearsons_correlation
 from brainspy.utils.pytorch import TorchUtils
 
 
@@ -129,10 +130,13 @@ def _validate(model, results, criterion, hw_processor_configs):
 
     # results['gap'] = dataset.gap
     results["best_output"] = predictions
-    results["accuracy"] = perceptron(
-        predictions, results["targets"]
+    print(f"Simulation accuracy {results['accuracy']['accuracy_value'].item()}: ")
+    print(f"Hardware accuracy: ")
+    results['accuracy'] = get_accuracy(
+        predictions, results["targets"], configs=results['accuracy']['configs'], node=results['accuracy']['node']
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    results["correlation"] = corr_coeff_torch(predictions.T, results["targets"].T)
+
+    results["correlation"] = pearsons_correlation(predictions, results["targets"])
     return results
 
 
@@ -149,10 +153,10 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from brainspy.utils.io import load_configs
-    from brainspy.algorithms.transforms import PointsToPlateau
-    from brainspy.algorithms.loss import fisher
+    from brainspy.utils.transforms import PointsToPlateau
+    from brainspy.algorithms.modules.signal import fisher
 
-    base_dir = "tmp/TEST/output/ring/gap_0.4/ring_classification_2020_08_20_083508"
+    base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_08_31_161428"
     model, results = load_reproducibility_results(base_dir)
 
     configs = load_configs("configs/ring.yaml")
