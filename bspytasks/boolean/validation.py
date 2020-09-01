@@ -94,20 +94,22 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from brainspy.utils.io import load_configs
-    from brainspy.utils.transforms import PointsToPlateau
+    from brainspy.utils.transforms import PointsToPlateaus, PlateausToPoints
     from brainspy.utils import manager
     from brainspy.utils.pytorch import TorchUtils
 
     configs = load_configs("configs/ring.yaml")
 
-    waveform_transforms = transforms.Compose(
-        [PointsToPlateau(configs["validation_processor"]["waveform"])]
-    )
-
     base_dir = "tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_09_01_115645"
 
     model = torch.load(os.path.join(base_dir, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
     results = torch.load(os.path.join(base_dir, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+    experiment_configs = load_configs(os.path.join(base_dir, 'reproducibility', 'configs.yaml'))
+
+    waveform_transforms = transforms.Compose(
+        [PlateausToPoints(experiment_configs['processor']['waveform']),  # Required to remove plateaus from training because the perceptron cannot accept less than 10 values for each gate
+         PointsToPlateaus(configs["validation_processor"]["waveform"])]
+    )
 
     results_dir = init_dirs(base_dir, is_main=True)
 

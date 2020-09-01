@@ -153,7 +153,7 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from brainspy.utils.io import load_configs
-    from brainspy.utils.transforms import PointsToPlateau
+    from brainspy.utils.transforms import PointsToPlateaus
     from brainspy.algorithms.modules.signal import fisher
 
     base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_08_31_161428"
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
     configs = load_configs("configs/ring.yaml")
     waveform_transforms = transforms.Compose(
-        [PointsToPlateau(configs["validation_processor"]["waveform"])]
+        [PointsToPlateaus(configs["validation_processor"]["waveform"])]
     )
 
     results_dir = init_dirs(os.path.join(base_dir, "validation"))
