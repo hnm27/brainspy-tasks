@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from bspytasks.boolean.data import BooleanGateDataset
 
 
+from brainspy.utils.pytorch import TorchUtils
 from brainspy.utils.manager import get_optimizer
 from brainspy.utils.io import save, create_directory, create_directory_timestamp
 from brainspy.algorithms.modules.performance.accuracy import (
@@ -50,7 +51,7 @@ def boolean_task(
             save_dir=reproducibility_dir,
         )
 
-        results = evaluate_model(model, loader.dataset, transforms=waveform_transforms)
+        results = evaluate_model(model, loader.dataset, criterion, transforms=waveform_transforms)
         results["training_data"] = training_data
         results["threshold"] = configs["threshold"]
         results["gate"] = str(gate)
@@ -83,7 +84,7 @@ def get_data(gate, data_transforms, configs):
     )
 
 
-def postprocess(results, model, configs, logger=None, node=None, save_dir=None):
+def postprocess(results, model, node_configs, logger=None, node=None, save_dir=None):
     if (
         torch.isnan(results["predictions"]).any()
         or torch.isinf(results["predictions"]).any()
@@ -94,7 +95,7 @@ def postprocess(results, model, configs, logger=None, node=None, save_dir=None):
         results["veredict"] = False
         return results
     results["accuracy"] = get_accuracy(
-        results["predictions"], results["targets"], configs, node
+        results["predictions"], results["targets"], node_configs, node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results["correlation"] = pearsons_correlation(
         results["predictions"], results["targets"]
@@ -116,11 +117,10 @@ def postprocess(results, model, configs, logger=None, node=None, save_dir=None):
         + "/"
         + str(results["threshold"])
     )
+
     results["results_fig"] = plot_results(results, save_dir)
+    results["performance_fig"] = plot_performance(results, save_dir=save_dir)
     results["accuracy_fig"] = plot_perceptron(results["accuracy"], save_dir)
-    results["performance_fig"] = plot_performance(
-        results["training_data"]["performance_history"], save_dir=save_dir
-    )
     print(results["summary"])
     if logger is not None:
         logger.log.add_figure(
@@ -134,7 +134,7 @@ def postprocess(results, model, configs, logger=None, node=None, save_dir=None):
     return results
 
 
-def evaluate_model(model, dataset, results={}, transforms=None):
+def evaluate_model(model, dataset, criterion, results={}, transforms=None):
     with torch.no_grad():
         model.eval()
         if transforms is None:
@@ -143,9 +143,11 @@ def evaluate_model(model, dataset, results={}, transforms=None):
             inputs, targets = transforms(dataset[:])
 
         predictions = model(inputs)
+
     results["inputs"] = inputs
     results["targets"] = targets
     results["predictions"] = predictions
+    results['performance'] = criterion(predictions, targets)
     return results
 
 
@@ -178,11 +180,11 @@ def plot_results(results, save_dir=None, fig=None, show_plots=False):
     return fig
 
 
-def plot_performance(performance, save_dir=None, fig=None, show_plots=False):
+def plot_performance(results, save_dir=None, fig=None, show_plots=False):
     if fig is None:
         plt.figure()
     plt.title(f"Learning profile", fontsize=12)
-    plt.plot(performance)
+    plt.plot(TorchUtils.get_numpy_from_tensor(results["training_data"]["performance_history"]))
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, f"training_profile"))
     plt.close()

@@ -5,35 +5,26 @@ import matplotlib.pyplot as plt
 from brainspy.utils.io import load_configs
 from bspytasks.boolean.tasks.classifier import postprocess
 from bspytasks.boolean.tasks.classifier import plot_results
-
+from brainspy.algorithms.modules.performance.accuracy import plot_perceptron
 from brainspy.utils.io import create_directory, create_directory_timestamp
 
 # TODO: Add possibility to validate multiple times
 
 
-def validate_gate(gate_base_dir, results_dir=None, model_name="model.pt", is_main=True):
-    # configs = load_configs(os.path.join(gate_base_dir, 'configs.yaml'))
-    if results_dir is None:
-        results_dir = os.path.join(os.path.split(gate_base_dir)[0], "validation")
-    model = torch.load(os.path.join(gate_base_dir, model_name))
-    results = process_results(torch.load(os.path.join(gate_base_dir, "results.pickle")))
-    results_dir = init_dirs(results_dir, is_main=is_main, gate=results["gate"])
+def validate_gate(model, results, configs, criterion, results_dir=None, transforms=None, show_plots=False, is_main=True):
+    results = process_results(results, transforms=transforms)
     with torch.no_grad():
-        model.eval()
-        # model.hw_eval()
+        model.hw_eval(configs)
         predictions = model(results["inputs"])
 
-    results["hw_validation"] = postprocess(
-        results["gate"],
-        results["simulation"],
-        model,
-        results["simulation"]["threshold"],
-        node=results["simulation"]["accuracy"]["node"],
-        save_dir=results_dir,
-    )
+    results["hw_validation"] = postprocess(results, model, results['accuracy']['configs'], node=results['accuracy']['node'],
+                                           save_dir=None
+                                           )
     results["hw_validation"]["predictions"] = predictions
-    results["simulation"]["summary"] = (
-        results["simulation"]["summary"]
+    results['hw_validation']['performance'] = criterion(predictions, results['targets'])
+    results['hw_validation']["accuracy_fig"] = plot_perceptron(results["accuracy"], results_dir, name='hardware')
+    results["summary"] = (
+        results["summary"]
         + "\n Accuracy (Hardware): "
         + str(results["hw_validation"]["accuracy"]["accuracy_value"].item())
         + "/"
@@ -52,24 +43,32 @@ def validate_vcdim(vcdim_base_dir, model_name="model.pt", is_main=True):
     ]
     for d in dirs:
         if os.path.split(d)[1] != "validation":
-            validate_gate(os.path.join(d, "reproducibility"), base_dir, is_main=False)
+            model = torch.load(os.path.join(d, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
+            results = torch.load(os.path.join(d, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+
+            results_dir = init_dirs(d, is_main=True)
+
+            criterion = manager.get_criterion(configs["algorithm"])
+
+            # validate_gate(os.path.join(d, "reproducibility"), base_dir, is_main=False)
+            validate_gate(
+                model, results, configs['validation_processor'], criterion, results_dir=results_dir, transforms=waveform_transforms
+            )
 
 
-def process_results(results):
-    new_results = {}
-    new_results["inputs"] = results["inputs"]
-    new_results["targets"] = results["targets"]
-    new_results["gate"] = results["gate"]
-    # Add waveforms here in relevant places
-    del results["inputs"]
-    # del results['targets']
-    del results["gate"]
-    new_results["simulation"] = results
-    return new_results
+def process_results(results, transforms=None):
+    if transforms is not None:
+        results["inputs"] = transforms(results["inputs"])
+        results["targets"] = transforms(results["targets"])
+        results['predictions'] = transforms(results['predictions'])
+    return results
 
 
 def plot_validation_results(results, save_dir):
     fig = plt.figure()
+    error = ((results['predictions'] - results["hw_validation"]["predictions"]) ** 2).mean()
+    print(f"\n MSE: {error}")
+    results['summary'] = results['summary'] + f"\n MSE: {error}"
     plt.plot(
         results["hw_validation"]["predictions"].detach().cpu(),
         label="Prediction (Hardware)",
@@ -77,30 +76,44 @@ def plot_validation_results(results, save_dir):
     plt.plot(
         results["hw_validation"]["targets"].detach().cpu(), label="Target (Hardware)"
     )
-    plot_results(results["simulation"], fig=fig, save_dir=save_dir)
+    plot_results(results, fig=fig, save_dir=save_dir)
 
 
-def init_dirs(base_dir, is_main=True, gate=""):
+def init_dirs(base_dir, is_main=True):
+    name = 'validation'
+    base_dir = os.path.join(base_dir, 'validation')
     if is_main:
-        base_dir = create_directory_timestamp(base_dir, gate)
+        base_dir = create_directory_timestamp(base_dir, name)
     else:
-        base_dir = os.path.join(base_dir, gate)
+        base_dir = os.path.join(base_dir, name)
         create_directory(base_dir)
     return base_dir
 
 
 if __name__ == "__main__":
+    from torchvision import transforms
 
-    from brainspy.processors.dnpu import DNPU
-    import numpy as np
-    import datetime as d
+    from brainspy.utils.io import load_configs
+    from brainspy.utils.transforms import PointsToPlateau
+    from brainspy.utils import manager
+    from brainspy.utils.pytorch import TorchUtils
 
-    # transforms = transforms.Compose([
-    #     ToTensor()
-    # ])
+    configs = load_configs("configs/ring.yaml")
 
-    # find_gate(configs, gate, DNPU, threshold=0.8, transforms=transforms, logger=logger)
-    validate_gate(
-        "tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_08_17_131228/reproducibility"
+    waveform_transforms = transforms.Compose(
+        [PointsToPlateau(configs["validation_processor"]["waveform"])]
     )
-    # validate_vcdim('tmp/TEST/output/boolean/vc_dimension_4_2020_08_06_133047/')
+
+    base_dir = "tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_09_01_115645"
+
+    model = torch.load(os.path.join(base_dir, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
+    results = torch.load(os.path.join(base_dir, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+
+    results_dir = init_dirs(base_dir, is_main=True)
+
+    criterion = manager.get_criterion(configs["algorithm"])
+
+    # validate_gate(
+    #     model, results, configs['validation_processor'], criterion, results_dir=results_dir, transforms=waveform_transforms
+    # )
+    validate_vcdim('tmp/TEST/output/boolean/vc_dimension_4_2020_09_01_145233')
