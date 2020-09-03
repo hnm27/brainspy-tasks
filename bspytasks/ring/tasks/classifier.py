@@ -67,6 +67,7 @@ def ring_task(
         model,
         criterion,
         logger,
+        waveform_transforms=waveform_transforms,
         save_dir=results_dir,
         name="train",
     )
@@ -81,6 +82,7 @@ def ring_task(
             criterion,
             logger,
             node=results["train_results"]["accuracy"]["node"],
+            waveform_transforms=waveform_transforms,
             save_dir=results_dir,
             name="dev",
         )
@@ -95,6 +97,7 @@ def ring_task(
             criterion,
             logger,
             node=results["train_results"]["accuracy"]["node"],
+            waveform_transforms=waveform_transforms,
             save_dir=results_dir,
             name="test",
         )
@@ -135,7 +138,7 @@ def get_ring_data(configs, transforms, data_dir=None):
 
 
 def postprocess(
-    configs, dataset, model, criterion, logger, node=None, save_dir=None, name="train"
+    configs, dataset, model, criterion, logger, node=None, waveform_transforms=None, save_dir=None, name="train"
 ):
     results = {}
     with torch.no_grad():
@@ -143,6 +146,8 @@ def postprocess(
         inputs, targets = dataset[:]
         indices = torch.argsort(targets[:, 0], dim=0)
         inputs, targets = inputs[indices], targets[indices]
+        if waveform_transforms is not None:
+            inputs, targets = waveform_transforms([inputs, targets])
         predictions = model(inputs)
         results["performance"] = criterion(predictions, targets)
 
