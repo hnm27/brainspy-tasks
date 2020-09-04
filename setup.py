@@ -9,6 +9,6 @@ setup(
     author_email="u.alegre@utwente.nl",
     license="GPL-3.0",
     packages=find_packages(),
-    install_requires=["numpy", "matplotlib"],
+    install_requires=["matplotlib"],
     zip_safe=False,
 )
