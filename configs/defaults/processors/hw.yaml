@@ -1,4 +1,3 @@
-torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
 processor_type: 'cdaq_to_cdaq' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
 data:
   shape: 1830 # Only required for hardware mode
@@ -11,6 +10,7 @@ data:
     slope_length: 30
 driver:
   driver_type: local # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
+  torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt' # Only useful for hardware simulation debug
   sampling_frequency: 1000
   amplification: 28.5
   input_instrument: cDAQ1Mod4
