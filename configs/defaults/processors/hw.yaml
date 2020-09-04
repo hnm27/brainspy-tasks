@@ -1,29 +1,32 @@
-platform: 'hardware'
 torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
-processor_type: 'simulation_debug'
-setup_type: cdaq_to_nidaq
-activation_channels:
-- 0
-- 1
-- 2
-- 3
-- 4
-- 5
-- 6
-readout_channels:
-- 0
-input_indices:
-- 1
-- 2
-sampling_frequency: 100
-amplification: 100
-shape: 33020
-output_clipping_range: [-4,4]
-waveform:
-  plateau_lengths: 80
-  slope_lengths: 20
-conversion: -0.6
+processor_type: 'cdaq_to_cdaq' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
+data:
+  shape: 1830 # Only required for hardware mode
+  activation_electrode_no: 7 # It specifies the number of activation electrodes. Only required for simulation mode
+  input_indices: # It specifies the indices of the activation data array that will be considered as inputs
+    - 1
+    - 2
+  waveform: 
+    plateau_length: 30 
+    slope_length: 30
 driver:
-  driver_type: local
-amplitude: [0.9, 0.9, 0.9, 0.9, 0.9, 0.5, 0.5]
-offset: [-0.3,-0.3,-0.3,-0.3,-0.3,-0.2,-0.2]
+  driver_type: local # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
+  sampling_frequency: 1000
+  amplification: 28.5
+  input_instrument: cDAQ1Mod4
+  activation_channels: # Channels through which voltages will be sent for activating the device (with both data inputs and control voltages)
+    - 8
+    - 10
+    - 13
+    - 11
+    - 7
+    - 12
+    - 14
+  output_instrument: cDAQ1Mod3
+  readout_channels: # Channels for reading the output current values
+    - 2
+  output_clipping_range: [-4,4] # This value will be multiplied by the amplification value
+  trigger_source: cDAQ1/segment1
+  # These control the output ranges.
+  amplitude: [0.9, 0.9, 0.9, 0.9, 0.9, 0.5, 0.5]
+  offset: [-0.3,-0.3,-0.3,-0.3,-0.3,-0.2,-0.2]

@@ -18,10 +18,10 @@ class Hardware_Validator:
 
         self.validation_dir = configs["data_dir"]
         self.show_plots = configs["show_plots"]
-        self.input_indices = configs["processor"]["input_indices"]
+        self.data_input_indices = configs["processor"]["data"]["input_indices"]
         self.nr_electrodes = configs["processor"]["input_electrode_no"]
         self.cv_indices = get_control_voltage_indices(
-            self.input_indices, self.nr_electrodes
+            self.data_input_indices, self.nr_electrodes
         )
         self.slope_length = configs["processor"]["waveform"]["slope_lengths"]
         self.plateau_lengths = configs["processor"]["waveform"]["plateau_lengths"]
@@ -45,7 +45,7 @@ class Hardware_Validator:
 
     def generate_input_matrix(self, inputs, control_voltages):
         inp_matrix = np.empty((inputs.shape[0], self.nr_electrodes))
-        inp_matrix[:, self.input_indices] = inputs
+        inp_matrix[:, self.data_input_indices] = inputs
         inp_matrix[:, self.cv_indices] = self.generate_sloped_values(
             control_voltages, inputs.shape[0]
         )
