@@ -116,6 +116,8 @@ def ring_task(
     print(
         "=========================================================================================="
     )
+    if model.is_hardware() and "close" in dir(model):
+        model.close()
     return results, model
 
 
