@@ -103,7 +103,10 @@ def ring_task(
         )
     if save_data:
         plot_results(results, plots_dir=results_dir)
-        torch.save(model, os.path.join(reproducibility_dir, "model.pt"))
+        if model.is_hardware():
+            model.load_state_dict(torch.load(os.path.join(reproducibility_dir, "model.pt")))
+        else:
+            model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
         torch.save(
             results,
             os.path.join(reproducibility_dir, "results.pickle"),
