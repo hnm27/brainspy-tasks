@@ -156,12 +156,12 @@ if __name__ == "__main__":
     from brainspy.utils.transforms import PointsToPlateaus
     from brainspy.algorithms.modules.signal import fisher
 
-    base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_08_31_161428"
+    base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_09_07_182726"
     model, results = load_reproducibility_results(base_dir)
 
     configs = load_configs("configs/ring.yaml")
     waveform_transforms = transforms.Compose(
-        [PointsToPlateaus(configs["validation_processor"]["waveform"])]
+        [PointsToPlateaus(configs["validation_processor"]["data"]["waveform"])]
     )
 
     results_dir = init_dirs(os.path.join(base_dir, "validation"))
