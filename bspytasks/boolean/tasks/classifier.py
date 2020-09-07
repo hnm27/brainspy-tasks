@@ -184,7 +184,8 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
     if fig is None:
         plt.figure()
     plt.title(f"Learning profile", fontsize=12)
-    plt.plot(TorchUtils.get_numpy_from_tensor(results["training_data"]["performance_history"]))
+    for i in range(len(results['training_data']['performance_history'])):
+        plt.plot(TorchUtils.get_numpy_from_tensor(results["training_data"]["performance_history"][i]))
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, f"training_profile"))
     plt.close()
@@ -216,7 +217,7 @@ if __name__ == "__main__":
     )
 
     waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["waveform"])]
+        [DataPointsToPlateau(configs["processor"]["data"]["waveform"])]
     )
 
     logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))
