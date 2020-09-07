@@ -107,8 +107,8 @@ if __name__ == "__main__":
     experiment_configs = load_configs(os.path.join(base_dir, 'reproducibility', 'configs.yaml'))
 
     waveform_transforms = transforms.Compose(
-        [PlateausToPoints(experiment_configs['processor']['waveform']),  # Required to remove plateaus from training because the perceptron cannot accept less than 10 values for each gate
-         PointsToPlateaus(configs["validation_processor"]["waveform"])]
+        [PlateausToPoints(experiment_configs['processor']["data"]['waveform']),  # Required to remove plateaus from training because the perceptron cannot accept less than 10 values for each gate
+         PointsToPlateaus(configs["validation_processor"]["data"]["waveform"])]
     )
 
     results_dir = init_dirs(base_dir, is_main=True)
