@@ -52,9 +52,7 @@ def vc_dimension_test(
         )
         if "accuracy" in results:
             accuracies[i] = results["accuracy"]["accuracy_value"]
-        performances[i] = results["training_data"]["performance_history"][
-            0
-        ]  # Only training performance is relevant for the boolean task, at position [0]
+        performances[i][:len(results['training_data']['performance_history'][0])] = results['training_data']['performance_history'][0]  # Only training performance is relevant for the boolean task, at position [0]. Since the algorithm sometimes stop because it reaches a threshold, it will only fill existing values and the rest will remain to zero.
         veredicts[i] = results["veredict"]
         correlations[i] = results["correlation"]
         del results
@@ -131,7 +129,7 @@ if __name__ == "__main__":
     )
 
     waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["waveform"])]
+        [DataPointsToPlateau(configs["processor"]["data"]["waveform"])]
     )
 
     criterion = manager.get_criterion(configs["algorithm"])
