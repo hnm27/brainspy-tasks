@@ -2,6 +2,7 @@ import os
 import torch
 
 import numpy as np
+import pickle as p
 import matplotlib.pyplot as plt
 
 from bspytasks.boolean.data import BooleanGateDataset
@@ -65,12 +66,29 @@ def boolean_task(
 
         if results["veredict"]:
             break
-    torch.save(results, os.path.join(reproducibility_dir, "results.pickle"))
-    save("configs", os.path.join(reproducibility_dir, "configs.yaml"), data=configs)
+    close(model, results, configs, reproducibility_dir)
     print(
         "=========================================================================================="
     )
     return results
+
+
+def close(model, results, configs, save_dir):
+    torch.save(results, os.path.join(save_dir, "results.pickle"))
+    save("configs", os.path.join(save_dir, "configs.yaml"), data=configs)
+    # Save the latest model
+    if model.is_hardware():
+        model.load_state_dict(torch.load(os.path.join(save_dir, "model.pt")))
+    else:
+        model = torch.load(os.path.join(save_dir, "model.pt"))
+    torch.save(
+        results,
+        os.path.join(save_dir, "results.pickle"),
+        pickle_protocol=p.HIGHEST_PROTOCOL,
+    )
+    # Close the model adequately if it is on hardware
+    if model.is_hardware() and "close" in dir(model):
+        model.close()
 
 
 def get_data(gate, data_transforms, configs):

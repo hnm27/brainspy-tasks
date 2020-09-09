@@ -102,23 +102,29 @@ def ring_task(
             name="test",
         )
     if save_data:
-        plot_results(results, plots_dir=results_dir)
-        if model.is_hardware():
-            model.load_state_dict(torch.load(os.path.join(reproducibility_dir, "model.pt")))
-        else:
-            model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
-        torch.save(
-            results,
-            os.path.join(reproducibility_dir, "results.pickle"),
-            pickle_protocol=p.HIGHEST_PROTOCOL,
-        )
-        save("configs", os.path.join(reproducibility_dir, "configs.yaml"), data=configs)
+        close(model, results, configs, reproducibility_dir, results_dir)
+
     print(
         "=========================================================================================="
     )
+
+    return results, model
+
+
+def close(model, results, configs, reproducibility_dir, results_dir):
+    save("configs", os.path.join(reproducibility_dir, "configs.yaml"), data=configs)
+    torch.save(
+        results,
+        os.path.join(reproducibility_dir, "results.pickle"),
+        pickle_protocol=p.HIGHEST_PROTOCOL,
+    )
+    plot_results(results, plots_dir=results_dir)
+    if model.is_hardware():
+        model.load_state_dict(torch.load(os.path.join(reproducibility_dir, "model.pt")))
+    else:
+        model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
     if model.is_hardware() and "close" in dir(model):
         model.close()
-    return results, model
 
 
 def get_ring_data(configs, transforms, data_dir=None):
