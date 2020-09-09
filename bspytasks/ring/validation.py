@@ -11,8 +11,8 @@ from brainspy.utils.pytorch import TorchUtils
 def load_reproducibility_results(base_dir, model_name="model.pt"):
     base_dir = os.path.join(base_dir, "reproducibility")
     # configs = load_configs(os.path.join(gate_base_dir, 'configs.yaml'))
-    model = torch.load(os.path.join(base_dir, model_name))
-    results = torch.load(os.path.join(base_dir, "results.pickle"))
+    model = torch.load(os.path.join(base_dir, model_name), map_location=TorchUtils.get_accelerator_type())
+    results = torch.load(os.path.join(base_dir, "results.pickle"), map_location=TorchUtils.get_accelerator_type())
     return model, results  # , configs
 
 
