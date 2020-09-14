@@ -159,6 +159,10 @@ def postprocess(
         inputs, targets = inputs[indices], targets[indices]
         if waveform_transforms is not None:
             inputs, targets = waveform_transforms([inputs, targets])
+        if inputs.device != TorchUtils.get_accelerator_type():
+            inputs = inputs.to(device=TorchUtils.get_accelerator_type())
+        if targets.device != TorchUtils.get_accelerator_type():
+            targets = targets.to(device=TorchUtils.get_accelerator_type())
         predictions = model(inputs)
         results["performance"] = criterion(predictions, targets)
 
@@ -279,31 +283,31 @@ def plot_inputs(results, label, colors=["b", "r"], plots_dir=None, extension="pn
 
 
 if __name__ == "__main__":
-    from torchvision import transforms
+    from torchvision import transforms as tfms
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
-    from brainspy.utils.transforms import (
-        DataToTensor,
-        DataToVoltageRange,
-        DataPointsToPlateau,
-    )
+    from brainspy.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau, ToDevice
 
     from brainspy.processors.dnpu import DNPU
+
+    #TorchUtils.force_cpu = False
 
     V_MIN = [-1.2, -1.2]
     V_MAX = [0.7, 0.7]
 
     configs = load_configs("configs/ring.yaml")
 
-    data_transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor()]
+    data_transforms = tfms.Compose(
+        [DataToVoltageRange(V_MIN, V_MAX, -1, 1),
+         DataToTensor(device=torch.device('cpu'))]
     )
 
     # Add your custom transformations for the datapoints
-    # waveform_transforms = transforms.Compose([
-    #     DataPointsToPlateau(configs['processor']['waveform'])
-    # ])
+    waveform_transforms = tfms.Compose([
+        # DataPointsToPlateau(configs['processor']['waveform']),
+        ToDevice()
+    ])
 
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
