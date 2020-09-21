@@ -1,4 +1,5 @@
 import os
+import re
 import torch
 import matplotlib.pyplot as plt
 
@@ -34,26 +35,47 @@ def validate_gate(model, results, configs, criterion, results_dir=None, transfor
     torch.save(results, os.path.join(results_dir, "hw_validation_results.pickle"))
 
 
-def validate_vcdim(vcdim_base_dir, model_name="model.pt", is_main=True):
-    base_dir = init_dirs(os.path.join(vcdim_base_dir, "validation"))
+def validate_vcdim(vcdim_base_dir, validation_processor_configs, is_main=True):
+    base_dir = init_dirs(vcdim_base_dir, is_main=is_main)
     dirs = [
         os.path.join(vcdim_base_dir, o)
         for o in os.listdir(vcdim_base_dir)
         if os.path.isdir(os.path.join(vcdim_base_dir, o))
     ]
+
     for d in dirs:
         if os.path.split(d)[1] != "validation":
+            gate_dir = create_directory(os.path.join(base_dir, d.split(os.path.sep)[-1]))
             model = torch.load(os.path.join(d, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
             results = torch.load(os.path.join(d, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+            experiment_configs = load_configs(os.path.join(d, 'reproducibility', "configs.yaml"))
+            #results_dir = init_dirs(d, is_main=is_main)
 
-            results_dir = init_dirs(d, is_main=True)
+            criterion = manager.get_criterion(experiment_configs["algorithm"])
 
-            criterion = manager.get_criterion(configs["algorithm"])
+            waveform_transforms = transforms.Compose(
+                [PlateausToPoints(experiment_configs['processor']["data"]['waveform']),  # Required to remove plateaus from training because the perceptron cannot accept less than 10 values for each gate
+                 PointsToPlateaus(validation_processor_configs["data"]["waveform"])]
+            )
 
             # validate_gate(os.path.join(d, "reproducibility"), base_dir, is_main=False)
             validate_gate(
-                model, results, configs['validation_processor'], criterion, results_dir=results_dir, transforms=waveform_transforms
+                model, results, validation_processor_configs, criterion, results_dir=gate_dir, transforms=waveform_transforms, is_main=False
             )
+
+
+def validate_capacity(capacity_base_dir, validation_processor_configs):
+    # base_dir = init_dirs(os.path.join(capacity_base_dir, "validation"), is_main=True)
+    dirs = [
+        os.path.join(capacity_base_dir, o)
+        for o in os.listdir(capacity_base_dir)
+        if os.path.isdir(os.path.join(capacity_base_dir, o))
+    ]
+    pattern = re.compile('vc_dimension_*')
+
+    for d in dirs:
+        if pattern.match(d.split(os.path.sep)[-1]) is not None:
+            validate_vcdim(d, validation_processor_configs)
 
 
 def process_results(results, transforms=None):
@@ -90,6 +112,25 @@ def init_dirs(base_dir, is_main=True):
     return base_dir
 
 
+def default_validate_gate(gate_base_dir, validation_processor_configs):
+    model = torch.load(os.path.join(gate_base_dir, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
+    results = torch.load(os.path.join(gate_base_dir, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+    experiment_configs = load_configs(os.path.join(gate_base_dir, 'reproducibility', 'configs.yaml'))
+
+    results_dir = init_dirs(gate_base_dir, is_main=True)
+
+    criterion = manager.get_criterion(experiment_configs["algorithm"])
+
+    waveform_transforms = transforms.Compose(
+        [PlateausToPoints(experiment_configs['processor']["data"]['waveform']),  # Required to remove plateaus from training because the perceptron cannot accept less than 10 values for each gate
+            PointsToPlateaus(validation_processor_configs["data"]["waveform"])]
+    )
+
+    validate_gate(
+        model, results, validation_processor_configs, criterion, results_dir=results_dir, transforms=waveform_transforms
+    )
+
+
 if __name__ == "__main__":
     from torchvision import transforms
 
@@ -98,24 +139,13 @@ if __name__ == "__main__":
     from brainspy.utils import manager
     from brainspy.utils.pytorch import TorchUtils
 
-    configs = load_configs("configs/ring.yaml")
+    validation_processor_configs = load_configs("configs/defaults/processors/hw.yaml")
 
-    base_dir = "tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_09_01_115645"
+    capacity_base_dir = "tmp/TEST/output/boolean/capacity_test_2020_09_21_134359"
+    vcdim_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_134359/vc_dimension_4'
+    gate_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_134359/vc_dimension_4/[0 0 0 1]'
 
-    model = torch.load(os.path.join(base_dir, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
-    results = torch.load(os.path.join(base_dir, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
-    experiment_configs = load_configs(os.path.join(base_dir, 'reproducibility', 'configs.yaml'))
+    default_validate_gate(gate_base_dir, validation_processor_configs)
+    # validate_vcdim(vcdim_base_dir, validation_processor_configs)
 
-    waveform_transforms = transforms.Compose(
-        [PlateausToPoints(experiment_configs['processor']["data"]['waveform']),  # Required to remove plateaus from training because the perceptron cannot accept less than 10 values for each gate
-         PointsToPlateaus(configs["validation_processor"]["data"]["waveform"])]
-    )
-
-    results_dir = init_dirs(base_dir, is_main=True)
-
-    criterion = manager.get_criterion(configs["algorithm"])
-
-    # validate_gate(
-    #     model, results, configs['validation_processor'], criterion, results_dir=results_dir, transforms=waveform_transforms
-    # )
-    validate_vcdim('tmp/TEST/output/boolean/vc_dimension_4_2020_09_01_145233')
+    # validate_capacity(capacity_base_dir, validation_processor_configs)
