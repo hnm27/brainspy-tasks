@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     configs = load_configs("configs/boolean.yaml")
     data_transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor()]
+        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(device=torch.device('cpu'))]
     )
 
     waveform_transforms = transforms.Compose(

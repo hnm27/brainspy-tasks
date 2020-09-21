@@ -98,7 +98,7 @@ def get_data(gate, data_transforms, configs):
     else:
         batch_size = len(dataset)
     return torch.utils.data.DataLoader(
-        dataset, batch_size=4, shuffle=True, pin_memory=True
+        dataset, batch_size=batch_size, shuffle=True, pin_memory=configs['algorithm']['pin_memory']
     )
 
 
