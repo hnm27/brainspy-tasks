@@ -149,7 +149,7 @@ if __name__ == "__main__":
     )
 
     waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["waveform"])]
+        [DataPointsToPlateau(configs["processor"]["data"]["waveform"])]
     )
 
     criterion = manager.get_criterion(configs["algorithm"])

@@ -98,7 +98,7 @@ def get_data(gate, data_transforms, configs):
     else:
         batch_size = len(dataset)
     return torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=True, pin_memory=False
+        dataset, batch_size=4, shuffle=True, pin_memory=True
     )
 
 
@@ -131,7 +131,7 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
         + " Veredict: "
         + str(results["veredict"])
         + "\n Accuracy (Simulation): "
-        + str(results["accuracy"]["accuracy_value"].item())
+        + str(results["accuracy"]["accuracy_value"])
         + "/"
         + str(results["threshold"])
     )
@@ -159,6 +159,8 @@ def evaluate_model(model, dataset, criterion, results={}, transforms=None):
             inputs, targets = dataset[:]
         else:
             inputs, targets = transforms(dataset[:])
+        inputs = inputs.to(device=TorchUtils.get_accelerator_type())
+        targets = targets.to(device=TorchUtils.get_accelerator_type())
 
         predictions = model(inputs)
 
@@ -231,7 +233,7 @@ if __name__ == "__main__":
     configs = load_configs("configs/boolean.yaml")
 
     data_transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor()]
+        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(device=torch.device("cpu"))]
     )
 
     waveform_transforms = transforms.Compose(
