@@ -1,6 +1,5 @@
 processor_type: 'simulation' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
 data:
-  shape: 1830 # Only required for hardware mode
   activation_electrode_no: 7 # It specifies the number of activation electrodes. Only required for simulation mode
   input_indices: # It specifies the indices of the activation data array that will be considered as inputs
     - 1
@@ -9,7 +8,7 @@ data:
     plateau_length: 1 
     slope_length: 0
 driver:
-  torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt'
-  # - noise: 
-  #   - type: 'gaussian'
-  #   - mse: 1.97
+  torch_model_dict: '/home/unai/Documents/3-programming/brainspy-smg/tmp/output/new_test_model/training_data_2020_09_14_190250/model.pt'
+  noise: 
+    type: 'gaussian'
+    mse: 0.6533523201942444

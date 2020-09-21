@@ -54,12 +54,12 @@ def boolean_task(
 
         results = evaluate_model(model, loader.dataset, criterion, transforms=waveform_transforms)
         results["training_data"] = training_data
-        results["threshold"] = configs["threshold"]
+        results["threshold"] = configs["algorithm"]["stop_threshold"]
         results["gate"] = str(gate)
         results = postprocess(
             results,
             model,
-            configs["algorithm"]["accuracy"],
+            configs["accuracy"],
             logger=logger,
             save_dir=main_dir,
         )
@@ -93,12 +93,12 @@ def close(model, results, configs, save_dir):
 
 def get_data(gate, data_transforms, configs):
     dataset = BooleanGateDataset(target=gate, transforms=data_transforms)
-    if "batch_size" in configs["algorithm"]:
-        batch_size = configs["algorithm"]["batch_size"]
+    if "batch_size" in configs["data"]:
+        batch_size = configs["data"]["batch_size"]
     else:
         batch_size = len(dataset)
     return torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=True, pin_memory=configs['algorithm']['pin_memory']
+        dataset, batch_size=batch_size, shuffle=True, pin_memory=configs['data']['pin_memory']
     )
 
 

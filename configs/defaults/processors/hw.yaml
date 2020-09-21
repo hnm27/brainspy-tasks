@@ -1,6 +1,5 @@
-processor_type: 'cdaq_to_cdaq' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
+processor_type: 'simulation_debug' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
 data:
-  shape: 1830 # Only required for hardware mode
   activation_electrode_no: 7 # It specifies the number of activation electrodes. Only required for simulation mode
   input_indices: # It specifies the indices of the activation data array that will be considered as inputs
     - 1
@@ -9,24 +8,10 @@ data:
     plateau_length: 30 
     slope_length: 30
 driver:
-  driver_type: local # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
-  torch_model_dict: '/home/unai/Documents/3-programming/brainspy-processors/tmp/input/models/test.pt' # Only useful for hardware simulation debug
+  tasks_driver_type: local # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
+  torch_model_dict: /home/unai/Documents/3-programming/brainspy-smg/tmp/output/new_test_model/training_data_2020_09_14_190250/model.pt # Only useful for hardware simulation debug
   sampling_frequency: 1000
   amplification: 28.5
-  input_instrument: cDAQ1Mod4
-  activation_channels: # Channels through which voltages will be sent for activating the device (with both data inputs and control voltages)
-    - 8
-    - 10
-    - 13
-    - 11
-    - 7
-    - 12
-    - 14
-  output_instrument: cDAQ1Mod3
-  readout_channels: # Channels for reading the output current values
-    - 2
+  instruments_setup: !include instruments/cdaq.yaml # Default configurations for cdaq to nidaq or cdaq to cdaq
   output_clipping_range: [-4,4] # This value will be multiplied by the amplification value
-  trigger_source: cDAQ1/segment1
   # These control the output ranges.
-  amplitude: [0.9, 0.9, 0.9, 0.9, 0.9, 0.5, 0.5]
-  offset: [-0.3,-0.3,-0.3,-0.3,-0.3,-0.2,-0.2]

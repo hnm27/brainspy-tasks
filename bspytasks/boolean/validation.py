@@ -141,11 +141,11 @@ if __name__ == "__main__":
 
     validation_processor_configs = load_configs("configs/defaults/processors/hw.yaml")
 
-    capacity_base_dir = "tmp/TEST/output/boolean/capacity_test_2020_09_21_134359"
-    vcdim_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_134359/vc_dimension_4'
-    gate_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_134359/vc_dimension_4/[0 0 0 1]'
+    capacity_base_dir = "tmp/TEST/output/boolean/capacity_test_2020_09_21_155613"
+    vcdim_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_155613/vc_dimension_4'
+    gate_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_155613/vc_dimension_4/[0 0 0 1]'
 
-    default_validate_gate(gate_base_dir, validation_processor_configs)
-    # validate_vcdim(vcdim_base_dir, validation_processor_configs)
+    # default_validate_gate(gate_base_dir, validation_processor_configs)
+    validate_vcdim(vcdim_base_dir, validation_processor_configs)
 
     # validate_capacity(capacity_base_dir, validation_processor_configs)

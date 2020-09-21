@@ -1,7 +1,26 @@
 from_dimension: 4
-to_dimension: 10
+to_dimension: 6
 threshold_parameter: 0.5
-max_attempts : 5
+max_attempts : 0
 results_base_dir : "tmp/TEST/output/boolean"
+data:
+    batch_size: 256
+    worker_no: 0
+    pin_memory: True
 algorithm: !include defaults/algorithms/ga/boolean.yaml
-processor: !include defaults/processors/hw.yaml
+accuracy: !include defaults/perceptron/accuracy.yaml #Configurations for the perceptron
+processor: 
+  processor_type: 'simulation' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
+  data:
+    activation_electrode_no: 7 # It specifies the number of activation electrodes. Only required for simulation mode
+    input_indices: # It specifies the indices of the activation data array that will be considered as inputs
+      - 1
+      - 2
+    waveform:
+      plateau_length: 3 # A plateau of 3 is needed to train the perceptron (That requires at least 10 values (3x4 = 12)) 
+      slope_length: 0
+  driver:
+    torch_model_dict: '/home/unai/Documents/3-programming/brainspy-smg/tmp/output/new_test_model/training_data_2020_09_07_165911/model.pt'
+    # noise: 
+    #   type: 'gaussian'
+    #   mse: 2.36
