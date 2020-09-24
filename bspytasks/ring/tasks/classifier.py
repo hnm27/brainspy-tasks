@@ -62,7 +62,7 @@ def ring_task(
     )
 
     results["train_results"] = postprocess(
-        configs["algorithm"]["accuracy"],
+        configs["accuracy"],
         dataloaders[0].dataset[dataloaders[0].sampler.indices],
         model,
         criterion,
@@ -76,7 +76,7 @@ def ring_task(
     ]
     if len(dataloaders[1]) > 0:
         results["dev_results"] = postprocess(
-            configs["algorithm"]["accuracy"],
+            configs["accuracy"],
             dataloaders[1].dataset[dataloaders[1].sampler.indices],
             model,
             criterion,
@@ -91,7 +91,7 @@ def ring_task(
         ][1]
     if len(dataloaders[2]) > 0:
         results["test_results"] = postprocess(
-            configs["algorithm"]["accuracy"],
+            configs["accuracy"],
             dataloaders[2].dataset[dataloaders[2].sampler.indices],
             model,
             criterion,
@@ -140,10 +140,11 @@ def get_ring_data(configs, transforms, data_dir=None):
         )
     dataloaders = split(
         dataset,
-        configs["algorithm"]["batch_size"],
+        configs["data"]["batch_size"],
         sampler=BalancedSubsetRandomSampler,
-        num_workers=configs["algorithm"]["worker_no"],
+        num_workers=configs["data"]["worker_no"],
         split_percentages=configs["data"]["split_percentages"],
+        pin_memory=configs["data"]["pin_memory"]
     )
     return dataloaders
 

@@ -227,7 +227,7 @@ if __name__ == "__main__":
     V_MAX = [0.7, 0.7]
 
     transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor()]
+        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(torch.device('cpu'))]
     )
 
     configs = load_configs("configs/ring.yaml")

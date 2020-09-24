@@ -147,6 +147,7 @@ def split(
     num_workers,
     sampler=SubsetRandomSampler,
     split_percentages=[0.8, 0.1, 0.1],
+    pin_memory=True
 ):
     # Split percentages are expected to be in the following format: [80,10,10]
     percentages = np.array(split_percentages)
@@ -178,12 +179,13 @@ def split(
         batch_size=batch_size[0],
         sampler=train_sampler,
         num_workers=num_workers,
+        pin_memory=pin_memory
     )
     dev_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size[1], sampler=dev_sampler, num_workers=num_workers
+        dataset, batch_size=batch_size[1], sampler=dev_sampler, num_workers=num_workers, pin_memory=pin_memory
     )
     test_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size[2], sampler=test_sampler, num_workers=num_workers
+        dataset, batch_size=batch_size[2], sampler=test_sampler, num_workers=num_workers, pin_memory=pin_memory
     )
 
     return [

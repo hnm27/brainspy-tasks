@@ -149,6 +149,9 @@ def init_dirs(base_dir, is_main=True, gate=""):
     return base_dir
 
 
+def capacity_validation(base_dir):
+
+
 if __name__ == "__main__":
     from torchvision import transforms
 
