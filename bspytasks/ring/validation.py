@@ -52,6 +52,7 @@ def validate(
 
     plot_all(results, save_dir=results_dir, show_plots=show_plots)
     torch.save(results, os.path.join(results_dir, "hw_validation_results.pickle"))
+    return results
 
 
 def plot_all(results, save_dir=None, show_plots=False):
@@ -149,9 +150,6 @@ def init_dirs(base_dir, is_main=True, gate=""):
     return base_dir
 
 
-def capacity_validation(base_dir):
-
-
 if __name__ == "__main__":
     from torchvision import transforms
 
@@ -159,12 +157,13 @@ if __name__ == "__main__":
     from brainspy.utils.transforms import PointsToPlateaus
     from brainspy.algorithms.modules.signal import fisher
 
-    base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_09_07_182726"
+    base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_09_23_140014"
     model, results = load_reproducibility_results(base_dir)
 
     configs = load_configs("configs/ring.yaml")
+    hw_processor_configs = load_configs("configs/defaults/processors/hw.yaml")
     waveform_transforms = transforms.Compose(
-        [PointsToPlateaus(configs["validation_processor"]["data"]["waveform"])]
+        [PointsToPlateaus(hw_processor_configs["data"]["waveform"])]
     )
 
     results_dir = init_dirs(os.path.join(base_dir, "validation"))
@@ -172,7 +171,7 @@ if __name__ == "__main__":
     validate(
         model,
         results,
-        configs["validation_processor"],
+        hw_processor_configs,
         fisher,
         results_dir,
         transforms=waveform_transforms,
