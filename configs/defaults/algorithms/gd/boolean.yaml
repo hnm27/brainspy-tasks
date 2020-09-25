@@ -3,3 +3,4 @@ epochs: 80
 learning_rate: 0.001
 criterion: 'corrsig_fit'
 optimizer: 'adam'
+regul_factor: 10000000

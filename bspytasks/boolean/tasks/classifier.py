@@ -39,7 +39,7 @@ def boolean_task(
     print("GATE: " + str(gate))
     for i in range(configs["max_attempts"] + 1):
         print("ATTEMPT: " + str(i))
-        model = custom_model(configs["processor"])
+        model = custom_model(configs["processor"], alpha=configs['algorithm']['regul_factor'])
         optimizer = get_optimizer(model, configs["algorithm"])
         model, training_data = algorithm(
             model,
@@ -140,15 +140,15 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
     # results["performance_fig"] = plot_performance(results, save_dir=save_dir)
     # results["accuracy_fig"] = plot_perceptron(results["accuracy"], save_dir)
     print(results["summary"])
-    if logger is not None:
-        logger.log.add_figure(
-            "Results/VCDim" + str(len(results["targets"])) + "/" + results["gate"],
-            results["results_fig"],
-        )
-        logger.log.add_figure(
-            "Accuracy/VCDim" + str(len(results["targets"])) + "/" + results["gate"],
-            results["accuracy_fig"],
-        )
+    # if logger is not None:
+    #     logger.log.add_figure(
+    #         "Results/VCDim" + str(len(results["targets"])) + "/" + results["gate"],
+    #         results["results_fig"],
+    #     )
+    #     logger.log.add_figure(
+    #         "Accuracy/VCDim" + str(len(results["targets"])) + "/" + results["gate"],
+    #         results["accuracy_fig"],
+    #     )
     return results
 
 
