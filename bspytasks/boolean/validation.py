@@ -3,27 +3,34 @@ import re
 import torch
 import matplotlib.pyplot as plt
 
+from torchvision import transforms
+
 from brainspy.utils.io import load_configs
-from bspytasks.boolean.tasks.classifier import postprocess
-from bspytasks.boolean.tasks.classifier import plot_results
 from brainspy.algorithms.modules.performance.accuracy import plot_perceptron
 from brainspy.utils.io import create_directory, create_directory_timestamp
+from brainspy.utils.transforms import PlateausToPoints, PointsToPlateaus
+from brainspy.utils.pytorch import TorchUtils
+from brainspy.utils import manager
+
+from bspytasks.boolean.tasks.classifier import postprocess
+from bspytasks.boolean.tasks.classifier import plot_results
 
 # TODO: Add possibility to validate multiple times
 
 
-def validate_gate(model, results, configs, criterion, results_dir=None, transforms=None, show_plots=False, is_main=True):
-    results = process_results(results, transforms=transforms)
+def validate_gate(model, model_results, configs, criterion, results_dir=None, transforms=None, show_plots=False, is_main=True):
+    results = process_results(model_results.copy(), transforms=transforms)
     with torch.no_grad():
         model.hw_eval(configs)
         predictions = model(results["inputs"])
 
-    results["hw_validation"] = postprocess(results, model, results['accuracy']['configs'], node=results['accuracy']['node'],
+    results["hw_validation"]["predictions"] = predictions
+    results["hw_validation"] = postprocess(results['hw_validation'], model, results['accuracy']['configs'], node=results['accuracy']['node'],
                                            save_dir=None
                                            )
-    results["hw_validation"]["predictions"] = predictions
+
     results['hw_validation']['performance'] = criterion(predictions, results['targets'])
-    results['hw_validation']["accuracy_fig"] = plot_perceptron(results["accuracy"], results_dir, name='hardware')
+    results['hw_validation']["accuracy_fig"] = plot_perceptron(results['hw_validation']["accuracy"], results_dir, name='hardware')
     results["summary"] = (
         results["summary"]
         + "\n Accuracy (Hardware): "
@@ -33,6 +40,9 @@ def validate_gate(model, results, configs, criterion, results_dir=None, transfor
     )
     plot_validation_results(results, save_dir=results_dir)
     torch.save(results, os.path.join(results_dir, "hw_validation_results.pickle"))
+    if model.is_hardware():
+        model.close()
+    del model
 
 
 def validate_vcdim(vcdim_base_dir, validation_processor_configs, is_main=True):
@@ -83,6 +93,7 @@ def process_results(results, transforms=None):
         results["inputs"] = transforms(results["inputs"])
         results["targets"] = transforms(results["targets"])
         results['predictions'] = transforms(results['predictions'])
+    results['hw_validation'] = results.copy()
     return results
 
 
@@ -98,7 +109,7 @@ def plot_validation_results(results, save_dir):
     plt.plot(
         results["hw_validation"]["targets"].detach().cpu(), label="Target (Hardware)"
     )
-    plot_results(results, fig=fig, save_dir=save_dir)
+    plot_results(results, fig=fig, save_dir=save_dir, line='.')
 
 
 def init_dirs(base_dir, is_main=True):
@@ -142,10 +153,10 @@ if __name__ == "__main__":
     validation_processor_configs = load_configs("configs/defaults/processors/hw.yaml")
 
     capacity_base_dir = "tmp/TEST/output/boolean/capacity_test_2020_09_21_155613"
-    vcdim_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_155613/vc_dimension_4'
-    gate_base_dir = 'tmp/TEST/output/boolean/capacity_test_2020_09_21_155613/vc_dimension_4/[0 0 0 1]'
+    vcdim_base_dir = '/home/unai/Documents/3-programming/brainspy-tasks/tmp/TEST/output/boolean/vc_dimension_4_2020_09_24_190737'
+    gate_base_dir = '/home/unai/Documents/3-programming/brainspy-tasks/tmp/TEST/output/boolean/[0, 0, 0, 1]_2020_09_24_181148'
 
-    # default_validate_gate(gate_base_dir, validation_processor_configs)
+    #default_validate_gate(gate_base_dir, validation_processor_configs)
     validate_vcdim(vcdim_base_dir, validation_processor_configs)
 
     # validate_capacity(capacity_base_dir, validation_processor_configs)

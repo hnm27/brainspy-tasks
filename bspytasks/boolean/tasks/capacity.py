@@ -141,7 +141,7 @@ if __name__ == "__main__":
     from brainspy.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
-    V_MAX = [0.7, 0.7]
+    V_MAX = [0.6, 0.6]
 
     configs = load_configs("configs/boolean.yaml")
     data_transforms = transforms.Compose(

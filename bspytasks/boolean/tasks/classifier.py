@@ -136,9 +136,9 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
         + str(results["threshold"])
     )
 
-    results["results_fig"] = plot_results(results, save_dir)
-    results["performance_fig"] = plot_performance(results, save_dir=save_dir)
-    results["accuracy_fig"] = plot_perceptron(results["accuracy"], save_dir)
+    # results["results_fig"] = plot_results(results, save_dir)
+    # results["performance_fig"] = plot_performance(results, save_dir=save_dir)
+    # results["accuracy_fig"] = plot_perceptron(results["accuracy"], save_dir)
     print(results["summary"])
     if logger is not None:
         logger.log.add_figure(
@@ -183,12 +183,12 @@ def init_dirs(gate_name, base_dir, is_main):
     return base_dir, reproducibility_dir
 
 
-def plot_results(results, save_dir=None, fig=None, show_plots=False):
+def plot_results(results, save_dir=None, fig=None, show_plots=False, line='-'):
     if fig is None:
         fig = plt.figure()
     plt.title(results["summary"])
-    plt.plot(results["predictions"].detach().cpu(), label="Prediction (Simulation)")
-    plt.plot(results["targets"].detach().cpu(), label="Target (Simulation)")
+    plt.plot(results["predictions"].detach().cpu(), line, label="Prediction (Simulation)")
+    plt.plot(results["targets"].detach().cpu(), line, label="Target (Simulation)")
     plt.ylabel("Current (nA)")
     plt.xlabel("Time")
     plt.legend()
