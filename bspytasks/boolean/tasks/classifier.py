@@ -33,13 +33,16 @@ def boolean_task(
     )
     gate = np.array(configs["gate"])
     loader = get_data(gate, data_transforms, configs)
+    if 'track_running_stats' in configs['algorithm']:
+        configs['processor']['track_running_stats'] = configs['algorithm']['track_running_stats']
     print(
         "=========================================================================================="
     )
     print("GATE: " + str(gate))
     for i in range(configs["max_attempts"] + 1):
         print("ATTEMPT: " + str(i))
-        model = custom_model(configs["processor"], alpha=configs['algorithm']['regul_factor'])
+
+        model = custom_model(configs["processor"])
         optimizer = get_optimizer(model, configs["algorithm"])
         model, training_data = algorithm(
             model,
@@ -54,7 +57,7 @@ def boolean_task(
 
         results = evaluate_model(model, loader.dataset, criterion, transforms=waveform_transforms)
         results["training_data"] = training_data
-        results["threshold"] = configs["algorithm"]["stop_threshold"]
+        results["threshold"] = configs["threshold"]
         results["gate"] = str(gate)
         results = postprocess(
             results,
@@ -119,7 +122,7 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
         results["predictions"], results["targets"]
     )
 
-    if results["accuracy"]["accuracy_value"] >= results["threshold"]:
+    if (results["accuracy"]["accuracy_value"] / 100) >= results["threshold"]:
         results["veredict"] = True
     else:
         results["veredict"] = False
@@ -136,9 +139,12 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
         + str(results["threshold"])
     )
 
-    # results["results_fig"] = plot_results(results, save_dir)
-    # results["performance_fig"] = plot_performance(results, save_dir=save_dir)
-    # results["accuracy_fig"] = plot_perceptron(results["accuracy"], save_dir)
+    # results["results_fig"] =
+    plot_results(results, save_dir)
+    # results["performance_fig"] =
+    plot_performance(results, save_dir=save_dir)
+    # results["accuracy_fig"] =
+    plot_perceptron(results["accuracy"], save_dir)
     print(results["summary"])
     # if logger is not None:
     #     logger.log.add_figure(
@@ -228,7 +234,7 @@ if __name__ == "__main__":
     from brainspy.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
-    V_MAX = [0.7, 0.7]
+    V_MAX = [0.6, 0.6]
 
     configs = load_configs("configs/boolean.yaml")
 

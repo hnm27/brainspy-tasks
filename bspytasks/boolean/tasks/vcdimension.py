@@ -23,7 +23,7 @@ def vc_dimension_test(
     print("---------------------------------------------")
     # REMOVE THIS
 
-    configs["algorithm"]["stop_threshold"] = (
+    configs['threshold'] = (
         1 - (configs["threshold_parameter"] / configs["current_dimension"])
     )  # * 100.0
     targets = generate_targets(configs["current_dimension"])
@@ -58,7 +58,7 @@ def vc_dimension_test(
         del results
     results = {
         "capacity": torch.mean(veredicts),
-        "threshold": configs["algorithm"]["stop_threshold"],
+        "threshold": configs['threshold'],
         "targets": targets,
         "accuracies": accuracies,
         "performances": performances,
