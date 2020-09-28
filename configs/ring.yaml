@@ -1,5 +1,5 @@
 results_base_dir : "tmp/TEST/output/ring"
-runs: 100
+runs: 1000
 start_gap: 0.4
 stop_gap: 0.00825
 data:
@@ -10,6 +10,9 @@ data:
     - 0.8 # Percentage of the data used for training
     - 0.1 # Percentage of the data used for validation
     - 0.1 # Percentage of the data used for test
+  batch_size: 512
+  worker_no: 0 # Rule of thumb, 4 per GPU
+  pin_memory: True
 algorithm: !include defaults/algorithms/gd/ring.yaml
 processor: !include defaults/processors/simulation.yaml
-validation_processor: !include defaults/processors/hw.yaml
+accuracy: !include defaults/perceptron/accuracy.yaml #Configurations for the perceptron

@@ -39,7 +39,8 @@ def ring_task(
         "=========================================================================================="
     )
     print("GAP: " + str(results["gap"]))
-
+    if 'track_running_stats' in configs['algorithm']:
+        configs['processor']['track_running_stats'] = configs['algorithm']['track_running_stats']
     results_dir, reproducibility_dir = init_dirs(
         str(results["gap"]),
         configs["results_base_dir"],
@@ -295,7 +296,7 @@ if __name__ == "__main__":
     #TorchUtils.force_cpu = False
 
     V_MIN = [-1.2, -1.2]
-    V_MAX = [0.7, 0.7]
+    V_MAX = [0.6, 0.6]
 
     configs = load_configs("configs/ring.yaml")
 
