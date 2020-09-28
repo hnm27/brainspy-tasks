@@ -1,11 +1,12 @@
 type: genetic
 optimizer: genetic
 criterion: corrsig_fit
-epochs: 60 # Number of generations
+epochs: 100 # Number of generations
 partition: # Genome partition
 - 4
 - 22
-stop_threshold: 1
+stop_threshold: 1.0
+track_running_stats: False
 # This is now automatically obtained from the model from the info dictionary, but it can also be defined as follows:
 #generange:
 #- - -1.2

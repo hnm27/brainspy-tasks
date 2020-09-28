@@ -13,5 +13,5 @@ driver:
   sampling_frequency: 1000
   amplification: 28.5
   instruments_setup: !include instruments/cdaq.yaml # Default configurations for cdaq to nidaq or cdaq to cdaq
-  output_clipping_range: [-4,4] # This value will be multiplied by the amplification value
+  output_clipping_range: [-3.8596,3.8596] # This value will be multiplied by the amplification value
   # These control the output ranges.
