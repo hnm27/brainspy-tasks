@@ -1,5 +1,5 @@
-epochs: 120
-learning_rate: 0.0008
+epochs: 130
+learning_rate: 0.01
 betas: 
   !!python/tuple [0.999, 0.999]
 data:

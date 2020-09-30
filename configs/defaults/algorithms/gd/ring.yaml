@@ -1,6 +1,7 @@
 type: 'gradient'
 epochs: 100
-learning_rate: 0.007
+learning_rate: 0.0007
 criterion: 'fisher'
 optimizer: 'adam'
 regul_factor: 10000000
+track_running_stats: false
