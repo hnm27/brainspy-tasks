@@ -1,5 +1,0 @@
-name: bspytasks
-dependencies:
-  - python
-  - matplotlib
-  - ipython
