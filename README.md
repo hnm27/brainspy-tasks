@@ -1,5 +1,5 @@
 
-# brains-py #
+# brains-py tasks#
 A python package based on the brains-py library to peform benchmark tests and tasks for studying the capacity of the boron-doped silicon devices. The package is part of the brains-py project, a set of python libraries to support the development of nano-scale in-materio hardware neural-network accelerators.
 
 *   [![Tools](https://img.shields.io/badge/brainspy--black.svg)](https://github.com/BraiNEdarwin/brains-py): A python package to support the study of Dopant Network Processing Units as hardware accelerators for non-linear operations. Its aim is to support key functions for hardware setups and algorithms related to searching functionality on DNPUs and DNPU architectures both in simulations and in hardware.
