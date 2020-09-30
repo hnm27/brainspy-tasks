@@ -90,7 +90,7 @@ def plot_results(results, base_dir=None, show_plots=False):
     fig = plt.figure()
     correlations = TorchUtils.get_numpy_from_tensor(torch.abs(results["correlations"]))
     threshold = TorchUtils.get_numpy_from_tensor(
-        results["threshold"] * torch.ones(correlations.shape)
+        results["threshold"] * 100. * torch.ones(correlations.shape)
     )
     accuracies = TorchUtils.get_numpy_from_tensor(results["accuracies"])
     plt.plot(correlations, threshold, "k")
