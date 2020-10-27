@@ -39,7 +39,7 @@ def boolean_task(
         "=========================================================================================="
     )
     print("GATE: " + str(gate))
-    for i in range(configs["max_attempts"] + 1):
+    for i in range(1,configs["max_attempts"] + 1):
         print("ATTEMPT: " + str(i))
 
         model = custom_model(configs["processor"])
@@ -69,7 +69,7 @@ def boolean_task(
 
         if results["veredict"]:
             break
-    close(model, results, configs, reproducibility_dir)
+        close(model, results, configs, reproducibility_dir)
     print(
         "=========================================================================================="
     )
