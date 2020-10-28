@@ -33,13 +33,15 @@ def boolean_task(
     )
     gate = np.array(configs["gate"])
     loader = get_data(gate, data_transforms, configs)
-    if 'track_running_stats' in configs['algorithm']:
-        configs['processor']['track_running_stats'] = configs['algorithm']['track_running_stats']
+    if "track_running_stats" in configs["algorithm"]:
+        configs["processor"]["track_running_stats"] = configs["algorithm"][
+            "track_running_stats"
+        ]
     print(
         "=========================================================================================="
     )
     print("GATE: " + str(gate))
-    for i in range(1,configs["max_attempts"] + 1):
+    for i in range(1, configs["max_attempts"] + 1):
         print("ATTEMPT: " + str(i))
 
         model = custom_model(configs["processor"])
@@ -55,7 +57,9 @@ def boolean_task(
             save_dir=reproducibility_dir,
         )
 
-        results = evaluate_model(model, loader.dataset, criterion, transforms=waveform_transforms)
+        results = evaluate_model(
+            model, loader.dataset, criterion, transforms=waveform_transforms
+        )
         results["training_data"] = training_data
         results["threshold"] = configs["threshold"]
         results["gate"] = str(gate)
@@ -66,10 +70,10 @@ def boolean_task(
             logger=logger,
             save_dir=main_dir,
         )
-
+        close(model, results, configs, reproducibility_dir)
         if results["veredict"]:
             break
-        close(model, results, configs, reproducibility_dir)
+
     print(
         "=========================================================================================="
     )
@@ -101,7 +105,10 @@ def get_data(gate, data_transforms, configs):
     else:
         batch_size = len(dataset)
     return torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=True, pin_memory=configs['data']['pin_memory']
+        dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        pin_memory=configs["data"]["pin_memory"],
     )
 
 
@@ -173,7 +180,7 @@ def evaluate_model(model, dataset, criterion, results={}, transforms=None):
     results["inputs"] = inputs
     results["targets"] = targets
     results["predictions"] = predictions
-    results['performance'] = criterion(predictions, targets)
+    results["performance"] = criterion(predictions, targets)
     return results
 
 
@@ -189,11 +196,13 @@ def init_dirs(gate_name, base_dir, is_main):
     return base_dir, reproducibility_dir
 
 
-def plot_results(results, save_dir=None, fig=None, show_plots=False, line='-'):
+def plot_results(results, save_dir=None, fig=None, show_plots=False, line="-"):
     if fig is None:
         fig = plt.figure()
     plt.title(results["summary"])
-    plt.plot(results["predictions"].detach().cpu(), line, label="Prediction (Simulation)")
+    plt.plot(
+        results["predictions"].detach().cpu(), line, label="Prediction (Simulation)"
+    )
     plt.plot(results["targets"].detach().cpu(), line, label="Target (Simulation)")
     plt.ylabel("Current (nA)")
     plt.xlabel("Time")
@@ -210,8 +219,12 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
     if fig is None:
         plt.figure()
     plt.title(f"Learning profile", fontsize=12)
-    for i in range(len(results['training_data']['performance_history'])):
-        plt.plot(TorchUtils.get_numpy_from_tensor(results["training_data"]["performance_history"][i]))
+    for i in range(len(results["training_data"]["performance_history"])):
+        plt.plot(
+            TorchUtils.get_numpy_from_tensor(
+                results["training_data"]["performance_history"][i]
+            )
+        )
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, f"training_profile"))
     plt.close()
@@ -239,7 +252,10 @@ if __name__ == "__main__":
     configs = load_configs("configs/boolean.yaml")
 
     data_transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(device=torch.device("cpu"))]
+        [
+            DataToVoltageRange(V_MIN, V_MAX, -1, 1),
+            DataToTensor(device=torch.device("cpu")),
+        ]
     )
 
     waveform_transforms = transforms.Compose(
