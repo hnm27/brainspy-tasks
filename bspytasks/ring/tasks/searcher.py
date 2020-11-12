@@ -63,7 +63,7 @@ def search_solution(
     algorithm,
     transforms=None,
     waveform_transforms=None,
-    logger=None,
+    custom_logger=None,
     is_main=True,
 ):
     main_dir, search_stats_dir, results_dir, reproducibility_dir = init_dirs(
@@ -77,6 +77,9 @@ def search_solution(
     for run in range(configs["runs"]):
         print(f"########### RUN {run} ################")
         all_results["seeds"][run] = TorchUtils.init_seed(None, deterministic=True)
+
+        if custom_logger is not None:
+            logger = custom_logger(os.path.join('runs',os.path.split(configs['results_base_dir'])[-1]+'_run_'+str(run)))
 
         results, model = ring_task(
             configs,
