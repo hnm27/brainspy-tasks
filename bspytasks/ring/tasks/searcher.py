@@ -62,6 +62,7 @@ def search_solution(
     criterion,
     algorithm,
     transforms=None,
+    waveform_transforms=None,
     logger=None,
     is_main=True,
 ):
@@ -86,6 +87,7 @@ def search_solution(
             logger=logger,
             is_main=False,
             save_data=False,
+            waveform_transforms=waveform_transforms
         )
         all_results = update_all_search_stats(all_results, results, run)
         if is_best_run(results, best_run):
