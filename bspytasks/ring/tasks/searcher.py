@@ -43,15 +43,15 @@ def init_results(runs, output_shape):
     return results
 
 
-def init_all_results(dataloaders, runs):
+def init_all_results(dataloaders, runs, waveform_plateau_length=1):
     results = {}
     results["seeds"] = torch.zeros(runs)
-    results["train_results"] = init_results(runs, len(dataloaders[0].sampler.indices))
+    results["train_results"] = init_results(runs, len(dataloaders[0].sampler.indices)*waveform_plateau_length)
     if len(dataloaders[1]) > 0:
-        results["dev_results"] = init_results(runs, len(dataloaders[1].sampler.indices))
+        results["dev_results"] = init_results(runs, len(dataloaders[1].sampler.indices)*waveform_plateau_length)
     if len(dataloaders[2]) > 0:
         results["test_results"] = init_results(
-            runs, len(dataloaders[2].sampler.indices)
+            runs, len(dataloaders[2].sampler.indices)*waveform_plateau_length
         )
     return results
 
@@ -71,7 +71,7 @@ def search_solution(
     )
     configs["results_base_dir"] = main_dir
     dataloaders = get_ring_data(configs, transforms)
-    all_results = init_all_results(dataloaders, configs["runs"])
+    all_results = init_all_results(dataloaders, configs["runs"], waveform_plateau_length=configs['processor']['data']['waveform']['plateau_length'])
     best_run = None
 
     for run in range(configs["runs"]):
