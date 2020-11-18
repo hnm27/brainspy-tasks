@@ -80,6 +80,8 @@ def search_solution(
 
         if custom_logger is not None:
             logger = custom_logger(os.path.join(configs['results_base_dir'],'runs',os.path.split(configs['results_base_dir'])[-1]+'_run_'+str(run)))
+        else:
+            logger = None
 
         results, model = ring_task(
             configs,
