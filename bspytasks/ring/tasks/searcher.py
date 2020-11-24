@@ -3,6 +3,7 @@ import torch
 import pickle as p
 import matplotlib.pyplot as plt
 
+from shutil import copyfile
 from bspytasks.ring.tasks.classifier import get_ring_data, ring_task, plot_results
 from brainspy.utils.io import (
     load_configs,
@@ -100,6 +101,8 @@ def search_solution(
             best_run = results
             plot_results(results, plots_dir=results_dir)
             torch.save(model, os.path.join(reproducibility_dir, "model.pt"))
+            if os.path.exists(os.path.join(reproducibility_dir,'tmp','training_data.pickle')):
+                copyfile(os.path.join(reproducibility_dir,'tmp','training_data.pickle'),os.path.join(reproducibility_dir,'training_data.pickle'))
             torch.save(
                 results,
                 os.path.join(reproducibility_dir, "results.pickle"),
@@ -111,6 +114,9 @@ def search_solution(
                 data=configs,
             )
             torch.save(results, os.path.join(search_stats_dir, "best_result.pickle"))
+            if logger is not None and "log_debug" in dir(logger):
+                logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_train', results['train_results']['inputs'], results['train_results']['targets'], model)
+                logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_dev', results['dev_results']['inputs'], results['dev_results']['targets'], model)
 
     close_search(
         all_results,
