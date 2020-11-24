@@ -20,7 +20,8 @@ processor:
       plateau_length: 3 # A plateau of at least 3 is needed to train the perceptron (That requires at least 10 values (3x4 = 12)).
       slope_length: 0
   driver:
-    torch_model_dict: '/home/unai/Documents/3-programming/brainspy-smg/tmp/output/new_test_model/training_data_2020_09_14_190250/model.pt'
+    torch_model_dict: 'model.pt'
+    output_clipping: False
     noise: 
       type: 'gaussian'
       mse: 0.6533523201942444
