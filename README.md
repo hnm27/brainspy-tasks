@@ -28,14 +28,8 @@ The installation instructions differ depending on whether if you want to install
 ## 3. License and libraries ##
 This code is released under the GNU GENERAL PUBLIC LICENSE Version 3. Click [here](https://github.com/BraiNEdarwin/brainspy-tasks/blob/master/doc/LICENSE) to see the full license.
 The package relies on the following libraries:
-* Pytorch
-* Numpy
-* Nidaqmx
-* pyyaml
-* Pyro4
-* tqdm
-* torch-optimizer
-* pywin32
+* brains-py
+* matplotlib
 
 ## 4. Acknowledgements
 This package has been created and it is maintained by the [Brains](https://www.utwente.nl/en/brains/) team of the [NanoElectronics](https://www.utwente.nl/en/eemcs/ne/) research group at the University of Twente. It has been designed and developed by:
