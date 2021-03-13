@@ -133,11 +133,7 @@ if __name__ == "__main__":
     from bspytasks.boolean.logger import Logger
 
     from brainspy.utils.io import load_configs
-    from brainspy.utils.transforms import (
-        DataToTensor,
-        DataPointsToPlateau,
-        DataToVoltageRange,
-    )
+    from bspytasks.utils.transforms import DataToVoltageRange, DataPointsToPlateau, DataToTensor
     from brainspy.processors.dnpu import DNPU
 
     V_MIN = [-1.2, -1.2]
