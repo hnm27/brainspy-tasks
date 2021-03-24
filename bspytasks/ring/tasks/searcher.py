@@ -16,7 +16,7 @@ from brainspy.utils.pytorch import TorchUtils
 
 
 def init_dirs(gap, base_dir, is_main=True):
-    main_dir = f"searcher_{gap}mV"
+    main_dir = f"searcher_{gap}gap"
     search_stats_dir = "search_stats"
     results_dir = "results"
     reproducibility_dir = "reproducibility"
@@ -114,9 +114,9 @@ def search_solution(
                 data=configs,
             )
             torch.save(results, os.path.join(search_stats_dir, "best_result.pickle"))
-            if logger is not None and "log_debug" in dir(logger):
-                logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_train', results['train_results']['inputs'], results['train_results']['targets'], model)
-                logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_dev', results['dev_results']['inputs'], results['dev_results']['targets'], model)
+            # if logger is not None and "log_debug" in dir(logger):
+            #     logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_train', results['train_results']['inputs'], results['train_results']['targets'], model)
+            #     logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_dev', results['dev_results']['inputs'], results['dev_results']['targets'], model)
 
     close_search(
         all_results,

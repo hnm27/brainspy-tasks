@@ -64,7 +64,7 @@ def ring_task(
 
     results["train_results"] = postprocess(
         configs["accuracy"],
-        dataloaders[0].dataset[dataloaders[0].sampler.indices],
+        dataloaders[0].dataset,#[dataloaders[0].sampler.indices],
         model,
         criterion,
         logger,
@@ -78,7 +78,7 @@ def ring_task(
     if len(dataloaders[1]) > 0:
         results["dev_results"] = postprocess(
             configs["accuracy"],
-            dataloaders[1].dataset[dataloaders[1].sampler.indices],
+            dataloaders[1].dataset,#[dataloaders[1].sampler.indices],
             model,
             criterion,
             logger,
@@ -93,7 +93,7 @@ def ring_task(
     if len(dataloaders[2]) > 0:
         results["test_results"] = postprocess(
             configs["accuracy"],
-            dataloaders[2].dataset[dataloaders[2].sampler.indices],
+            dataloaders[2].dataset,#[dataloaders[2].sampler.indices],
             model,
             criterion,
             logger,
@@ -131,6 +131,8 @@ def close(model, results, configs, reproducibility_dir, results_dir):
 def get_ring_data(configs, transforms, data_dir=None):
     # Returns dataloaders and split indices
     if configs["data"]["load"]:
+        if data_dir is None:
+            data_dir = configs['data']['load']
         dataset = RingDatasetLoader(data_dir, transforms=transforms, save_dir=data_dir)
     else:
         dataset = RingDatasetGenerator(
