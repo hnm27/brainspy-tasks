@@ -88,11 +88,11 @@ def init_dirs(dimension, base_dir, is_main):
 
 def plot_results(results, base_dir=None, show_plots=False):
     fig = plt.figure()
-    correlations = TorchUtils.get_numpy_from_tensor(torch.abs(results["correlations"]))
-    threshold = TorchUtils.get_numpy_from_tensor(
+    correlations = TorchUtils.to_numpy(torch.abs(results["correlations"]))
+    threshold = TorchUtils.to_numpy(
         results["threshold"] * 100. * torch.ones(correlations.shape)
     )
-    accuracies = TorchUtils.get_numpy_from_tensor(results["accuracies"])
+    accuracies = TorchUtils.to_numpy(results["accuracies"])
     plt.plot(correlations, threshold, "k")
     plt.scatter(correlations, accuracies)
     plt.xlabel("Fitness / Performance")

@@ -173,8 +173,8 @@ def evaluate_model(model, dataset, criterion, results={}, transforms=None):
             inputs, targets = dataset[:]
         else:
             inputs, targets = transforms(dataset[:])
-        inputs = inputs.to(device=TorchUtils.get_accelerator_type())
-        targets = targets.to(device=TorchUtils.get_accelerator_type())
+        inputs = inputs.to(device=TorchUtils.get_device())
+        targets = targets.to(device=TorchUtils.get_device())
 
         predictions = model(inputs)
 
@@ -222,7 +222,7 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
     plt.title(f"Learning profile", fontsize=12)
     for i in range(len(results["training_data"]["performance_history"])):
         plt.plot(
-            TorchUtils.get_numpy_from_tensor(
+            TorchUtils.to_numpy(
                 results["training_data"]["performance_history"][i]
             )
         )

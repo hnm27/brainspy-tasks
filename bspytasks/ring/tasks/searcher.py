@@ -47,12 +47,12 @@ def init_results(runs, output_shape):
 def init_all_results(dataloaders, runs, waveform_plateau_length=1):
     results = {}
     results["seeds"] = torch.zeros(runs)
-    results["train_results"] = init_results(runs, len(dataloaders[0].sampler.indices)*waveform_plateau_length)
+    results["train_results"] = init_results(runs, len(dataloaders[0].sampler.indices) * waveform_plateau_length)
     if len(dataloaders[1]) > 0:
-        results["dev_results"] = init_results(runs, len(dataloaders[1].sampler.indices)*waveform_plateau_length)
+        results["dev_results"] = init_results(runs, len(dataloaders[1].sampler.indices) * waveform_plateau_length)
     if len(dataloaders[2]) > 0:
         results["test_results"] = init_results(
-            runs, len(dataloaders[2].sampler.indices)*waveform_plateau_length
+            runs, len(dataloaders[2].sampler.indices) * waveform_plateau_length
         )
     return results
 
@@ -80,7 +80,7 @@ def search_solution(
         all_results["seeds"][run] = TorchUtils.init_seed(None, deterministic=True)
 
         if custom_logger is not None:
-            logger = custom_logger(os.path.join(configs['results_base_dir'],'runs',os.path.split(configs['results_base_dir'])[-1]+'_run_'+str(run)))
+            logger = custom_logger(os.path.join(configs['results_base_dir'], 'runs', os.path.split(configs['results_base_dir'])[-1] + '_run_' + str(run)))
         else:
             logger = None
 
@@ -101,8 +101,8 @@ def search_solution(
             best_run = results
             plot_results(results, plots_dir=results_dir)
             torch.save(model, os.path.join(reproducibility_dir, "model.pt"))
-            if os.path.exists(os.path.join(reproducibility_dir,'tmp','training_data.pickle')):
-                copyfile(os.path.join(reproducibility_dir,'tmp','training_data.pickle'),os.path.join(reproducibility_dir,'training_data.pickle'))
+            if os.path.exists(os.path.join(reproducibility_dir, 'tmp', 'training_data.pickle')):
+                copyfile(os.path.join(reproducibility_dir, 'tmp', 'training_data.pickle'), os.path.join(reproducibility_dir, 'training_data.pickle'))
             torch.save(
                 results,
                 os.path.join(reproducibility_dir, "results.pickle"),
@@ -195,8 +195,8 @@ def plot_all_search_results(results, save_dir, extension="png"):
 
 
 def plot_search_results(label, results, save_dir, extension="png", show_plots=False):
-    accuracy_per_run = TorchUtils.get_numpy_from_tensor(results["accuracy_per_run"])
-    performance_per_run = TorchUtils.get_numpy_from_tensor(
+    accuracy_per_run = TorchUtils.to_numpy(results["accuracy_per_run"])
+    performance_per_run = TorchUtils.to_numpy(
         results["performance_per_run"]
     )
 

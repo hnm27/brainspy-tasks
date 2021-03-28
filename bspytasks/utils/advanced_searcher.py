@@ -15,8 +15,8 @@
 
 #     def improve_solution(self, results, model):
 #         self.processor.load_state_dict(model.copy())
-#         inputs = TorchUtils.get_tensor_from_numpy(results['inputs'])
-#         targets = TorchUtils.get_tensor_from_numpy(results['targets'])
+#         inputs = TorchUtils.format(results['inputs'])
+#         targets = TorchUtils.format(results['targets'])
 #         TorchUtils.init_seed(results['seed'], deterministic=True)
 #         new_results = self.task.run_task(inputs, targets, results['mask'], save_data=True)
 

@@ -56,8 +56,8 @@ def validate_vcdim(vcdim_base_dir, validation_processor_configs, is_main=True):
     for d in dirs:
         if os.path.split(d)[1] != "validation":
             gate_dir = create_directory(os.path.join(base_dir, d.split(os.path.sep)[-1]))
-            model = torch.load(os.path.join(d, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
-            results = torch.load(os.path.join(d, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+            model = torch.load(os.path.join(d, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_device()))
+            results = torch.load(os.path.join(d, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_device()))
             experiment_configs = load_configs(os.path.join(d, 'reproducibility', "configs.yaml"))
             #results_dir = init_dirs(d, is_main=is_main)
 
@@ -124,8 +124,8 @@ def init_dirs(base_dir, is_main=True):
 
 
 def default_validate_gate(gate_base_dir, validation_processor_configs):
-    model = torch.load(os.path.join(gate_base_dir, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_accelerator_type()))
-    results = torch.load(os.path.join(gate_base_dir, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_accelerator_type()))
+    model = torch.load(os.path.join(gate_base_dir, 'reproducibility', 'model.pt'), map_location=torch.device(TorchUtils.get_device()))
+    results = torch.load(os.path.join(gate_base_dir, 'reproducibility', "results.pickle"), map_location=torch.device(TorchUtils.get_device()))
     experiment_configs = load_configs(os.path.join(gate_base_dir, 'reproducibility', 'configs.yaml'))
 
     results_dir = init_dirs(gate_base_dir, is_main=True)
