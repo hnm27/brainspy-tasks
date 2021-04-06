@@ -8,7 +8,7 @@ import torch
 import numpy as np
 
 from torch.utils.data import Dataset, Sampler
-from torch.utils.data import random_split, SubsetRandomSampler
+from torch.utils.data import random_split, Subset
 
 
 class RingDatasetGenerator(Dataset):
@@ -104,7 +104,7 @@ class RingDatasetLoader(Dataset):
         ), "Targets and inputs must have the same length"
         if verbose:
             print(
-                f"There are a total of {len(self.inputs[self.targets == 0]) + len(self.inputs[self.targets == 1])} samples"
+                f"There are a total of {len(self.inputs)} samples"
             )
             print(
                 f"The input ring dataset has a {self.gap} gap (In a range from -1 to 1)."
@@ -145,47 +145,50 @@ def split(
     dataset,
     batch_size,
     num_workers,
-    sampler=SubsetRandomSampler,
+    sampler=BalancedSubsetRandomSampler,
     split_percentages=[0.8, 0.1, 0.1],
     pin_memory=True
 ):
     # Split percentages are expected to be in the following format: [80,10,10]
     percentages = np.array(split_percentages)
     assert np.sum(percentages) == 1, "Split percentage does not sum up to 1"
+    # split_vals = percentages * len(dataset)
+    
+    
+    
     indices = list(range(len(dataset)))
-    indices = balanced_permutation(len(dataset))
+    #indices = balanced_permutation(len(dataset))
     max_train_index = int(np.floor(percentages[0] * len(dataset)))
     max_dev_index = int(np.floor((percentages[0] + percentages[1]) * len(dataset)))
-    max_test_index = int(np.floor(np.sum(percentages) * len(dataset)))
+    max_test_index = int(np.floor(percentages[2] * len(dataset)))
 
     train_index = indices[:max_train_index]
     dev_index = indices[max_train_index:max_dev_index]
     test_index = indices[max_dev_index:max_test_index]
 
-    train_sampler = sampler(train_index)
-    dev_sampler = sampler(dev_index)
-    test_sampler = sampler(test_index)
-    if batch_size > 0:
-        batch_size = [batch_size, batch_size, batch_size]
-    else:
+    train_dataset = Subset(dataset,train_index)
+    dev_dataset = Subset(dataset, dev_index)
+    test_dataset = Subset(dataset,test_index)
 
-        batch_size = [
-            get_batch_size(train_sampler),
-            get_batch_size(dev_sampler),
-            get_batch_size(test_sampler),
-        ]
+    train_sampler = sampler(list(range(len(train_dataset))))
+    dev_sampler = sampler(list(range(len(dev_dataset))))
+    test_sampler = sampler(list(range(len(test_dataset))))
+
+    if not isinstance(batch_size,list):
+        batch_size = [batch_size, batch_size, batch_size]
+
     train_loader = torch.utils.data.DataLoader(
-        dataset,
+        train_dataset,
         batch_size=batch_size[0],
         sampler=train_sampler,
         num_workers=num_workers,
         pin_memory=pin_memory
     )
     dev_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size[1], sampler=dev_sampler, num_workers=num_workers, pin_memory=pin_memory
+        dev_dataset, batch_size=batch_size[1], sampler=dev_sampler, num_workers=num_workers, pin_memory=pin_memory
     )
     test_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size[2], sampler=test_sampler, num_workers=num_workers, pin_memory=pin_memory
+        test_dataset, batch_size=batch_size[2], sampler=test_sampler, num_workers=num_workers, pin_memory=pin_memory
     )
 
     return [

@@ -64,7 +64,7 @@ def ring_task(
 
     results["train_results"] = postprocess(
         configs["accuracy"],
-        dataloaders[0].dataset[dataloaders[0].sampler.indices],
+        dataloaders[0].dataset,  # [dataloaders[0].sampler.indices],
         model,
         criterion,
         logger,
@@ -78,7 +78,7 @@ def ring_task(
     if len(dataloaders[1]) > 0:
         results["dev_results"] = postprocess(
             configs["accuracy"],
-            dataloaders[1].dataset[dataloaders[1].sampler.indices],
+            dataloaders[1].dataset,  # [dataloaders[1].sampler.indices],
             model,
             criterion,
             logger,
@@ -93,7 +93,7 @@ def ring_task(
     if len(dataloaders[2]) > 0:
         results["test_results"] = postprocess(
             configs["accuracy"],
-            dataloaders[2].dataset[dataloaders[2].sampler.indices],
+            dataloaders[2].dataset,  # [dataloaders[2].sampler.indices],
             model,
             criterion,
             logger,
@@ -131,6 +131,8 @@ def close(model, results, configs, reproducibility_dir, results_dir):
 def get_ring_data(configs, transforms, data_dir=None):
     # Returns dataloaders and split indices
     if configs["data"]["load"]:
+        if data_dir is None:
+            data_dir = configs['data']['load']
         dataset = RingDatasetLoader(data_dir, transforms=transforms, save_dir=data_dir)
     else:
         dataset = RingDatasetGenerator(
@@ -161,10 +163,10 @@ def postprocess(
         inputs, targets = inputs[indices], targets[indices]
         if waveform_transforms is not None:
             inputs, targets = waveform_transforms([inputs, targets])
-        if inputs.device != TorchUtils.get_accelerator_type():
-            inputs = inputs.to(device=TorchUtils.get_accelerator_type())
-        if targets.device != TorchUtils.get_accelerator_type():
-            targets = targets.to(device=TorchUtils.get_accelerator_type())
+        if inputs.device != TorchUtils.get_device():
+            inputs = inputs.to(device=TorchUtils.get_device())
+        if targets.device != TorchUtils.get_device():
+            targets = targets.to(device=TorchUtils.get_device())
         predictions = model(inputs)
         results["performance"] = criterion(predictions, targets)
 
@@ -215,14 +217,14 @@ def plot_results(results, plots_dir=None, show_plots=False, extension="png"):
     plt.figure()
     plt.title(f"Learning profile", fontsize=12)
     plt.plot(
-        TorchUtils.get_numpy_from_tensor(
+        TorchUtils.to_numpy(
             results["train_results"]["performance_history"]
         ),
         label="Train",
     )
     if "dev_results" in results:
         plt.plot(
-            TorchUtils.get_numpy_from_tensor(
+            TorchUtils.to_numpy(
                 results["dev_results"]["performance_history"]
             ),
             label="Dev",

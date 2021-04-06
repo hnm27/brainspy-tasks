@@ -11,8 +11,8 @@ from brainspy.utils.pytorch import TorchUtils
 def load_reproducibility_results(base_dir, model_name="model.pt"):
     base_dir = os.path.join(base_dir, "reproducibility")
     # configs = load_configs(os.path.join(gate_base_dir, 'configs.yaml'))
-    model = torch.load(os.path.join(base_dir, model_name), map_location=TorchUtils.get_accelerator_type())
-    results = torch.load(os.path.join(base_dir, "results.pickle"), map_location=TorchUtils.get_accelerator_type())
+    model = torch.load(os.path.join(base_dir, model_name), map_location=TorchUtils.get_device())
+    results = torch.load(os.path.join(base_dir, "results.pickle"), map_location=TorchUtils.get_device())
     return model, results  # , configs
 
 
@@ -58,8 +58,8 @@ def validate(
 def plot_all(results, save_dir=None, show_plots=False):
     if "train_results" in results:
         plot_validation_results(
-            TorchUtils.get_numpy_from_tensor(results["train_results"]["best_output"]),
-            TorchUtils.get_numpy_from_tensor(
+            TorchUtils.to_numpy(results["train_results"]["best_output"]),
+            TorchUtils.to_numpy(
                 results["train_results_hw"]["best_output"]
             ),
             name="train_plot",
@@ -68,16 +68,16 @@ def plot_all(results, save_dir=None, show_plots=False):
         )
     if "dev_results" in results:
         plot_validation_results(
-            TorchUtils.get_numpy_from_tensor(results["dev_results"]["best_output"]),
-            TorchUtils.get_numpy_from_tensor(results["dev_results_hw"]["best_output"]),
+            TorchUtils.to_numpy(results["dev_results"]["best_output"]),
+            TorchUtils.to_numpy(results["dev_results_hw"]["best_output"]),
             name="dev_plot",
             save_dir=save_dir,
             show_plot=show_plots,
         )
     if "test_results" in results:
         plot_validation_results(
-            TorchUtils.get_numpy_from_tensor(results["test_results"]["best_output"]),
-            TorchUtils.get_numpy_from_tensor(results["test_results_hw"]["best_output"]),
+            TorchUtils.to_numpy(results["test_results"]["best_output"]),
+            TorchUtils.to_numpy(results["test_results_hw"]["best_output"]),
             name="test_plot",
             save_dir=save_dir,
             show_plot=show_plots,
