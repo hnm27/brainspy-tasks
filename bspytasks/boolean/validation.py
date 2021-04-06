@@ -8,7 +8,8 @@ from torchvision import transforms
 from brainspy.utils.io import load_configs
 from brainspy.algorithms.modules.performance.accuracy import plot_perceptron
 from brainspy.utils.io import create_directory, create_directory_timestamp
-from brainspy.utils.transforms import PlateausToPoints, PointsToPlateaus
+from bspytasks.utils.transforms import PlateausToPoints
+from bspytasks.utils.transforms import PointsToPlateaus
 from brainspy.utils.pytorch import TorchUtils
 from brainspy.utils import manager
 

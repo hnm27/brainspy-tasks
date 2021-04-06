@@ -3,7 +3,7 @@ from bspytasks.datasets.ring import RingDataGenerator
 
 
 if __name__ == "__main__":
-    from brainspy.utils.transforms import DataToTensor
+    from bspytasks.utils.transforms import DataToTensor
 
     transforms = transforms.Compose([DataToTensor()])
     dataset = RingDataGenerator(1000, 0.2)

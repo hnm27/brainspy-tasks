@@ -289,7 +289,7 @@ if __name__ == "__main__":
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
-    from brainspy.utils.transforms import DataToTensor, DataToVoltageRange, DataPointsToPlateau, ToDevice
+    from bspytasks.utils.transforms import DataToVoltageRange, DataPointsToPlateau, ToDevice, DataToTensor
 
     from brainspy.processors.dnpu import DNPU
 

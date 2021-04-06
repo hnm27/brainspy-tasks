@@ -154,7 +154,7 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from brainspy.utils.io import load_configs
-    from brainspy.utils.transforms import PointsToPlateaus
+    from bspytasks.utils.transforms import PointsToPlateaus
     from brainspy.algorithms.modules.signal import fisher
 
     base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_09_23_140014"
