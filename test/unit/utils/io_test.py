@@ -3,10 +3,7 @@ import HtmlTestRunner
 import torch
 import numpy as np
 from numpy import load, asarray
-from bspytasks.utils.io import (
-    save,
-    save_pickle
-)
+from bspytasks.utils.io import save, save_pickle
 import tracemalloc
 import yaml
 import shutil
@@ -17,7 +14,6 @@ import pickle
 class IOTest(unittest.TestCase):
     """
     Tests for the io.py class.
-    To run the test, change the path variable in the places indicated below.
     """
 
     def __init__(self, test_name):
@@ -28,7 +24,10 @@ class IOTest(unittest.TestCase):
         configs["batch"] = None
         configs["data"] = {"data1": "New data"}
         self.configs = configs
-        self.path = "C:/users/humai/Downloads/brainspy-tasks/test/unit/utils/testfiles"  # Enter path to the testfiles directory
+        while "brainspy-tasks" not in os.getcwd():
+            os.chdir("..")
+            os.chdir("brainspy-tasks")
+        self.path = os.path.join(os.getcwd(), "test/unit/utils/testfiles")
 
     def test_save(self):
         """
