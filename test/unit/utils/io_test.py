@@ -20,7 +20,7 @@ class IOTest(unittest.TestCase):
         super(IOTest, self).__init__()
         configs = {}
         configs["plateau_length"] = 80
-        configs["slope_length"] = 20
+        configs["slope_length"] = 30
         configs["batch"] = None
         configs["data"] = {"data1": "New data"}
         self.configs = configs
