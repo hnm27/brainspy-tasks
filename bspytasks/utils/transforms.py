@@ -4,6 +4,7 @@ from brainspy.utils.electrodes import transform_current_to_voltage
 from brainspy.utils.waveform import WaveformManager
 from brainspy.utils.pytorch import TorchUtils
 
+
 class DataToVoltageRange:
     def __init__(self, v_min, v_max, x_min=-1, x_max=1):
         self.scale, self.offset = transform_current_to_voltage(
@@ -31,6 +32,7 @@ class PlateausToPoints:
     def __call__(self, x):
         return self.mgr.plateaus_to_points(x)
 
+
 class DataPointsToPlateau:
     def __init__(self, configs):
         self.mgr = WaveformManager(configs)
@@ -49,10 +51,10 @@ class ToDevice:
 
     def __call__(self, data):
         inputs, targets = data[0], data[1]
-        if inputs.device != TorchUtils.get_accelerator_type():
-            inputs = inputs.to(device=TorchUtils.get_accelerator_type())
-        if targets.device != TorchUtils.get_accelerator_type():
-            targets = targets.to(device=TorchUtils.get_accelerator_type())
+        if inputs.device != TorchUtils.get_device():
+            inputs = inputs.to(device=TorchUtils.get_device())
+        if targets.device != TorchUtils.get_device():
+            targets = targets.to(device=TorchUtils.get_device())
         return (inputs, targets)
 
 
@@ -63,7 +65,7 @@ class DataToTensor:
         if device is not None:
             self.device = device
         else:
-            self.device = TorchUtils.get_accelerator_type()
+            self.device = TorchUtils.get_device()
 
     def __call__(self, data):
         inputs, targets = data[0], data[1]
