@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
     logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))
 
-    configs["gate"] = [0, 0, 0, 1]
+    configs["gate"] = [0, 1, 1, 0]
     configs["threshold"] = 0.8
 
     criterion = manager.get_criterion(configs["algorithm"])
@@ -274,5 +274,5 @@ if __name__ == "__main__":
         algorithm,
         data_transforms=data_transforms,
         waveform_transforms=waveform_transforms,
-        logger=logger,
+        logger=logger
     )

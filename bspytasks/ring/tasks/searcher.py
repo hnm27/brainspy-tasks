@@ -9,8 +9,9 @@ from brainspy.utils.io import (
     load_configs,
     create_directory,
     create_directory_timestamp,
-    save,
 )
+
+from bspytasks.utils.io import save
 
 from brainspy.utils.pytorch import TorchUtils
 
@@ -72,7 +73,7 @@ def search_solution(
     )
     configs["results_base_dir"] = main_dir
     dataloaders = get_ring_data(configs, transforms)
-    all_results = init_all_results(dataloaders, configs["runs"], waveform_plateau_length=configs['processor']['data']['waveform']['plateau_length'])
+    all_results = init_all_results(dataloaders, configs["runs"], waveform_plateau_length=configs['processor']['waveform']['plateau_length'])
     best_run = None
 
     for run in range(configs["runs"]):
