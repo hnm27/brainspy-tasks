@@ -1,6 +1,6 @@
 processor_type: 'simulation_debug' # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
 data:
-  activation_electrode_no: 7 # It specifies the number of activation electrodes. Only required for simulation mode
+  activation_electrode_no: 4 # It specifies the number of activation electrodes. Only required for simulation mode
   input_indices: # It specifies the indices of the activation data array that will be considered as inputs
     - 1
     - 2
@@ -9,9 +9,10 @@ data:
     slope_length: 30
 driver:
   tasks_driver_type: local # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
-  torch_model_dict: /home/unai/Documents/3-programming/brainspy-smg/tmp/output/new_test_model/training_data_2020_09_14_190250/model.pt # Only useful for hardware simulation debug
+  torch_model_dict: model_multiple_outputs.pt # Only useful for hardware simulation debug
   sampling_frequency: 1000
-  amplification: 28.5
-  instruments_setup: !include instruments/cdaq.yaml # Default configurations for cdaq to nidaq or cdaq to cdaq
+  amplification: [100, 100, 100, 100, 10, 10,10,10]
+  output_clipping: False
+  # instruments_setup: !include instruments/cdaq.yaml # Default configurations for cdaq to nidaq or cdaq to cdaq
   output_clipping_range: [-3.8596,3.8596] # This value will be multiplied by the amplification value
   # These control the output ranges.

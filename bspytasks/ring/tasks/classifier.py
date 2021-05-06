@@ -12,7 +12,8 @@ from bspytasks.ring.data import (
     balanced_permutation,
     split,
 )
-from brainspy.utils.io import create_directory, create_directory_timestamp, save
+from brainspy.utils.io import create_directory, create_directory_timestamp
+from bspytasks.utils.io import save
 from brainspy.utils.manager import get_criterion, get_optimizer, get_algorithm
 
 from brainspy.algorithms.modules.performance.accuracy import (
@@ -48,7 +49,8 @@ def ring_task(
         save_data=save_data,
     )
     # criterion = get_criterion(configs['algorithm'])
-    model = custom_model(configs["processor"])
+    model_data = torch.load(configs["processor"]['model_dir'], map_location=torch.device('cpu'))
+    model = custom_model(configs['processor'], model_data['info'], model_data['model_state_dict'])
     optimizer = get_optimizer(model, configs["algorithm"])
     # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(
@@ -85,7 +87,7 @@ def ring_task(
             node=results["train_results"]["accuracy"]["node"],
             waveform_transforms=waveform_transforms,
             save_dir=results_dir,
-            name="dev",
+            name="validation",
         )
         results["dev_results"]["performance_history"] = train_data[
             "performance_history"
@@ -177,6 +179,7 @@ def postprocess(
     results["accuracy"] = get_accuracy(
         predictions, targets, configs, node=node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
+    print(f"{name.capitalize()} accuracy: {results['accuracy']['accuracy_value']}")
     results["correlation"] = pearsons_correlation(predictions, targets)
     # results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir, name=name)
 

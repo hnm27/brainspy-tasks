@@ -1,13 +1,13 @@
 import numpy as np
 import torch
-from brainspy.utils.electrodes import transform_current_to_voltage
+from brainspy.utils.transforms import get_linear_transform_constants
 from brainspy.utils.waveform import WaveformManager
 from brainspy.utils.pytorch import TorchUtils
 
 
 class DataToVoltageRange:
     def __init__(self, v_min, v_max, x_min=-1, x_max=1):
-        self.scale, self.offset = transform_current_to_voltage(
+        self.scale, self.offset = get_linear_transform_constants(
             np.array(v_min), np.array(v_max), np.array(x_min), np.array(x_max)
         )
 
@@ -70,9 +70,9 @@ class DataToTensor:
     def __call__(self, data):
         inputs, targets = data[0], data[1]
         inputs = torch.tensor(
-            inputs, device=self.device, dtype=TorchUtils.get_data_type()
+            inputs, device=self.device, dtype=torch.get_default_dtype()
         )
         targets = torch.tensor(
-            targets, device=self.device, dtype=TorchUtils.get_data_type()
+            targets, device=self.device, dtype=torch.get_default_dtype()
         )
         return (inputs, targets)

@@ -160,11 +160,10 @@ def split(
     #indices = balanced_permutation(len(dataset))
     max_train_index = int(np.floor(percentages[0] * len(dataset)))
     max_dev_index = int(np.floor((percentages[0] + percentages[1]) * len(dataset)))
-    max_test_index = int(np.floor(percentages[2] * len(dataset)))
 
     train_index = indices[:max_train_index]
     dev_index = indices[max_train_index:max_dev_index]
-    test_index = indices[max_dev_index:max_test_index]
+    test_index = indices[max_dev_index:len(dataset)]
 
     train_dataset = Subset(dataset,train_index)
     dev_dataset = Subset(dataset, dev_index)
