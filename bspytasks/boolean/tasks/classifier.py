@@ -45,7 +45,8 @@ def boolean_task(
     for i in range(1, configs["max_attempts"] + 1):
         print("ATTEMPT: " + str(i))
 
-        model = custom_model(configs["processor"])
+        model_data = torch.load(configs["processor"]['model_dir'], map_location=torch.device('cpu'))
+        model = custom_model(configs['processor'], model_data['info'], model_data['model_state_dict'])
         optimizer = get_optimizer(model, configs["algorithm"])
         model, training_data = algorithm(
             model,
@@ -256,7 +257,7 @@ if __name__ == "__main__":
     )
 
     waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["data"]["waveform"])]
+        [DataPointsToPlateau(configs["processor"]["waveform"])]
     )
 
     logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))

@@ -1,7 +1,5 @@
-type: 'gradient'
-epochs: 200
-learning_rate: 0.001
-criterion: bce
-optimizer: 'adam'
-regul_factor: 1000000
-track_running_stats: True
+type: "gradient"
+epochs: 400
+learning_rate: 0.01
+criterion: corrsig
+optimizer: "adam"
