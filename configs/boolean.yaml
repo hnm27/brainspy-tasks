@@ -7,20 +7,34 @@ data:
   batch_size: 512
   worker_no: 0
   pin_memory: True
-algorithm: !include defaults/algorithms/gd/boolean.yaml
+algorithm: !include defaults/algorithms/ga/boolean.yaml
 accuracy: !include defaults/perceptron/accuracy.yaml #Configurations for the perceptron
+direct_measurement: True
+info:
+    electrode_info:
+      electrode_no: 8
+      activation_electrodes: 
+        electrode_no: 7
+        voltage_ranges: [[-0.55,0.325],[-0.95,0.55],[-1,0.6],[-1,0.6],[-1,0.6],[-0.95,0.55],[-0.55,0.325]]
+      output_electrodes: 
+        electrode_no: 1
+        amplification: [28.5]
+        clipping_value: [-114.0, 114.0]
 processor:
-  processor_type: "simulation" # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq
-  model_dir: "training_data.pt"
-  input_indices: # It specifies the indices of the activation data array that will be considered as inputs
-    - 1
-    - 2
-  electrode_effects:
-    amplification: [28.5] # It always has to be a list
-    clipping_value: None
-    #noise:
-    #  type: gaussian
-    #  variance: 0.65
+  processor_type: cdaq_to_cdaq # Possible values are: simulation, simulation_debug, cdaq_to_cdaq, and cdaq_to_nidaq 
+  input_indices: [2, 3]
   waveform:
-    plateau_length: 3
-    slope_length: 0
+    plateau_length: 30
+    slope_length: 30
+  driver:
+    real_time_rack: False # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
+    sampling_frequency: 1000
+    instruments_setup:
+        trigger_source: cDAQ1/segment1   
+        multiple_devices: False    
+        activation_instrument: cDAQ1Mod3
+        activation_channels: [0,2,5,3,4,6,1]
+        activation_voltage_ranges:  [[-0.7,0.3],[-1.2,0.7],[-1.2,0.7],[-1.2,0.7],[-1.2,0.7],[-1.2,0.7],[-0.7,0.3]]
+        readout_instrument: cDAQ1Mod4
+        readout_channels: [4] #ai4
+        activation_channel_mask: [1,1,1,1,1,1,1]
