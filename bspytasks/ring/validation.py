@@ -70,7 +70,7 @@ def plot_all(results, save_dir=None, show_plots=False):
         plot_validation_results(
             TorchUtils.to_numpy(results["dev_results"]["best_output"]),
             TorchUtils.to_numpy(results["dev_results_hw"]["best_output"]),
-            name="dev_plot",
+            name="validation_plot",
             save_dir=save_dir,
             show_plot=show_plots,
         )
@@ -98,7 +98,7 @@ def plot_validation_results(
 
     plt.figure()
     plt.title(
-        f"Comparison between Hardware and Simulation \n (MSE: {error})", fontsize=12
+        f"{name.capitalize()}\nComparison between Hardware and Simulation \n (MSE: {error})", fontsize=10
     )
     plt.plot(model_output)
     plt.plot(real_output, "-.")
@@ -127,16 +127,17 @@ def _validate(model, results, criterion, hw_processor_configs):
     with torch.no_grad():
         model.hw_eval(hw_processor_configs)
         predictions = model(results["inputs"])
+        model.close()
         results["performance"] = criterion(predictions, results["targets"])
 
     # results['gap'] = dataset.gap
     results["best_output"] = predictions
     print(f"Simulation accuracy {results['accuracy']['accuracy_value'].item()}: ")
-    print(f"Hardware accuracy: ")
+    
     results['accuracy'] = get_accuracy(
         predictions, results["targets"], configs=results['accuracy']['configs'], node=results['accuracy']['node']
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-
+    print(f"Hardware accuracy: {results['accuracy']['accuracy_value'].item()} \n")
     results["correlation"] = pearsons_correlation(predictions, results["targets"])
     return results
 
