@@ -18,7 +18,6 @@ def capacity_test(
     criterion,
     algorithm,
     data_transforms=None,
-    waveform_transforms=None,
     logger=None,
 ):
     print(
@@ -49,7 +48,6 @@ def capacity_test(
             criterion,
             algorithm,
             data_transforms=data_transforms,
-            waveform_transforms=waveform_transforms,
             logger=logger,
             is_main=False,
         )
@@ -133,19 +131,12 @@ if __name__ == "__main__":
     from bspytasks.boolean.logger import Logger
 
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToVoltageRange, DataPointsToPlateau, DataToTensor
-    from brainspy.processors.dnpu import DNPU
-
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.6, 0.6]
+    from bspytasks.utils.transforms import DataToVoltageRange, DataToTensor
+    from bspytasks.models.default import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
     data_transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(device=torch.device('cpu'))]
-    )
-
-    waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["waveform"])]
+        [DataToTensor(device=torch.device('cpu'))]
     )
 
     criterion = manager.get_criterion(configs["algorithm"])
@@ -154,10 +145,9 @@ if __name__ == "__main__":
     logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))
     capacity_test(
         configs,
-        DNPU,
+        DefaultCustomModel,
         criterion,
         algorithm,
         data_transforms=data_transforms,
-        waveform_transforms=waveform_transforms,
         logger=logger,
     )

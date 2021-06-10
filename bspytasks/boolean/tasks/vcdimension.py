@@ -14,7 +14,6 @@ def vc_dimension_test(
     criterion,
     algorithm,
     data_transforms=None,
-    waveform_transforms=None,
     logger=None,
     is_main=True,
 ):
@@ -46,7 +45,6 @@ def vc_dimension_test(
             criterion,
             algorithm,
             data_transforms=data_transforms,
-            waveform_transforms=waveform_transforms,
             logger=logger,
             is_main=False,
         )
@@ -113,20 +111,12 @@ if __name__ == "__main__":
     from brainspy.utils import manager
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToVoltageRange, DataPointsToPlateau, DataToTensor
-    from brainspy.processors.dnpu import DNPU
+    from bspytasks.utils.transforms import DataToTensor
+    from bspytasks.models.default import DefaultCustomModel
 
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.6, 0.6]
 
     configs = load_configs("configs/boolean.yaml")
-    data_transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor('cpu')]
-    )
-
-    waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["waveform"])]
-    )
+    data_transforms = transforms.Compose([DataToTensor('cpu')])
 
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
@@ -134,9 +124,8 @@ if __name__ == "__main__":
     configs["current_dimension"] = 4
     results = vc_dimension_test(
         configs,
-        DNPU,
+        DefaultCustomModel,
         criterion,
         algorithm,
         data_transforms=data_transforms,
-        waveform_transforms=waveform_transforms,
     )

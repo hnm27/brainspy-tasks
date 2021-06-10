@@ -3,3 +3,4 @@ epochs: 100
 learning_rate: 0.001
 criterion: "fisher"
 optimizer: "adam"
+constraint_control_voltages: "regul" # 'regul' or 'clip'

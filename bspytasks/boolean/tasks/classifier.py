@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from bspytasks.boolean.data import BooleanGateDataset
 
-
+from brainspy.processors.processor import Processor
 from brainspy.utils.pytorch import TorchUtils
 from brainspy.utils.manager import get_optimizer
 from brainspy.utils.io import create_directory, create_directory_timestamp
@@ -25,7 +25,7 @@ def boolean_task(
     criterion,
     algorithm,
     data_transforms=None,
-    waveform_transforms=None,
+    #waveform_transforms=None,
     logger=None,
     is_main=True,
 ):
@@ -44,9 +44,8 @@ def boolean_task(
     print("GATE: " + str(gate))
     for i in range(1, configs["max_attempts"] + 1):
         print("ATTEMPT: " + str(i))
-
-        model_data = torch.load(configs["processor"]['model_dir'], map_location=torch.device('cpu'))
-        model = custom_model(configs['processor'], model_data['info'], model_data['model_state_dict'])
+        model = custom_model(configs['processor'])
+        model = TorchUtils.format(model)
         optimizer = get_optimizer(model, configs["algorithm"])
         model, training_data = algorithm(
             model,
@@ -54,13 +53,13 @@ def boolean_task(
             criterion,
             optimizer,
             configs["algorithm"],
-            waveform_transforms=waveform_transforms,
+            #waveform_transforms=waveform_transforms,
             logger=logger,
             save_dir=reproducibility_dir,
         )
 
         results = evaluate_model(
-            model, loader.dataset, criterion, transforms=waveform_transforms
+            model, loader.dataset, criterion#, transforms=waveform_transforms
         )
         results["training_data"] = training_data
         results["threshold"] = configs["threshold"]
@@ -87,7 +86,7 @@ def close(model, results, configs, save_dir):
     save("configs", os.path.join(save_dir, "configs.yaml"), data=configs)
     # Save the latest model
     if model.is_hardware():
-        model.load_state_dict(torch.load(os.path.join(save_dir, "model.pt")))
+        model.load_state_dict(torch.load(os.path.join(save_dir, "training_data.pickle"))['model_state_dict'])
     else:
         model = torch.load(os.path.join(save_dir, "model.pt"))
     torch.save(
@@ -125,10 +124,10 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
         results["veredict"] = False
         return results
     results["accuracy"] = get_accuracy(
-        results["predictions"], results["targets"], node_configs, node
+        results["predictions"], model.format_targets(results["targets"]), node_configs, node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results["correlation"] = pearsons_correlation(
-        results["predictions"], results["targets"]
+        results["predictions"], model.format_targets(results["targets"])
     )
 
     if (results["accuracy"]["accuracy_value"] / 100) >= results["threshold"]:
@@ -167,13 +166,13 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
     return results
 
 
-def evaluate_model(model, dataset, criterion, results={}, transforms=None):
+def evaluate_model(model, dataset, criterion, results={}): #, transforms=None):
     with torch.no_grad():
         model.eval()
-        if transforms is None:
-            inputs, targets = dataset[:]
-        else:
-            inputs, targets = transforms(dataset[:])
+        #if transforms is None:
+        inputs, targets = dataset[:]
+        #else:
+        #    inputs, targets = transforms(dataset[:])
         inputs = inputs.to(device=TorchUtils.get_device())
         targets = targets.to(device=TorchUtils.get_device())
 
@@ -182,7 +181,7 @@ def evaluate_model(model, dataset, criterion, results={}, transforms=None):
     results["inputs"] = inputs
     results["targets"] = targets
     results["predictions"] = predictions
-    results["performance"] = criterion(predictions, targets)
+    results["performance"] = criterion(predictions, model.format_targets(targets))
     return results
 
 
@@ -241,23 +240,15 @@ if __name__ == "__main__":
     from brainspy.utils import manager
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToVoltageRange, DataPointsToPlateau, DataToTensor
-    from brainspy.processors.dnpu import DNPU
-
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.6, 0.6]
+    from bspytasks.utils.transforms import DataToTensor
+    from bspytasks.models.default import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
 
     data_transforms = transforms.Compose(
         [
-            DataToVoltageRange(V_MIN, V_MAX, -1, 1),
             DataToTensor(device=torch.device("cpu")),
         ]
-    )
-
-    waveform_transforms = transforms.Compose(
-        [DataPointsToPlateau(configs["processor"]["waveform"])]
     )
 
     logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))
@@ -270,10 +261,9 @@ if __name__ == "__main__":
 
     boolean_task(
         configs,
-        DNPU,
+        DefaultCustomModel,
         criterion,
         algorithm,
         data_transforms=data_transforms,
-        waveform_transforms=waveform_transforms,
         logger=logger
     )

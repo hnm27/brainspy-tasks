@@ -3,3 +3,4 @@ epochs: 400
 learning_rate: 0.01
 criterion: corrsig
 optimizer: "adam"
+constraint_control_voltages: "regul" # 'regul' or 'clip'
