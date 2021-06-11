@@ -64,7 +64,6 @@ def search_solution(
     criterion,
     algorithm,
     transforms=None,
-    waveform_transforms=None,
     custom_logger=None,
     is_main=True,
 ):
@@ -94,7 +93,6 @@ def search_solution(
             logger=logger,
             is_main=False,
             save_data=False,
-            waveform_transforms=waveform_transforms
         )
         all_results = update_all_search_stats(all_results, results, run)
         if is_best_run(results, best_run):
@@ -234,14 +232,11 @@ if __name__ == "__main__":
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToVoltageRange, DataToTensor
-    from brainspy.processors.dnpu import DNPU
-
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.6, 0.6]
+    from bspytasks.utils.transforms import DataToTensor
+    from bspytasks.models.default import DefaultCustomModel
 
     transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(torch.device('cpu'))]
+        [DataToTensor(torch.device('cpu'))]
     )
 
     configs = load_configs("configs/ring.yaml")
@@ -249,4 +244,4 @@ if __name__ == "__main__":
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
 
-    search_solution(configs, DNPU, criterion, algorithm, transforms=transforms)
+    search_solution(configs, DefaultCustomModel, criterion, algorithm, transforms=transforms)

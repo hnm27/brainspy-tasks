@@ -29,7 +29,6 @@ def ring_task(
     custom_model,
     criterion,
     algorithm,
-    waveform_transforms=None,
     logger=None,
     is_main=True,
     save_data=True,
@@ -49,8 +48,7 @@ def ring_task(
         save_data=save_data,
     )
     # criterion = get_criterion(configs['algorithm'])
-    model_data = torch.load(configs["processor"]['model_dir'], map_location=torch.device('cpu'))
-    model = custom_model(configs['processor'], model_data['info'], model_data['model_state_dict'])
+    model = custom_model(configs['processor'])
     optimizer = get_optimizer(model, configs["algorithm"])
     # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(
@@ -61,7 +59,6 @@ def ring_task(
         configs["algorithm"],
         logger=logger,
         save_dir=reproducibility_dir,
-        waveform_transforms=waveform_transforms,
     )
 
     results["train_results"] = postprocess(
@@ -70,7 +67,6 @@ def ring_task(
         model,
         criterion,
         logger,
-        waveform_transforms=waveform_transforms,
         save_dir=results_dir,
         name="train",
     )
@@ -85,7 +81,6 @@ def ring_task(
             criterion,
             logger,
             node=results["train_results"]["accuracy"]["node"],
-            waveform_transforms=waveform_transforms,
             save_dir=results_dir,
             name="validation",
         )
@@ -100,7 +95,6 @@ def ring_task(
             criterion,
             logger,
             node=results["train_results"]["accuracy"]["node"],
-            waveform_transforms=waveform_transforms,
             save_dir=results_dir,
             name="test",
         )
@@ -123,7 +117,7 @@ def close(model, results, configs, reproducibility_dir, results_dir):
     )
     plot_results(results, plots_dir=results_dir)
     if model.is_hardware():
-        model.load_state_dict(torch.load(os.path.join(reproducibility_dir, "model.pt")))
+        model.load_state_dict(torch.load(os.path.join(reproducibility_dir, "training_data.pickle"))['model_state_dict'])
     else:
         model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
     if model.is_hardware() and "close" in dir(model):
@@ -155,7 +149,7 @@ def get_ring_data(configs, transforms, data_dir=None):
 
 
 def postprocess(
-    configs, dataset, model, criterion, logger, node=None, waveform_transforms=None, save_dir=None, name="train"
+    configs, dataset, model, criterion, logger, node=None, save_dir=None, name="train"
 ):
     results = {}
     with torch.no_grad():
@@ -163,12 +157,11 @@ def postprocess(
         inputs, targets = dataset[:]
         indices = torch.argsort(targets[:, 0], dim=0)
         inputs, targets = inputs[indices], targets[indices]
-        if waveform_transforms is not None:
-            inputs, targets = waveform_transforms([inputs, targets])
         if inputs.device != TorchUtils.get_device():
             inputs = inputs.to(device=TorchUtils.get_device())
         if targets.device != TorchUtils.get_device():
             targets = targets.to(device=TorchUtils.get_device())
+        targets = model.format_targets(targets)
         predictions = model(inputs)
         results["performance"] = criterion(predictions, targets)
 
@@ -294,27 +287,14 @@ if __name__ == "__main__":
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToVoltageRange, DataPointsToPlateau, ToDevice, DataToTensor
+    from bspytasks.utils.transforms import DataToTensor
 
-    from brainspy.processors.dnpu import DNPU
+    from bspytasks.models.default import DefaultCustomModel
 
-    #TorchUtils.force_cpu = False
-
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.6, 0.6]
 
     configs = load_configs("configs/ring.yaml")
 
-    data_transforms = tfms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1),
-         DataToTensor(device=torch.device('cpu'))]
-    )
-
-    # Add your custom transformations for the datapoints
-    waveform_transforms = tfms.Compose([
-        # DataPointsToPlateau(configs['processor']['waveform']),
-        ToDevice()
-    ])
+    data_transforms = tfms.Compose([DataToTensor(device=torch.device('cpu'))])
 
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
@@ -322,5 +302,5 @@ if __name__ == "__main__":
     dataloaders = get_ring_data(configs, data_transforms)
 
     ring_task(
-        configs, dataloaders, DNPU, criterion, algorithm
-    )  # , waveform_transforms=waveform_transforms)
+        configs, dataloaders, DefaultCustomModel, criterion, algorithm
+    )

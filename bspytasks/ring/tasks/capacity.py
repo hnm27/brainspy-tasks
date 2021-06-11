@@ -10,7 +10,7 @@ def capacity_test(configs, custom_model, criterion, algorithm, transforms=None):
         configs["data"]["gap"] = gap
         configs["results_base_dir"] = base_dir
         search_solution(
-            configs, DNPU, criterion, algorithm, transforms=transforms, is_main=False
+            configs, custom_model, criterion, algorithm, transforms=transforms, is_main=False
         )
         gap = gap / 2
         print(f"*****************************")
@@ -22,14 +22,12 @@ if __name__ == "__main__":
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToVoltageRange, DataToTensor
-    from brainspy.processors.dnpu import DNPU
+    from bspytasks.utils.transforms import DataToTensor
+    from bspytasks.models.default import DefaultCustomModel
 
-    V_MIN = [-1.2, -1.2]
-    V_MAX = [0.6, 0.6]
 
     transforms = transforms.Compose(
-        [DataToVoltageRange(V_MIN, V_MAX, -1, 1), DataToTensor(torch.device('cpu'))]
+        [DataToTensor(torch.device('cpu'))]
     )
 
     configs = load_configs("configs/ring.yaml")
@@ -37,4 +35,4 @@ if __name__ == "__main__":
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
 
-    capacity_test(configs, DNPU, criterion, algorithm, transforms=transforms)
+    capacity_test(configs, DefaultCustomModel, criterion, algorithm, transforms=transforms)
