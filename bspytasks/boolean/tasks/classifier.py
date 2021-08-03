@@ -29,15 +29,14 @@ def boolean_task(
     logger=None,
     is_main=True,
 ):
-    main_dir, reproducibility_dir = init_dirs(
-        str(configs["gate"]), configs["results_base_dir"], is_main
-    )
+    main_dir, reproducibility_dir = init_dirs(str(configs["gate"]),
+                                              configs["results_base_dir"],
+                                              is_main)
     gate = np.array(configs["gate"])
     loader = get_data(gate, data_transforms, configs)
     if "track_running_stats" in configs["algorithm"]:
         configs["processor"]["track_running_stats"] = configs["algorithm"][
-            "track_running_stats"
-        ]
+            "track_running_stats"]
     print(
         "=========================================================================================="
     )
@@ -59,7 +58,9 @@ def boolean_task(
         )
 
         results = evaluate_model(
-            model, loader.dataset, criterion#, transforms=waveform_transforms
+            model,
+            loader.dataset,
+            criterion  #, transforms=waveform_transforms
         )
         results["training_data"] = training_data
         results["threshold"] = configs["threshold"]
@@ -86,7 +87,9 @@ def close(model, results, configs, save_dir):
     save("configs", os.path.join(save_dir, "configs.yaml"), data=configs)
     # Save the latest model
     if model.is_hardware():
-        model.load_state_dict(torch.load(os.path.join(save_dir, "training_data.pickle"))['model_state_dict'])
+        model.load_state_dict(
+            torch.load(os.path.join(
+                save_dir, "training_data.pickle"))['model_state_dict'])
     else:
         model = torch.load(os.path.join(save_dir, "model.pt"))
     torch.save(
@@ -113,39 +116,36 @@ def get_data(gate, data_transforms, configs):
     )
 
 
-def postprocess(results, model, node_configs, logger=None, node=None, save_dir=None):
-    if (
-        torch.isnan(results["predictions"]).any()
-        or torch.isinf(results["predictions"]).any()
-    ):
+def postprocess(results,
+                model,
+                node_configs,
+                logger=None,
+                node=None,
+                save_dir=None):
+    if (torch.isnan(results["predictions"]).any()
+            or torch.isinf(results["predictions"]).any()):
         print(
             "Nan values detected in the predictions. It is likely that the gradients of the model exploded. Skipping.."
         )
         results["veredict"] = False
         return results
     results["accuracy"] = get_accuracy(
-        results["predictions"], model.format_targets(results["targets"]), node_configs, node
+        results["predictions"], model.format_targets(results["targets"]),
+        node_configs, node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     results["correlation"] = pearsons_correlation(
-        results["predictions"], model.format_targets(results["targets"])
-    )
+        results["predictions"], model.format_targets(results["targets"]))
 
     if (results["accuracy"]["accuracy_value"] / 100) >= results["threshold"]:
         results["veredict"] = True
     else:
         results["veredict"] = False
-    results["summary"] = (
-        "VC Dimension: "
-        + str(len(results["targets"]))
-        + " Gate: "
-        + results["gate"]
-        + " Veredict: "
-        + str(results["veredict"])
-        + "\n Accuracy (Simulation): "
-        + str(results["accuracy"]["accuracy_value"])
-        + "/"
-        + str(results["threshold"])
-    )
+    results["summary"] = ("VC Dimension: " + str(len(results["targets"])) +
+                          " Gate: " + results["gate"] + " Veredict: " +
+                          str(results["veredict"]) +
+                          "\n Accuracy (Simulation): " +
+                          str(results["accuracy"]["accuracy_value"]) + "/" +
+                          str(results["threshold"]))
 
     # results["results_fig"] =
     plot_results(results, save_dir)
@@ -166,7 +166,10 @@ def postprocess(results, model, node_configs, logger=None, node=None, save_dir=N
     return results
 
 
-def evaluate_model(model, dataset, criterion, results={}): #, transforms=None):
+def evaluate_model(model,
+                   dataset,
+                   criterion,
+                   results={}):  #, transforms=None):
     with torch.no_grad():
         model.eval()
         #if transforms is None:
@@ -181,7 +184,8 @@ def evaluate_model(model, dataset, criterion, results={}): #, transforms=None):
     results["inputs"] = inputs
     results["targets"] = targets
     results["predictions"] = predictions
-    results["performance"] = criterion(predictions, model.format_targets(targets))
+    results["performance"] = criterion(predictions,
+                                       model.format_targets(targets))
     return results
 
 
@@ -201,10 +205,12 @@ def plot_results(results, save_dir=None, fig=None, show_plots=False, line="-"):
     if fig is None:
         fig = plt.figure()
     plt.title(results["summary"])
-    plt.plot(
-        results["predictions"].detach().cpu(), line, label="Prediction (Simulation)"
-    )
-    plt.plot(results["targets"].detach().cpu(), line, label="Target (Simulation)")
+    plt.plot(results["predictions"].detach().cpu(),
+             line,
+             label="Prediction (Simulation)")
+    plt.plot(results["targets"].detach().cpu(),
+             line,
+             label="Target (Simulation)")
     plt.ylabel("Current (nA)")
     plt.xlabel("Time")
     plt.legend()
@@ -223,9 +229,7 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
     for i in range(len(results["training_data"]["performance_history"])):
         plt.plot(
             TorchUtils.to_numpy(
-                results["training_data"]["performance_history"][i]
-            )
-        )
+                results["training_data"]["performance_history"][i]))
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, f"training_profile"))
     plt.close()
@@ -245,25 +249,22 @@ if __name__ == "__main__":
 
     configs = load_configs("configs/boolean.yaml")
 
-    data_transforms = transforms.Compose(
-        [
-            DataToTensor(device=torch.device("cpu")),
-        ]
-    )
+    data_transforms = transforms.Compose([
+        DataToTensor(device=torch.device("cpu")),
+    ])
 
-    logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))
+    logger = Logger(f"tmp/output/logs/experiment" +
+                    str(d.datetime.now().timestamp()))
 
     configs["gate"] = [0, 1, 1, 0]
     configs["threshold"] = 0.8
 
-    criterion = manager.get_criterion(configs["algorithm"])
-    algorithm = manager.get_algorithm(configs["algorithm"])
+    criterion = manager.get_criterion(configs["algorithm"]['criterion'])
+    algorithm = manager.get_algorithm(configs["algorithm"]['type'])
 
-    boolean_task(
-        configs,
-        DefaultCustomModel,
-        criterion,
-        algorithm,
-        data_transforms=data_transforms,
-        logger=logger
-    )
+    boolean_task(configs,
+                 DefaultCustomModel,
+                 criterion,
+                 algorithm,
+                 data_transforms=data_transforms,
+                 logger=logger)

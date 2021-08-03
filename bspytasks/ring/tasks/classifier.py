@@ -1,7 +1,6 @@
 from brainspy.utils.pytorch import TorchUtils
 import os
 import torch
-import numpy as np
 import pickle as p
 import matplotlib.pyplot as plt
 
@@ -40,7 +39,8 @@ def ring_task(
     )
     print("GAP: " + str(results["gap"]))
     if 'track_running_stats' in configs['algorithm']:
-        configs['processor']['track_running_stats'] = configs['algorithm']['track_running_stats']
+        configs['processor']['track_running_stats'] = configs['algorithm'][
+            'track_running_stats']
     results_dir, reproducibility_dir = init_dirs(
         str(results["gap"]),
         configs["results_base_dir"],
@@ -48,7 +48,7 @@ def ring_task(
         save_data=save_data,
     )
     # criterion = get_criterion(configs['algorithm'])
-    model = custom_model(configs['processor'])
+    model = TorchUtils.format(custom_model(configs['processor']))
     optimizer = get_optimizer(model, configs["algorithm"])
     # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(
@@ -70,9 +70,8 @@ def ring_task(
         save_dir=results_dir,
         name="train",
     )
-    results["train_results"]["performance_history"] = train_data["performance_history"][
-        0
-    ]
+    results["train_results"]["performance_history"] = train_data[
+        "performance_history"][0]
     if len(dataloaders[1]) > 0:
         results["dev_results"] = postprocess(
             configs["accuracy"],
@@ -85,8 +84,7 @@ def ring_task(
             name="validation",
         )
         results["dev_results"]["performance_history"] = train_data[
-            "performance_history"
-        ][1]
+            "performance_history"][1]
     if len(dataloaders[2]) > 0:
         results["test_results"] = postprocess(
             configs["accuracy"],
@@ -109,7 +107,9 @@ def ring_task(
 
 
 def close(model, results, configs, reproducibility_dir, results_dir):
-    save("configs", os.path.join(reproducibility_dir, "configs.yaml"), data=configs)
+    save("configs",
+         os.path.join(reproducibility_dir, "configs.yaml"),
+         data=configs)
     torch.save(
         results,
         os.path.join(reproducibility_dir, "results.pickle"),
@@ -117,7 +117,10 @@ def close(model, results, configs, reproducibility_dir, results_dir):
     )
     plot_results(results, plots_dir=results_dir)
     if model.is_hardware():
-        model.load_state_dict(torch.load(os.path.join(reproducibility_dir, "training_data.pickle"))['model_state_dict'])
+        model.load_state_dict(
+            torch.load(
+                os.path.join(reproducibility_dir,
+                             "training_data.pickle"))['model_state_dict'])
     else:
         model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
     if model.is_hardware() and "close" in dir(model):
@@ -129,7 +132,9 @@ def get_ring_data(configs, transforms, data_dir=None):
     if configs["data"]["load"]:
         if data_dir is None:
             data_dir = configs['data']['load']
-        dataset = RingDatasetLoader(data_dir, transforms=transforms, save_dir=data_dir)
+        dataset = RingDatasetLoader(data_dir,
+                                    transforms=transforms,
+                                    save_dir=data_dir)
     else:
         dataset = RingDatasetGenerator(
             configs["data"]["sample_no"],
@@ -137,31 +142,31 @@ def get_ring_data(configs, transforms, data_dir=None):
             transforms=transforms,
             save_dir=data_dir,
         )
-    dataloaders = split(
-        dataset,
-        configs["data"]["batch_size"],
-        sampler=BalancedSubsetRandomSampler,
-        num_workers=configs["data"]["worker_no"],
-        split_percentages=configs["data"]["split_percentages"],
-        pin_memory=configs["data"]["pin_memory"]
-    )
+    dataloaders = split(dataset,
+                        configs["data"]["batch_size"],
+                        sampler=BalancedSubsetRandomSampler,
+                        num_workers=configs["data"]["worker_no"],
+                        split_percentages=configs["data"]["split_percentages"],
+                        pin_memory=configs["data"]["pin_memory"])
     return dataloaders
 
 
-def postprocess(
-    configs, dataset, model, criterion, logger, node=None, save_dir=None, name="train"
-):
+def postprocess(configs,
+                dataset,
+                model,
+                criterion,
+                logger,
+                node=None,
+                save_dir=None,
+                name="train"):
     results = {}
     with torch.no_grad():
         model.eval()
         inputs, targets = dataset[:]
+        inputs = TorchUtils.format(inputs)
+        targets = TorchUtils.format(targets)
         indices = torch.argsort(targets[:, 0], dim=0)
         inputs, targets = inputs[indices], targets[indices]
-        if inputs.device != TorchUtils.get_device():
-            inputs = inputs.to(device=TorchUtils.get_device())
-        if targets.device != TorchUtils.get_device():
-            targets = targets.to(device=TorchUtils.get_device())
-        targets = model.format_targets(targets)
         predictions = model(inputs)
         results["performance"] = criterion(predictions, targets)
 
@@ -172,7 +177,9 @@ def postprocess(
     results["accuracy"] = get_accuracy(
         predictions, targets, configs, node=node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    print(f"{name.capitalize()} accuracy: {results['accuracy']['accuracy_value']}")
+    print(
+        f"{name.capitalize()} accuracy: {results['accuracy']['accuracy_value']}"
+    )
     results["correlation"] = pearsons_correlation(predictions, targets)
     # results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir, name=name)
 
@@ -188,7 +195,8 @@ def init_dirs(gap, base_dir, is_main=False, save_data=False):
     if save_data:
         reproducibility_dir = os.path.join(base_dir, reproducibility_dir)
     else:
-        reproducibility_dir = os.path.join(base_dir, reproducibility_dir, "tmp")
+        reproducibility_dir = os.path.join(base_dir, reproducibility_dir,
+                                           "tmp")
     create_directory(reproducibility_dir)
     results_dir = os.path.join(base_dir, results_dir)
     create_directory(results_dir)
@@ -196,33 +204,38 @@ def init_dirs(gap, base_dir, is_main=False, save_data=False):
 
 
 def plot_results(results, plots_dir=None, show_plots=False, extension="png"):
-    plot_output(
-        results["train_results"], "Train", plots_dir=plots_dir, extension=extension
-    )
-    plot_perceptron(results["train_results"]["accuracy"], plots_dir, name="train")
+    plot_output(results["train_results"],
+                "Train",
+                plots_dir=plots_dir,
+                extension=extension)
+    plot_perceptron(results["train_results"]["accuracy"],
+                    plots_dir,
+                    name="train")
     if "dev_results" in results:
-        plot_output(
-            results["dev_results"], "Dev", plots_dir=plots_dir, extension=extension
-        )
-        plot_perceptron(results["dev_results"]["accuracy"], plots_dir, name="dev")
+        plot_output(results["dev_results"],
+                    "Dev",
+                    plots_dir=plots_dir,
+                    extension=extension)
+        plot_perceptron(results["dev_results"]["accuracy"],
+                        plots_dir,
+                        name="dev")
     if "test_results" in results:
-        plot_output(
-            results["test_results"], "Test", plots_dir=plots_dir, extension=extension
-        )
-        plot_perceptron(results["test_results"]["accuracy"], plots_dir, name="test")
+        plot_output(results["test_results"],
+                    "Test",
+                    plots_dir=plots_dir,
+                    extension=extension)
+        plot_perceptron(results["test_results"]["accuracy"],
+                        plots_dir,
+                        name="test")
     plt.figure()
     plt.title(f"Learning profile", fontsize=12)
     plt.plot(
-        TorchUtils.to_numpy(
-            results["train_results"]["performance_history"]
-        ),
+        TorchUtils.to_numpy(results["train_results"]["performance_history"]),
         label="Train",
     )
     if "dev_results" in results:
         plt.plot(
-            TorchUtils.to_numpy(
-                results["dev_results"]["performance_history"]
-            ),
+            TorchUtils.to_numpy(results["dev_results"]["performance_history"]),
             label="Dev",
         )
     plt.legend()
@@ -230,7 +243,8 @@ def plot_results(results, plots_dir=None, show_plots=False, extension="png"):
         plt.savefig(os.path.join(plots_dir, f"training_profile." + extension))
 
     plt.figure()
-    plt.title(f"Inputs (V) \n {results['gap']} gap (-1 to 1 scale)", fontsize=12)
+    plt.title(f"Inputs (V) \n {results['gap']} gap (-1 to 1 scale)",
+              fontsize=12)
     plot_inputs(results["train_results"], "Train", ["blue", "cornflowerblue"])
     if "dev_results" in results:
         plot_inputs(results["dev_results"], "Dev", ["orange", "bisque"])
@@ -257,7 +271,11 @@ def plot_output(results, label, plots_dir=None, extension="png"):
         plt.savefig(os.path.join(plots_dir, label + "_output." + extension))
 
 
-def plot_inputs(results, label, colors=["b", "r"], plots_dir=None, extension="png"):
+def plot_inputs(results,
+                label,
+                colors=["b", "r"],
+                plots_dir=None,
+                extension="png"):
     # if type(results['dev_inputs']) is torch.Tensor:
     inputs = results["inputs"].cpu().numpy()
     targets = results["targets"][:, 0].cpu().numpy()
@@ -291,16 +309,13 @@ if __name__ == "__main__":
 
     from bspytasks.models.default import DefaultCustomModel
 
-
     configs = load_configs("configs/ring.yaml")
 
     data_transforms = tfms.Compose([DataToTensor(device=torch.device('cpu'))])
 
-    criterion = manager.get_criterion(configs["algorithm"])
-    algorithm = manager.get_algorithm(configs["algorithm"])
+    criterion = manager.get_criterion(configs["algorithm"]['criterion'])
+    algorithm = manager.get_algorithm(configs["algorithm"]['type'])
 
     dataloaders = get_ring_data(configs, data_transforms)
 
-    ring_task(
-        configs, dataloaders, DefaultCustomModel, criterion, algorithm
-    )
+    ring_task(configs, dataloaders, DefaultCustomModel, criterion, algorithm)
