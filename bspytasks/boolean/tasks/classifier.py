@@ -245,7 +245,7 @@ if __name__ == "__main__":
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
-    from bspytasks.models.default import DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
 

@@ -307,7 +307,7 @@ if __name__ == "__main__":
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
 
-    from bspytasks.models.default import DefaultCustomModel
+    from bspytasks.models.default_ring import DefaultCustomModel
 
     configs = load_configs("configs/ring.yaml")
 

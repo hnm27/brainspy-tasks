@@ -19,7 +19,7 @@ class DefaultCustomModel(torch.nn.Module):
                          self.node_no,
                          forward_pass_type='vec')
         self.linear = torch.nn.Linear(3, 1)
-        self.dnpu.add_input_transform([-1, 1])
+        #self.dnpu.add_input_transform([-1, 1])
 
         # self.dnpu2 = DNPU(processor=processor,
         #                   data_input_indices=[configs['input_indices']] *
@@ -37,7 +37,7 @@ class DefaultCustomModel(torch.nn.Module):
     def hw_eval(self, configs, info=None):
         self.eval()
         self.dnpu.hw_eval(configs, info)
-        self.dnpu2.hw_eval(configs, info)
+        #self.dnpu2.hw_eval(configs, info)
 
     def get_input_ranges(self):
         return self.dnpu.get_input_ranges()

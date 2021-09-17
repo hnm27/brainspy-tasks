@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from bspytasks.boolean.tasks.vcdimension import vc_dimension_test
 from brainspy.utils.io import create_directory_timestamp
 
-
 from brainspy.utils.pytorch import TorchUtils
 
 
@@ -29,7 +28,8 @@ def capacity_test(
     print(
         "*****************************************************************************************"
     )
-    base_dir = create_directory_timestamp(configs["results_base_dir"], "capacity_test")
+    base_dir = create_directory_timestamp(configs["results_base_dir"],
+                                          "capacity_test")
 
     # save(mode='configs', file_path=self.configs_dir, data=configs)
     summary_results = {
@@ -52,17 +52,13 @@ def capacity_test(
             is_main=False,
         )
         summary_results["capacity_per_N"].append(
-            TorchUtils.to_numpy(results["capacity"])
-        )
+            TorchUtils.to_numpy(results["capacity"]))
         summary_results["accuracy_distrib_per_N"].append(
-            TorchUtils.to_numpy(results["accuracies"])
-        )
+            TorchUtils.to_numpy(results["accuracies"]))
         summary_results["performance_distrib_per_N"].append(
-            TorchUtils.to_numpy(results["performances"][:, -1])
-        )
+            TorchUtils.to_numpy(results["performances"][:, -1]))
         summary_results["correlation_distrib_per_N"].append(
-            TorchUtils.to_numpy(results["correlations"])
-        )
+            TorchUtils.to_numpy(results["correlations"]))
         del results
     # self.vcdimension_test.close_results_file()
     # self.plot_summary()
@@ -70,9 +66,8 @@ def capacity_test(
     with open(os.path.join(base_dir, "summary_results.pickle"), "wb") as fp:
         pickle.dump(summary_results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     # torch.save(summary_results, os.path.join(base_dir, 'summary_results.pickle'))
-    plot_summary(
-        summary_results, configs["from_dimension"], configs["to_dimension"], base_dir
-    )
+    plot_summary(summary_results, configs["from_dimension"],
+                 configs["to_dimension"], base_dir)
     print(
         "*****************************************************************************************"
     )
@@ -132,17 +127,17 @@ if __name__ == "__main__":
 
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToVoltageRange, DataToTensor
-    from bspytasks.models.default import DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
     data_transforms = transforms.Compose(
-        [DataToTensor(device=torch.device('cpu'))]
-    )
+        [DataToTensor(device=torch.device('cpu'))])
 
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
 
-    logger = Logger(f"tmp/output/logs/experiment" + str(d.datetime.now().timestamp()))
+    logger = Logger(f"tmp/output/logs/experiment" +
+                    str(d.datetime.now().timestamp()))
     capacity_test(
         configs,
         DefaultCustomModel,
