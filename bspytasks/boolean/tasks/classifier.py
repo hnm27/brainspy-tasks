@@ -53,7 +53,7 @@ def boolean_task(
             optimizer,
             configs["algorithm"],
             #waveform_transforms=waveform_transforms,
-            logger=logger,
+            # logger=logger,
             save_dir=reproducibility_dir,
         )
 

@@ -31,9 +31,9 @@ def vc_dimension_test(
     veredicts = torch.zeros(len(targets))
     correlations = torch.zeros(len(targets))
 
-    base_dir = init_dirs(
-        configs["current_dimension"], configs["results_base_dir"], is_main=is_main
-    )
+    base_dir = init_dirs(configs["current_dimension"],
+                         configs["results_base_dir"],
+                         is_main=is_main)
     configs["results_base_dir"] = base_dir
     for i in range(len(targets)):
         if logger is not None:
@@ -50,7 +50,10 @@ def vc_dimension_test(
         )
         if "accuracy" in results:
             accuracies[i] = results["accuracy"]["accuracy_value"]
-        performances[i][:len(results['training_data']['performance_history'][0])] = results['training_data']['performance_history'][0]  # Only training performance is relevant for the boolean task, at position [0]. Since the algorithm sometimes stop because it reaches a threshold, it will only fill existing values and the rest will remain to zero.
+        performances[i][:len(
+            results['training_data']['performance_history'][0]
+        )] = results['training_data']['performance_history'][
+            0]  # Only training performance is relevant for the boolean task, at position [0]. Since the algorithm sometimes stop because it reaches a threshold, it will only fill existing values and the rest will remain to zero.
         veredicts[i] = results["veredict"]
         correlations[i] = results["correlation"]
         del results
@@ -66,9 +69,8 @@ def vc_dimension_test(
     plot_results(results, base_dir=base_dir)
     torch.save(
         results,
-        os.path.join(
-            base_dir, "vcdim_" + str(configs["current_dimension"]) + ".pickle"
-        ),
+        os.path.join(base_dir,
+                     "vcdim_" + str(configs["current_dimension"]) + ".pickle"),
     )
     return results
 
@@ -87,9 +89,8 @@ def init_dirs(dimension, base_dir, is_main):
 def plot_results(results, base_dir=None, show_plots=False):
     fig = plt.figure()
     correlations = TorchUtils.to_numpy(torch.abs(results["correlations"]))
-    threshold = TorchUtils.to_numpy(
-        results["threshold"] * 100. * torch.ones(correlations.shape)
-    )
+    threshold = TorchUtils.to_numpy(results["threshold"] * 100. *
+                                    torch.ones(correlations.shape))
     accuracies = TorchUtils.to_numpy(results["accuracies"])
     plt.plot(correlations, threshold, "k")
     plt.scatter(correlations, accuracies)
@@ -114,12 +115,13 @@ if __name__ == "__main__":
     from bspytasks.utils.transforms import DataToTensor
     from bspytasks.models.default import DefaultCustomModel
 
-
     configs = load_configs("configs/boolean.yaml")
-    data_transforms = transforms.Compose([DataToTensor('cpu')])
+    data_transforms = transforms.Compose([
+        DataToTensor(device=torch.device("cpu")),
+    ])
 
-    criterion = manager.get_criterion(configs["algorithm"])
-    algorithm = manager.get_algorithm(configs["algorithm"])
+    criterion = manager.get_criterion(configs["algorithm"]['criterion'])
+    algorithm = manager.get_algorithm(configs["algorithm"]['type'])
 
     configs["current_dimension"] = 4
     results = vc_dimension_test(

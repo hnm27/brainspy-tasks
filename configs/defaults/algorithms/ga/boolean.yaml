@@ -8,14 +8,13 @@ partition: # Genome partition
 stop_threshold: 1.0
 track_running_stats: False
 # This is now automatically obtained from the model from the info dictionary, but it can also be defined as follows:
-#generange:
-#- - -1.2
-#  - 0.6
-#- - -1.2
-#  - 0.6
-#- - -1.2
-#  - 0.6
-#- - -0.7
-#  - 0.3
-#- - -0.7
-#  - 0.3
+generange:
+  [
+    [-0.55, 0.325],
+    [-0.95, 0.55],
+    [-1.0, 0.6],
+    [-1.0, 0.6],
+    [-1.0, 0.6],
+    [-0.95, 0.55],
+    [-0.55, 0.325],
+  ]
