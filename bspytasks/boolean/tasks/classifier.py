@@ -130,11 +130,10 @@ def postprocess(results,
         results["veredict"] = False
         return results
     results["accuracy"] = get_accuracy(
-        results["predictions"], model.format_targets(results["targets"]),
-        node_configs, node
+        results["predictions"], results["targets_waveform"], node_configs, node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    results["correlation"] = pearsons_correlation(
-        results["predictions"], model.format_targets(results["targets"]))
+    results["correlation"] = pearsons_correlation(results["predictions"],
+                                                  results["targets_waveform"])
 
     if (results["accuracy"]["accuracy_value"] / 100) >= results["threshold"]:
         results["veredict"] = True
@@ -183,6 +182,7 @@ def evaluate_model(model,
 
     results["inputs"] = inputs
     results["targets"] = targets
+    results["targets_waveform"] = model.format_targets(targets)
     results["predictions"] = predictions
     results["performance"] = criterion(predictions,
                                        model.format_targets(targets))
@@ -208,7 +208,7 @@ def plot_results(results, save_dir=None, fig=None, show_plots=False, line="-"):
     plt.plot(results["predictions"].detach().cpu(),
              line,
              label="Prediction (Simulation)")
-    plt.plot(results["targets"].detach().cpu(),
+    plt.plot(results["targets_waveform"].detach().cpu(),
              line,
              label="Target (Simulation)")
     plt.ylabel("Current (nA)")
