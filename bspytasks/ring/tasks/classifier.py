@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from bspytasks.ring.data import (
     RingDatasetGenerator,
-    RingDatasetLoader,
+    #RingDatasetLoader,
     BalancedSubsetRandomSampler,
     balanced_permutation,
     split,
@@ -129,19 +129,11 @@ def close(model, results, configs, reproducibility_dir, results_dir):
 
 def get_ring_data(configs, transforms, data_dir=None):
     # Returns dataloaders and split indices
-    if configs["data"]["load"]:
-        if data_dir is None:
-            data_dir = configs['data']['load']
-        dataset = RingDatasetLoader(data_dir,
-                                    transforms=transforms,
-                                    save_dir=data_dir)
-    else:
-        dataset = RingDatasetGenerator(
-            configs["data"]["sample_no"],
-            configs["data"]["gap"],
-            transforms=transforms,
-            save_dir=data_dir,
-        )
+    dataset = RingDatasetGenerator(configs["data"]["sample_no"],
+                                   configs["data"]["gap"],
+                                   transforms=transforms,
+                                   load_filename=configs["data"]["load"],
+                                   save_dir=data_dir)
     dataloaders = split(dataset,
                         configs["data"]["batch_size"],
                         sampler=BalancedSubsetRandomSampler,
