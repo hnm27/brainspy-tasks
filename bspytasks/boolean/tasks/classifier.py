@@ -30,13 +30,10 @@ def boolean_task(
     is_main=True,
 ):
     main_dir, reproducibility_dir = init_dirs(str(configs["gate"]),
-                                              configs["results_base_dir"],
-                                              is_main)
+                                              configs["results_dir"], is_main)
     gate = np.array(configs["gate"])
     loader = get_data(gate, data_transforms, configs)
-    if "track_running_stats" in configs["algorithm"]:
-        configs["processor"]["track_running_stats"] = configs["algorithm"][
-            "track_running_stats"]
+
     print(
         "=========================================================================================="
     )
@@ -104,16 +101,9 @@ def close(model, results, configs, save_dir):
 
 def get_data(gate, data_transforms, configs):
     dataset = BooleanGateDataset(target=gate, transforms=data_transforms)
-    if "batch_size" in configs["data"]:
-        batch_size = configs["data"]["batch_size"]
-    else:
-        batch_size = len(dataset)
-    return torch.utils.data.DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        pin_memory=configs["data"]["pin_memory"],
-    )
+    return torch.utils.data.DataLoader(dataset,
+                                       batch_size=len(dataset),
+                                       shuffle=True)
 
 
 def postprocess(results,
@@ -139,12 +129,12 @@ def postprocess(results,
         results["veredict"] = True
     else:
         results["veredict"] = False
-    results["summary"] = ("VC Dimension: " + str(len(results["targets"])) +
-                          " Gate: " + results["gate"] + " Veredict: " +
-                          str(results["veredict"]) +
-                          "\n Accuracy (Simulation): " +
-                          str(results["accuracy"]["accuracy_value"]) + "/" +
-                          str(results["threshold"]))
+    results["summary"] = (
+        "VC Dimension: " + str(len(results["targets"])) + " Gate: " +
+        results["gate"] + " Veredict: " + str(results["veredict"]) +
+        "\n Accuracy (Simulation): " +
+        str(results["accuracy"]["accuracy_value"].item() / 100) + "/" +
+        str(results["threshold"]))
 
     # results["results_fig"] =
     plot_results(results, save_dir)
@@ -242,6 +232,7 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     from brainspy.utils import manager
+
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
@@ -257,10 +248,10 @@ if __name__ == "__main__":
                     str(d.datetime.now().timestamp()))
 
     configs["gate"] = [0, 1, 1, 0]
-    configs["threshold"] = 0.8
+    configs["threshold"] = 1.0
 
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
-    algorithm = manager.get_algorithm(configs["algorithm"]['type'])
+    algorithm = manager.get_algorithm(configs["algorithm"]['optimizer'])
 
     boolean_task(configs,
                  DefaultCustomModel,

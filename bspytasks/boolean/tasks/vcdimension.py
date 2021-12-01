@@ -32,9 +32,9 @@ def vc_dimension_test(
     correlations = torch.zeros(len(targets))
 
     base_dir = init_dirs(configs["current_dimension"],
-                         configs["results_base_dir"],
+                         configs["results_dir"],
                          is_main=is_main)
-    configs["results_base_dir"] = base_dir
+    configs["results_dir"] = base_dir
     for i in range(len(targets)):
         if logger is not None:
             logger.gate = str(targets[i])

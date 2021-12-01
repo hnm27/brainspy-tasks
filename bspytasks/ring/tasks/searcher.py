@@ -72,8 +72,8 @@ def search_solution(
     is_main=True,
 ):
     main_dir, search_stats_dir, results_dir, reproducibility_dir = init_dirs(
-        configs["data"]["gap"], configs["results_base_dir"], is_main=is_main)
-    configs["results_base_dir"] = main_dir
+        configs["data"]["gap"], configs["results_dir"], is_main=is_main)
+    configs["results_dir"] = main_dir
     dataloaders = get_ring_data(configs, transforms)
     all_results = init_all_results(dataloaders,
                                    configs["runs"],
@@ -89,8 +89,8 @@ def search_solution(
         if custom_logger is not None:
             logger = custom_logger(
                 os.path.join(
-                    configs['results_base_dir'], 'runs',
-                    os.path.split(configs['results_base_dir'])[-1] + '_run_' +
+                    configs['results_dir'], 'runs',
+                    os.path.split(configs['results_dir'])[-1] + '_run_' +
                     str(run)))
         else:
             logger = None
@@ -131,8 +131,8 @@ def search_solution(
             torch.save(results,
                        os.path.join(search_stats_dir, "best_result.pickle"))
             # if logger is not None and "log_debug" in dir(logger):
-            #     logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_train', results['train_results']['inputs'], results['train_results']['targets'], model)
-            #     logger.log_debug(configs["results_base_dir"].split(os.path.sep)[-1]+'_dev', results['dev_results']['inputs'], results['dev_results']['targets'], model)
+            #     logger.log_debug(configs["results_dir"].split(os.path.sep)[-1]+'_train', results['train_results']['inputs'], results['train_results']['targets'], model)
+            #     logger.log_debug(configs["results_dir"].split(os.path.sep)[-1]+'_dev', results['dev_results']['inputs'], results['dev_results']['targets'], model)
 
     close_search(
         all_results,

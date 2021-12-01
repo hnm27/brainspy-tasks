@@ -7,13 +7,12 @@ def capacity_test(configs,
                   criterion,
                   algorithm,
                   transforms=None):
-    base_dir = create_directory_timestamp(configs["results_base_dir"],
-                                          "capacity")
+    base_dir = create_directory_timestamp(configs["results_dir"], "capacity")
     gap = configs["start_gap"]
     while gap >= configs["stop_gap"]:
         print(f"********* GAP {gap} **********")
         configs["data"]["gap"] = gap
-        configs["results_base_dir"] = base_dir
+        configs["results_dir"] = base_dir
         search_solution(configs,
                         custom_model,
                         criterion,

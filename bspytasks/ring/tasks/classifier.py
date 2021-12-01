@@ -38,12 +38,10 @@ def ring_task(
         "=========================================================================================="
     )
     print("GAP: " + str(results["gap"]))
-    if 'track_running_stats' in configs['algorithm']:
-        configs['processor']['track_running_stats'] = configs['algorithm'][
-            'track_running_stats']
+
     results_dir, reproducibility_dir = init_dirs(
         str(results["gap"]),
-        configs["results_base_dir"],
+        configs["results_dir"],
         is_main=is_main,
         save_data=save_data,
     )

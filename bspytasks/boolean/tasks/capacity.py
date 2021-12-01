@@ -28,7 +28,7 @@ def capacity_test(
     print(
         "*****************************************************************************************"
     )
-    base_dir = create_directory_timestamp(configs["results_base_dir"],
+    base_dir = create_directory_timestamp(configs["results_dir"],
                                           "capacity_test")
 
     # save(mode='configs', file_path=self.configs_dir, data=configs)
@@ -40,7 +40,7 @@ def capacity_test(
     }
     for i in range(configs["from_dimension"], configs["to_dimension"] + 1):
         # capacity, accuracy_array, performance_array, correlation_array = vc_dimension_test(self.current_dimension, validate=validate)
-        configs["results_base_dir"] = base_dir
+        configs["results_dir"] = base_dir
         configs["current_dimension"] = i
         results = vc_dimension_test(
             configs,
@@ -62,7 +62,7 @@ def capacity_test(
         del results
     # self.vcdimension_test.close_results_file()
     # self.plot_summary()
-    # dict_loc = os.path.join(self.configs['vc_dimension_test']['results_base_dir'], 'summary_results.pkl')
+    # dict_loc = os.path.join(self.configs['vc_dimension_test']['results_dir'], 'summary_results.pkl')
     with open(os.path.join(base_dir, "summary_results.pickle"), "wb") as fp:
         pickle.dump(summary_results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     # torch.save(summary_results, os.path.join(base_dir, 'summary_results.pickle'))

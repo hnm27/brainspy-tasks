@@ -1,4 +1,4 @@
-results_base_dir: "tmp/TEST/output/ring"
+results_dir: "tmp/TEST/output/ring"
 runs: 1000
 start_gap: 0.4
 stop_gap: 0.00825
@@ -13,6 +13,9 @@ data:
   batch_size: 256
   worker_no: 0 # Rule of thumb, 4 per GPU
   pin_memory: True
+accuracy:
+  epochs: 100
+  learning_rate: 0.001
+  batch_size: 512
 algorithm: !include defaults/algorithms/gd/ring.yaml
 processor: !include defaults/processors/simulation.yaml
-accuracy: !include defaults/perceptron/accuracy.yaml #Configurations for the perceptron

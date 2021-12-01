@@ -1,20 +1,20 @@
-type: genetic
-optimizer: genetic
-criterion: corrsig_fit
-epochs: 100 # Number of generations
-partition: # Genome partition
-  - 4
-  - 22
-stop_threshold: 1.0
-track_running_stats: False
-# This is now automatically obtained from the model from the info dictionary, but it can also be defined as follows:
-generange:
+optimizer: genetic # Type of algorithm. It can either be 'genetic' or 'gradient'
+criterion:
+  corrsig_fit # What type of fitness function will be used for training.
+  #In this case, corrsig_fit will be used, which uses pearsons correlation and a sigmoid function to determine the fitness.
+epochs: 100 # Number of generations that will be used for the algorithm. (Number of loops)
+partition: # List with two elements.
+  - 4 # The first element indicates the number of genomes (control voltage combinations) that will not be mutated in each generation.
+  - 22 # The second element indicates the total number of genomes, when summing it with the first element.
+stop_threshold: 1.0 # Fitness function (criterion) score limit at which the algorithm stops when reached. By default 1.0 (deactivated)
+generange: # Optimal operation range for activation electrodes. This is used for creating genes (control voltages) that are always between the specified range.
+  # When using a surrogate model, it is not necessary to declare them, as this information is taken directly from the info dictionary. If this key is present, it will override that of the info dictionary:
   [
-    [-0.55, 0.325],
-    [-0.95, 0.55],
+    [-0.55, 0.325], # Ranges for activation electrode 0
+    [-0.95, 0.55], # Ranges for activation electrode 1
     [-1.0, 0.6],
     [-1.0, 0.6],
     [-1.0, 0.6],
     [-0.95, 0.55],
-    [-0.55, 0.325],
+    [-0.55, 0.325], # Ranges for activation electrode 6
   ]
