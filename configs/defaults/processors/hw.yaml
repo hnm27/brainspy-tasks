@@ -1,53 +1,25 @@
 processor_type: cdaq_to_cdaq
 input_indices: # It specifies the indices of the activation data array that will be considered as inputs
-  - 3
-  - 6
+  - 4 #AO2
+  - 0 #AO6
 waveform:
-  plateau_length: 30
-  slope_length: 30
-info:
-  sampling_frequency: 10000
-  electrode_info:
-    electrode_no: 8
-    activation_electrodes:
-      electrode_no: 7
-      voltage_ranges:
-        [
-          [-0.7, 1.2],
-          [-0.3, 0.4],
-          [-0.7, 1.2],
-          [-0.8, 1.1],
-          [-0.6, 1.1],
-          [-0.3, 0.5],
-          [-0.7, 1.1],
-        ]
-    output_electrodes:
-      electrode_no: 1
-      amplification: [41]
-      clipping_value: [-160, 160]
+  plateau_length: 40
+  slope_length: 40
 driver:
+  instrument_type: cdaq_to_cdaq
   real_time_rack: False # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
-  sampling_frequency: 10000 # Sampling frequency at which NI modules will write and read
-  amplification:
-    [41] # Amplification correction applied in software, to revert the amplification created in hardware in order to read the output current. It is different for each setup.
-    # BRAINS: 28.5
-    # DARWIN: 100 # Can also vary dependent on where the knob is.
-  instruments_setup:
-    sampling_frequency: 10000
-    multiple_devices: False # Whether if the driver will be reading simultaneously a single or multiple devices.
+  amplification: 41
+  inverted_output: True # Whether the amplification of the OP-Amp in the PCB is an inverting one.
+  instruments_setup: 
+    multiple_devices: False
     trigger_source: cDAQ1/segment1
+    average_io_point_difference: True # If there is a difference in the number of readout points w.r.t. the written points, it will return the average. 
+    activation_sampling_frequency: 10000
+    readout_sampling_frequency: 10000
+    average_io_point_difference: False
     activation_instrument: cDAQ1Mod3
-    activation_channels: [6, 0, 1, 5, 2, 4, 3]
-    activation_voltage_ranges:
-      [
-        [-0.7, 1.2],
-        [-0.3, 0.4],
-        [-0.7, 1.2],
-        [-0.8, 1.1],
-        [-0.6, 1.1],
-        [-0.3, 0.5],
-        [-0.7, 1.1],
-      ]
+    activation_channels: [6,0,1,5,2,4,3] #ao
+    activation_voltage_ranges: [[-0.9,0.5],[-0.3,0.5],[-0.9,0.9],[-1,1],[-0.9,0.6],[-0.6,0.3],[-1,1]] #[[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08]]  
+    activation_channel_mask: [1,1,1,1,1,1,1]
     readout_instrument: cDAQ1Mod4
-    readout_channels: [0] #ai4
-    activation_channel_mask: [1, 1, 1, 1, 1, 1, 1]
+    readout_channels: [0]
