@@ -17,7 +17,7 @@ class DefaultCustomModel(torch.nn.Module):
         self.dnpu = DNPU(processor=processor,
                          data_input_indices=[configs['input_indices']] *
                          self.node_no,
-                         forward_pass_type='for')
+                         forward_pass_type='vec')
         self.linear = torch.nn.Linear(3, 1)
         #self.dnpu.add_input_transform([-1, 1])
 

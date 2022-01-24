@@ -10,5 +10,5 @@ electrode_effects:
   #  type: gaussian
   #  variance: 0.65
 waveform:
-  plateau_length: 3
-  slope_length: 0
+  plateau_length: 10
+  slope_length: 10

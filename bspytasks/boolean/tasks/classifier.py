@@ -195,17 +195,15 @@ def plot_results(results, save_dir=None, fig=None, show_plots=False, line="-"):
     if fig is None:
         fig = plt.figure()
     plt.title(results["summary"])
-    plt.plot(results["predictions"].detach().cpu(),
-             line,
-             label="Prediction (Simulation)")
+    plt.plot(results["predictions"].detach().cpu(), line, label="Prediction")
     plt.plot(results["targets_waveform"].detach().cpu(),
              line,
-             label="Target (Simulation)")
+             label="Target shape")
     plt.ylabel("Current (nA)")
     plt.xlabel("Time")
     plt.legend()
     if save_dir is not None:
-        plt.savefig(os.path.join(save_dir, "results.jpg"))
+        plt.savefig(os.path.join(save_dir, "output_vs_targets.jpg"))
     if show_plots:
         plt.show()
     plt.close()
@@ -220,8 +218,12 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
         plt.plot(
             TorchUtils.to_numpy(
                 results["training_data"]["performance_history"][i]))
+    plt.ylabel("Performance (Fitness/Loss)")
+    plt.xlabel("Epoch")
     if save_dir is not None:
-        plt.savefig(os.path.join(save_dir, f"training_profile"))
+        plt.savefig(os.path.join(save_dir, f"train_profile.jpg"))
+    if show_plots:
+        plt.show()
     plt.close()
     return fig
 
