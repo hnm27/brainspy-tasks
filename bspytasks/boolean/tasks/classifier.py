@@ -94,9 +94,6 @@ def close(model, results, configs, save_dir):
         os.path.join(save_dir, "results.pickle"),
         pickle_protocol=p.HIGHEST_PROTOCOL,
     )
-    # Close the model adequately if it is on hardware
-    if model.is_hardware() and "close" in dir(model):
-        model.close()
 
 
 def get_data(gate, data_transforms, configs):
@@ -170,6 +167,10 @@ def evaluate_model(model,
 
         predictions = model(inputs)
 
+    # Close the model adequately if it is on hardware
+    if model.is_hardware() and "close" in dir(model):
+        model.close()
+
     results["inputs"] = inputs
     results["targets"] = targets
     results["targets_waveform"] = model.format_targets(targets)
@@ -206,7 +207,7 @@ def plot_results(results, save_dir=None, fig=None, show_plots=False, line="-"):
         plt.savefig(os.path.join(save_dir, "output_vs_targets.jpg"))
     if show_plots:
         plt.show()
-    plt.close()
+    plt.close(fig)
     return fig
 
 
@@ -223,7 +224,7 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, f"train_profile.jpg"))
     if show_plots:
-        plt.show()
+        plt.show(fig)
     plt.close()
     return fig
 
