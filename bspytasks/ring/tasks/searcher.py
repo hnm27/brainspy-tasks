@@ -250,12 +250,12 @@ if __name__ == "__main__":
     from bspytasks.utils.transforms import DataToTensor
     from bspytasks.models.default_ring import DefaultCustomModel
 
-    transforms = transforms.Compose([DataToTensor(torch.device('cpu'))])
+    transforms = None  # s in generaltransforms.Compose([DataToTensor(torch.device('cpu'))])
 
     configs = load_configs("configs/ring.yaml")
 
-    criterion = manager.get_criterion(configs["algorithm"])
-    algorithm = manager.get_algorithm(configs["algorithm"])
+    criterion = manager.get_criterion(configs["algorithm"]["criterion"])
+    algorithm = manager.get_algorithm(configs["algorithm"]["type"])
 
     search_solution(configs,
                     DefaultCustomModel,

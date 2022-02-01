@@ -1,5 +1,5 @@
-results_dir: "tmp/TEST/output/ring"
-runs: 1000
+results_dir: "tmp/ring"
+runs: 1500
 start_gap: 0.4
 stop_gap: 0.00825
 data:
@@ -10,12 +10,12 @@ data:
     - 0.6 # Percentage of the data used for training
     - 0.2 # Percentage of the data used for validation
     - 0.2 # Percentage of the data used for test
-  batch_size: 256
+  batch_size: 512
   worker_no: 0 # Rule of thumb, 4 per GPU
   pin_memory: True
 accuracy:
-  epochs: 100
-  learning_rate: 0.001
+  epochs: 500
+  learning_rate: 0.005
   batch_size: 512
 algorithm: !include defaults/algorithms/gd/ring.yaml
 processor: !include defaults/processors/simulation.yaml

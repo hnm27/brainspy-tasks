@@ -125,7 +125,7 @@ def close(model, results, configs, reproducibility_dir, results_dir):
         model.close()
 
 
-def get_ring_data(configs, transforms, data_dir=None):
+def get_ring_data(configs, transforms=None, data_dir=None):
     # Returns dataloaders and split indices
     dataset = RingDatasetGenerator(configs["data"]["sample_no"],
                                    configs["data"]["gap"],
@@ -301,11 +301,11 @@ if __name__ == "__main__":
 
     configs = load_configs("configs/ring.yaml")
 
-    data_transforms = tfms.Compose([DataToTensor(device=torch.device('cpu'))])
+    #data_transforms = tfms.Compose([DataToTensor(device=torch.device('cpu'))])
 
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
     algorithm = manager.get_algorithm(configs["algorithm"]['type'])
 
-    dataloaders = get_ring_data(configs, data_transforms)
+    dataloaders = get_ring_data(configs)  #, data_transforms)
 
     ring_task(configs, dataloaders, DefaultCustomModel, criterion, algorithm)
