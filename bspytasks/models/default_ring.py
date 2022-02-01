@@ -8,7 +8,7 @@ from brainspy.utils.pytorch import TorchUtils
 class DefaultCustomModel(torch.nn.Module):
     def __init__(self, configs):
         super(DefaultCustomModel, self).__init__()
-        self.alpha = 1
+        self.gamma = 1
         self.node_no = 1
         model_data = torch.load(configs['model_dir'],
                                 map_location=TorchUtils.get_device())
@@ -62,7 +62,7 @@ class DefaultCustomModel(torch.nn.Module):
         self.dnpu.close()
 
     def regularizer(self):
-        return self.alpha * (self.dnpu.regularizer())  # +
+        return self.gamma * (self.dnpu.regularizer())  # +
         #self.dnpu2.regularizer())
 
     def constraint_control_voltages(self):
