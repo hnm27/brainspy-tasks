@@ -6,14 +6,13 @@ import matplotlib.pyplot as plt
 
 from bspytasks.ring.data import (
     RingDatasetGenerator,
-    #RingDatasetLoader,
     BalancedSubsetRandomSampler,
-    balanced_permutation,
+    RingDatasetLoader,
     split,
 )
 from brainspy.utils.io import create_directory, create_directory_timestamp
 from bspytasks.utils.io import save
-from brainspy.utils.manager import get_criterion, get_optimizer, get_algorithm
+from brainspy.utils.manager import get_optimizer
 
 from brainspy.algorithms.modules.performance.accuracy import (
     get_accuracy,
@@ -127,11 +126,14 @@ def close(model, results, configs, reproducibility_dir, results_dir):
 
 def get_ring_data(configs, transforms=None, data_dir=None):
     # Returns dataloaders and split indices
-    dataset = RingDatasetGenerator(configs["data"]["sample_no"],
-                                   configs["data"]["gap"],
-                                   transforms=transforms,
-                                   load_filename=configs["data"]["load"],
-                                   save_dir=data_dir)
+    if configs["data"]["load"] is False:
+        dataset = RingDatasetGenerator(configs["data"]["sample_no"],
+                                       configs["data"]["gap"],
+                                       transforms=transforms,
+                                       save_dir=data_dir)
+    else:
+        dataset = RingDatasetLoader(configs["data"]["load"],
+                                    transforms=transforms)
     dataloaders = split(dataset,
                         configs["data"]["batch_size"],
                         sampler=BalancedSubsetRandomSampler,

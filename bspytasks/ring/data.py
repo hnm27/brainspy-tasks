@@ -12,44 +12,9 @@ from torch.utils.data import Dataset, Sampler
 from torch.utils.data import random_split, Subset
 
 
-class RingDatasetGenerator(Dataset):
-    def __init__(self,
-                 sample_no,
-                 gap,
-                 transforms=None,
-                 load_filename=None,
-                 save_dir=None,
-                 verbose=True):
-        # The gap needs to be in a scale from -1 to 1.
-        # The sample_no is related to the data that is going to be generated but it actually gets reduced when filtering the circles
-        # TODO: Make the dataset generate the exact number of samples as requested by the user
-
+class RingDatasetBase(Dataset):
+    def __init__(self, transforms=None):
         self.transforms = transforms
-        if load_filename is not None and load_filename is not False:
-            data = torch.load(load_filename, map_location=torch.device('cpu'))
-            self.inputs = data['inputs']
-            self.targets = data['targets']
-            self.gap = data['gap']
-            if self.gap != gap:
-                warnings.warn(
-                    f'Gap has been overriden by the default gap of the data: {self.gap}'
-                )
-        else:
-            self.inputs, self.targets = self.generate_data(sample_no,
-                                                           gap,
-                                                           verbose=verbose)
-            self.gap = gap
-
-        assert len(self.inputs) == len(
-            self.targets), "Targets and inputs must have the same length"
-
-        if save_dir is not None:
-            torch.save(
-                {
-                    "inputs": self.inputs,
-                    "targets": self.targets,
-                    "gap": self.gap
-                }, os.path.join(save_dir, "input_data_gap_" + str(gap)))
 
     def __len__(self):
         return len(self.inputs)
@@ -61,6 +26,44 @@ class RingDatasetGenerator(Dataset):
             sample = self.transforms(sample)
 
         return sample
+
+
+class RingDatasetLoader(RingDatasetBase):
+    def __init__(self, filename: str, transforms=None) -> None:
+        super().__init__(transforms=transforms)
+        data = torch.load(filename, map_location=torch.device('cpu'))
+        self.inputs = data['inputs']
+        self.targets = data['targets']
+        self.gap = data['gap']
+
+
+class RingDatasetGenerator(RingDatasetBase):
+    def __init__(self,
+                 sample_no: int,
+                 gap: float,
+                 transforms=None,
+                 save_dir: str = None,
+                 verbose: bool = False) -> None:
+        # The gap needs to be in a scale from -1 to 1.
+        # The sample_no is related to the data that is going to be generated but it actually gets reduced when filtering the circles
+        # TODO: Make the dataset generate the exact number of samples as requested by the user
+        super().__init__(transforms=transforms)
+        assert gap > -1 and gap < 1, "The separation gap between classes should be in a range from -1 to 1."
+        self.inputs, self.targets = self.generate_data(sample_no,
+                                                       gap,
+                                                       verbose=verbose)
+        self.gap = gap
+
+        assert len(self.inputs) == len(
+            self.targets), "Targets and inputs must have the same length"
+
+        if save_dir is not None:
+            torch.save(
+                {
+                    "inputs": self.inputs,
+                    "targets": self.targets,
+                    "gap": self.gap
+                }, os.path.join(save_dir, "input_data_gap_" + str(gap)))
 
     def generate_data(self, sample_no, gap, verbose=True):
         assert sample_no % 2 == 0, "Only an even sample number is supported."
