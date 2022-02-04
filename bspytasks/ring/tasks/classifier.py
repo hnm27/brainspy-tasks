@@ -134,6 +134,7 @@ def get_ring_data(configs, transforms=None, data_dir=None):
     else:
         dataset = RingDatasetLoader(configs["data"]["load"],
                                     transforms=transforms)
+    configs['data']['gap'] = dataset.gap
     dataloaders = split(dataset,
                         configs["data"]["batch_size"],
                         sampler=BalancedSubsetRandomSampler,
