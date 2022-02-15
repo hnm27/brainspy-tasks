@@ -119,7 +119,11 @@ def close(model, results, configs, reproducibility_dir, results_dir):
                 os.path.join(reproducibility_dir,
                              "training_data.pickle"))['model_state_dict'])
     else:
-        model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
+        # model = torch.load(os.path.join(reproducibility_dir, "model.pt"))
+        try:
+            model = torch.load(os.path.join(reproducibility_dir, "best_model_raw.pt"))
+        except:
+            model = torch.load(os.path.join(reproducibility_dir, "model_raw.pt"))
     if model.is_hardware() and "close" in dir(model):
         model.close()
 

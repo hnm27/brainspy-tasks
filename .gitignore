@@ -53,3 +53,5 @@ coverage.xml
 
 # Models
 *.pt
+.DS_Store
+.DS_Store
