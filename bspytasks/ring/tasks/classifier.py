@@ -119,7 +119,7 @@ def close(model, results, configs, reproducibility_dir, results_dir):
                 os.path.join(reproducibility_dir,
                              "training_data.pickle"))['model_state_dict'])
     else:
-        if configs['return_best_model']:
+        if configs['algorithm']['return_best_model']:
             model = torch.load(
                 os.path.join(reproducibility_dir, "best_model_raw.pt"))
         else:
