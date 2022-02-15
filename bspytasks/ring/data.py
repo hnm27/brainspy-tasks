@@ -48,7 +48,7 @@ class RingDatasetGenerator(RingDatasetBase):
         # The sample_no is related to the data that is going to be generated but it actually gets reduced when filtering the circles
         # TODO: Make the dataset generate the exact number of samples as requested by the user
         super().__init__(transforms=transforms)
-        assert gap > -1 and gap < 1, "The separation gap between classes should be in a range from -1 to 1."
+        assert gap > 0 and gap < 1, "The separation gap between classes should be in a range from -1 to 1."
         self.inputs, self.targets = self.generate_data(sample_no,
                                                        gap,
                                                        verbose=verbose)
