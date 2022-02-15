@@ -88,7 +88,7 @@ def close(model, results, configs, save_dir):
             torch.load(os.path.join(
                 save_dir, "training_data.pickle"))['model_state_dict'])
     else:
-        model = torch.load(os.path.join(save_dir, "model.pt"))
+        model = torch.load(os.path.join(save_dir, "model_raw.pt"))
     torch.save(
         results,
         os.path.join(save_dir, "results.pickle"),
