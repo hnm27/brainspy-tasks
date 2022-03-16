@@ -9,6 +9,7 @@ setup(
     author_email="u.alegre@utwente.nl",
     license="GPL-3.0",
     packages=find_packages(),
-    install_requires=["matplotlib"],
+    install_requires=["matplotlib",
+"tensorboard" ],
     zip_safe=False,
 )
