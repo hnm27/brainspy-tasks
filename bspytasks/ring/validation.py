@@ -11,8 +11,10 @@ from brainspy.utils.pytorch import TorchUtils
 def load_reproducibility_results(base_dir, model_name="model.pt"):
     base_dir = os.path.join(base_dir, "reproducibility")
     # configs = load_configs(os.path.join(gate_base_dir, 'configs.yaml'))
-    model = torch.load(os.path.join(base_dir, model_name), map_location=TorchUtils.get_device())
-    results = torch.load(os.path.join(base_dir, "results.pickle"), map_location=TorchUtils.get_device())
+    model = torch.load(os.path.join(base_dir, model_name),
+                       map_location=TorchUtils.get_device())
+    results = torch.load(os.path.join(base_dir, "results.pickle"),
+                         map_location=TorchUtils.get_device())
     return model, results  # , configs
 
 
@@ -29,46 +31,54 @@ def validate(
 
     # results_dir = init_dirs(results_dir, is_main=is_main, gate=results['gap'])
     if "train_results" in results:
-        results["train_results"] = apply_transforms(
-            results["train_results"], transforms=transforms
-        )
+        results["train_results"] = apply_transforms(results["train_results"],
+                                                    transforms=transforms)
         results["train_results_hw"] = _validate(
-            model, results["train_results"].copy(), criterion, configs
-        )
+            model, results["train_results"].copy(), criterion, configs)
     if "dev_results" in results:
-        results["dev_results"] = apply_transforms(
-            results["dev_results"], transforms=transforms
-        )
-        results["dev_results_hw"] = _validate(
-            model, results["dev_results"].copy(), criterion, configs
-        )
+        results["dev_results"] = apply_transforms(results["dev_results"],
+                                                  transforms=transforms)
+        results["dev_results_hw"] = _validate(model,
+                                              results["dev_results"].copy(),
+                                              criterion, configs)
     if "test_results" in results:
-        results["test_results"] = apply_transforms(
-            results["test_results"], transforms=transforms
-        )
-        results["test_results_hw"] = _validate(
-            model, results["test_results"].copy(), criterion, configs
-        )
+        results["test_results"] = apply_transforms(results["test_results"],
+                                                   transforms=transforms)
+        results["test_results_hw"] = _validate(model,
+                                               results["test_results"].copy(),
+                                               criterion, configs)
+    if "train_results" in results:
+        results["train_results"][
+            "best_output_formatted"] = model.format_targets(
+                results["train_results"]["best_output"])
+    if "dev_results" in results:
+        results["dev_results"]["best_output_formatted"] = model.format_targets(
+            results["dev_results"]["best_output"])
+    if "test_results" in results:
+        results["test_results"][
+            "best_output_formatted"] = model.format_targets(
+                results["test_results"]["best_output"])
 
     plot_all(results, save_dir=results_dir, show_plots=show_plots)
-    torch.save(results, os.path.join(results_dir, "hw_validation_results.pickle"))
+    torch.save(results,
+               os.path.join(results_dir, "hw_validation_results.pickle"))
     return results
 
 
 def plot_all(results, save_dir=None, show_plots=False):
     if "train_results" in results:
         plot_validation_results(
-            TorchUtils.to_numpy(results["train_results"]["best_output"]),
             TorchUtils.to_numpy(
-                results["train_results_hw"]["best_output"]
-            ),
+                results["train_results"]["best_output_formatted"]),
+            TorchUtils.to_numpy(results["train_results_hw"]["best_output"]),
             name="train_plot",
             save_dir=save_dir,
             show_plot=show_plots,
         )
     if "dev_results" in results:
         plot_validation_results(
-            TorchUtils.to_numpy(results["dev_results"]["best_output"]),
+            TorchUtils.to_numpy(
+                results["dev_results"]["best_output_formatted"]),
             TorchUtils.to_numpy(results["dev_results_hw"]["best_output"]),
             name="validation_plot",
             save_dir=save_dir,
@@ -76,7 +86,8 @@ def plot_all(results, save_dir=None, show_plots=False):
         )
     if "test_results" in results:
         plot_validation_results(
-            TorchUtils.to_numpy(results["test_results"]["best_output"]),
+            TorchUtils.to_numpy(
+                results["test_results"]["best_output_formatted"]),
             TorchUtils.to_numpy(results["test_results_hw"]["best_output"]),
             name="test_plot",
             save_dir=save_dir,
@@ -93,13 +104,13 @@ def plot_validation_results(
     extension="png",
 ):
 
-    error = ((model_output - real_output) ** 2).mean()
+    error = ((model_output - real_output)**2).mean()
     print(f"Total Error: {error}")
 
     plt.figure()
     plt.title(
-        f"{name.capitalize()}\nComparison between Hardware and Simulation \n (MSE: {error})", fontsize=10
-    )
+        f"{name.capitalize()}\nComparison between Hardware and Simulation \n (MSE: {error})",
+        fontsize=10)
     plt.plot(model_output)
     plt.plot(real_output, "-.")
     plt.ylabel("Current (nA)")
@@ -127,18 +138,26 @@ def _validate(model, results, criterion, hw_processor_configs):
     with torch.no_grad():
         model.hw_eval(hw_processor_configs)
         predictions = model(results["inputs"])
+        targets = model.format_targets(results['targets'])
         model.close()
-        results["performance"] = criterion(predictions, results["targets"])
+        results["performance"] = criterion(predictions, targets)
 
     # results['gap'] = dataset.gap
     results["best_output"] = predictions
-    print(f"Simulation accuracy {results['accuracy']['accuracy_value'].item()}: ")
-    
+    print(
+        f"Simulation accuracy {results['accuracy']['accuracy_value'].item()}: "
+    )
+
     results['accuracy'] = get_accuracy(
-        predictions, results["targets"], configs=results['accuracy']['configs'], node=results['accuracy']['node']
+        predictions,
+        targets,
+        configs=results['accuracy']['configs'],
+        node=results['accuracy']['node']
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
-    print(f"Hardware accuracy: {results['accuracy']['accuracy_value'].item()} \n")
-    results["correlation"] = pearsons_correlation(predictions, results["targets"])
+    print(
+        f"Hardware accuracy: {results['accuracy']['accuracy_value'].item()} \n"
+    )
+    results["correlation"] = pearsons_correlation(predictions, targets)
     return results
 
 
@@ -164,8 +183,7 @@ if __name__ == "__main__":
     configs = load_configs("configs/ring.yaml")
     hw_processor_configs = load_configs("configs/defaults/processors/hw.yaml")
     waveform_transforms = transforms.Compose(
-        [PointsToPlateaus(hw_processor_configs["data"]["waveform"])]
-    )
+        [PointsToPlateaus(hw_processor_configs["data"]["waveform"])])
 
     results_dir = init_dirs(os.path.join(base_dir, "validation"))
 
