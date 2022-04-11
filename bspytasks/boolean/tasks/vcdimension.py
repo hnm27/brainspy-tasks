@@ -101,7 +101,7 @@ def plot_results(results, base_dir=None, show_plots=False):
     plt.savefig(os.path.join(base_dir, "fitness_vs_accuracy.png"))
     if show_plots:
         plt.show()
-    plt.close()
+    plt.close(fig)
     return fig
 
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
-    from bspytasks.models.default_boolean import DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomHardwareModel as DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
     data_transforms = transforms.Compose([
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     ])
 
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
-    algorithm = manager.get_algorithm(configs["algorithm"]['type'])
+    algorithm = manager.get_algorithm(configs["algorithm"]['optimizer'])
 
     configs["current_dimension"] = 4
     results = vc_dimension_test(
