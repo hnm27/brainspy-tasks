@@ -12,11 +12,11 @@ from brainspy.utils.pytorch import TorchUtils
 from brainspy.utils.manager import get_optimizer
 from brainspy.utils.io import create_directory, create_directory_timestamp
 from bspytasks.utils.io import save
-from brainspy.algorithms.modules.performance.accuracy import (
+from brainspy.utils.performance.accuracy import (
     get_accuracy,
     plot_perceptron,
 )
-from brainspy.algorithms.modules.signal import pearsons_correlation
+from brainspy.utils.signal import pearsons_correlation
 
 
 def boolean_task(
@@ -236,13 +236,14 @@ if __name__ == "__main__":
     import numpy as np
     import datetime as d
     from torchvision import transforms
-
+    import matplotlib
+    matplotlib.use('Agg')
     from brainspy.utils import manager
 
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
-    from bspytasks.models.default_boolean import DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomSimulationModel as MyModel
 
     configs = load_configs("configs/boolean.yaml")
 
@@ -253,14 +254,14 @@ if __name__ == "__main__":
     logger = Logger(f"tmp/output/logs/experiment" +
                     str(d.datetime.now().timestamp()))
 
-    configs["gate"] = [0, 1, 1, 0]
+    configs["gate"] = [0, 1, 1, 1, 1, 1, 1, 0]  #[0, 1, 1, 0]
     configs["threshold"] = 1.0
 
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
     algorithm = manager.get_algorithm(configs["algorithm"]['optimizer'])
 
     boolean_task(configs,
-                 DefaultCustomModel,
+                 MyModel,
                  criterion,
                  algorithm,
                  data_transforms=data_transforms,

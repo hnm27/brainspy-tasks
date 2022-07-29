@@ -1,5 +1,5 @@
 type: "gradient"
-epochs: 150
+epochs: 400
 learning_rate: 0.001
 criterion: "fisher"
 optimizer: "adam"

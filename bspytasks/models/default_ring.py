@@ -18,27 +18,24 @@ class DefaultCustomModel(torch.nn.Module):
                          data_input_indices=[configs['input_indices']] *
                          self.node_no,
                          forward_pass_type='vec')
-        self.linear = torch.nn.Linear(3, 1)
         self.dnpu.add_input_transform([-1, 1])
 
-        # self.dnpu2 = DNPU(processor=processor,
-        #                   data_input_indices=[configs['input_indices']] *
-        #                   self.node_no)
-        # self.dnpu2.add_input_transform([-110, 100])
-
     def forward(self, x):
-        #x = torch.cat((x, x, x), dim=1)
         x = self.dnpu(x)
-        # x = self.linear(x)
-        #x = self.dnpu2(x)
-
         return x
 
+    # If you want to swap from simulation to hardware, or vice-versa you need these functions
     def hw_eval(self, configs, info=None):
         self.eval()
         self.dnpu.hw_eval(configs, info)
-        #self.dnpu2.hw_eval(configs, info)
 
+    def sw_train(self, configs, info=None, model_state_dict=None):
+        self.train()
+        self.dnpu.sw_train(configs, info, model_state_dict)
+
+    ##########################################################################################
+
+    # If you want to be able to get information about the ranges from outside, you have to add the following functions.
     def get_input_ranges(self):
         return self.dnpu.get_input_ranges()
 
@@ -53,21 +50,22 @@ class DefaultCustomModel(torch.nn.Module):
 
     def get_clipping_value(self):
         return self.dnpu.get_clipping_value()
-        # return clipping_value
 
+    # For being able to maintain control voltages within ranges, you should implement the following functions (only those which you are planning to use)
+    def regularizer(self):
+        return self.gamma * (self.dnpu.regularizer())
+
+    def constraint_control_voltages(self):
+        self.dnpu.constraint_control_voltages()
+
+    def format_targets(self, x: torch.Tensor) -> torch.Tensor:
+        return self.dnpu.format_targets(x)
+
+    ######################################################################################################################################################
+
+    # If you want to implement on-chip GA, you need these functions
     def is_hardware(self):
         return self.dnpu.processor.is_hardware
 
     def close(self):
         self.dnpu.close()
-
-    def regularizer(self):
-        return self.gamma * (self.dnpu.regularizer())  # +
-        #self.dnpu2.regularizer())
-
-    def constraint_control_voltages(self):
-        pass
-        # self.dnpu.constraint_control_voltages()
-
-    def format_targets(self, x: torch.Tensor) -> torch.Tensor:
-        return self.dnpu.format_targets(x)

@@ -3,8 +3,8 @@ import torch
 import matplotlib.pyplot as plt
 
 from brainspy.utils.io import create_directory, create_directory_timestamp
-from brainspy.algorithms.modules.performance.accuracy import get_accuracy
-from brainspy.algorithms.modules.signal import pearsons_correlation
+from brainspy.utils.performance.accuracy import get_accuracy
+from brainspy.utils.signal import pearsons_correlation
 from brainspy.utils.pytorch import TorchUtils
 
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import PointsToPlateaus
-    from brainspy.algorithms.modules.signal import fisher
+    from brainspy.utils.signal import fisher
 
     base_dir = "tmp/TEST/output/ring/ring_classification_gap_0.00625_2020_09_23_140014"
     model, results = load_reproducibility_results(base_dir)

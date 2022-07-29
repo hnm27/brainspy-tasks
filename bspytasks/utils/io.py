@@ -2,20 +2,12 @@
 Library that handles saving data
 """
 
-import io
-import os
-import time
 import pickle
-import shutil
-import torch
-import yaml
 import numpy as np
 from brainspy.utils.io import save_configs
 
 
-def save(
-    mode: str, file_path: str, **kwargs: dict
-):
+def save(mode: str, file_path: str, **kwargs: dict):
     """
     This function formats data from a dictionary and saves it to the given file
 
@@ -23,7 +15,7 @@ def save(
     ----------
 
     mode : str
-        file type as a python string  
+        file type as a python string
 
     file_path : str
         file object or path to file
@@ -31,7 +23,7 @@ def save(
     kwargs : dict
         data that needs to be saved
 
-    Example 
+    Example
     --------
     configs = {"data" : "example"}
     path = "tests/unit/utils/testfiles/test.yaml"
