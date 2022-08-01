@@ -7,7 +7,8 @@ def capacity_test(configs,
                   criterion,
                   algorithm,
                   transforms=None,
-                  custom_logger=None):
+                  custom_logger=None,
+                  average_plateaus=True):
     base_dir = create_directory_timestamp(configs["results_dir"], "capacity")
     gap = configs["start_gap"]
     while gap >= configs["stop_gap"]:
@@ -20,7 +21,8 @@ def capacity_test(configs,
                         algorithm,
                         transforms=transforms,
                         is_main=False,
-                        custom_logger=custom_logger)
+                        custom_logger=custom_logger,
+                        average_plateaus=average_plateaus)
         gap = gap / 2
         print(f"*****************************")
 
@@ -45,4 +47,5 @@ if __name__ == "__main__":
                   DefaultCustomModel,
                   criterion,
                   algorithm,
-                  custom_logger=Logger)
+                  custom_logger=Logger
+                  average_plateaus=True)

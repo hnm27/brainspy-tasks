@@ -67,15 +67,14 @@ def init_all_results(dataloaders,
     return results
 
 
-def search_solution(
-    configs,
-    custom_model,
-    criterion,
-    algorithm,
-    transforms=None,
-    custom_logger=None,
-    is_main=True,
-):
+def search_solution(configs,
+                    custom_model,
+                    criterion,
+                    algorithm,
+                    transforms=None,
+                    custom_logger=None,
+                    is_main=True,
+                    average_plateaus=True):
     main_dir, search_stats_dir, results_dir, reproducibility_dir = init_dirs(
         configs["data"]["gap"], configs["results_dir"], is_main=is_main)
     configs["results_dir"] = main_dir
@@ -84,7 +83,7 @@ def search_solution(
                                    configs["runs"],
                                    waveform_plateau_length=configs['processor']
                                    ['waveform']['plateau_length'],
-                                   average_plateaus=True)
+                                   average_plateaus=average_plateaus)
     best_run = None
 
     for run in range(configs["runs"]):
@@ -258,9 +257,12 @@ if __name__ == "__main__":
     criterion = manager.get_criterion(configs["algorithm"]["criterion"])
     algorithm = manager.get_algorithm(configs["algorithm"]["type"])
 
-    search_solution(configs,
-                    DefaultCustomModel,
-                    criterion,
-                    algorithm,
-                    transforms=None,
-                    custom_logger=Logger)
+    search_solution(
+        configs,
+        DefaultCustomModel,
+        criterion,
+        algorithm,
+        transforms=None,
+        custom_logger=Logger,
+        average_plateaus=True
+    )  # Set average_plateaus according to how you have declared your processor
