@@ -31,7 +31,6 @@ def capacity_test(
     base_dir = create_directory_timestamp(configs["results_dir"],
                                           "capacity_test")
 
-    # save(mode='configs', file_path=self.configs_dir, data=configs)
     summary_results = {
         "capacity_per_N": [],
         "accuracy_distrib_per_N": [],

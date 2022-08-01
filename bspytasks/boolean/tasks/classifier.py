@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 from bspytasks.boolean.data import BooleanGateDataset
 
-from brainspy.processors.processor import Processor
 from brainspy.utils.pytorch import TorchUtils
 from brainspy.utils.manager import get_optimizer
 from brainspy.utils.io import create_directory, create_directory_timestamp
@@ -25,7 +24,6 @@ def boolean_task(
     criterion,
     algorithm,
     data_transforms=None,
-    #waveform_transforms=None,
     logger=None,
     is_main=True,
 ):
@@ -45,7 +43,7 @@ def boolean_task(
         optimizer = get_optimizer(model, configs["algorithm"])
         model, training_data = algorithm(
             model,
-            (loader, None),
+            [loader, None],
             criterion,
             optimizer,
             configs["algorithm"],
@@ -235,34 +233,26 @@ def plot_performance(results, save_dir=None, fig=None, show_plots=False):
 if __name__ == "__main__":
     import numpy as np
     import datetime as d
-    from torchvision import transforms
-    import matplotlib
-    matplotlib.use('Agg')
+
     from brainspy.utils import manager
 
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToTensor
-    from bspytasks.models.default_boolean import DefaultCustomSimulationModel as MyModel
+    from bspytasks.models.default_boolean import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
-
-    data_transforms = transforms.Compose([
-        DataToTensor(device=torch.device("cpu")),
-    ])
 
     logger = Logger(f"tmp/output/logs/experiment" +
                     str(d.datetime.now().timestamp()))
 
-    configs["gate"] = [0, 1, 1, 1, 1, 1, 1, 0]  #[0, 1, 1, 0]
+    configs["gate"] = [0, 1, 1, 0]
     configs["threshold"] = 1.0
 
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
     algorithm = manager.get_algorithm(configs["algorithm"]['optimizer'])
 
     boolean_task(configs,
-                 MyModel,
+                 DefaultCustomModel,
                  criterion,
                  algorithm,
-                 data_transforms=data_transforms,
                  logger=logger)
