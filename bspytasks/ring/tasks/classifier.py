@@ -300,21 +300,26 @@ def plot_inputs(results,
 
 
 if __name__ == "__main__":
+    import datetime as d
     from torchvision import transforms as tfms
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
-
+    from bspytasks.ring.logger import Logger
     from bspytasks.models.default_ring import DefaultCustomModel
 
     configs = load_configs("configs/ring.yaml")
 
     #data_transforms = tfms.Compose([DataToTensor(device=torch.device('cpu'))])
-
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
     algorithm = manager.get_algorithm(configs["algorithm"]['type'])
 
     dataloaders = get_ring_data(configs)  #, data_transforms)
 
-    ring_task(configs, dataloaders, DefaultCustomModel, criterion, algorithm)
+    ring_task(configs,
+              dataloaders,
+              DefaultCustomModel,
+              criterion,
+              algorithm,
+              logger=Logger)

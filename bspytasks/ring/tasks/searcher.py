@@ -242,15 +242,12 @@ def plot_search_results(label,
 
 
 if __name__ == "__main__":
-
     from torchvision import transforms
 
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
-    from bspytasks.utils.transforms import DataToTensor
+    from bspytasks.ring.logger import Logger
     from bspytasks.models.default_ring import DefaultCustomModel
-
-    transforms = None  # s in generaltransforms.Compose([DataToTensor(torch.device('cpu'))])
 
     configs = load_configs("configs/ring.yaml")
 
@@ -261,4 +258,5 @@ if __name__ == "__main__":
                     DefaultCustomModel,
                     criterion,
                     algorithm,
-                    transforms=transforms)
+                    transforms=transforms,
+                    cutsom_logger=Logger)
