@@ -24,7 +24,7 @@ def capacity_test(configs,
                         custom_logger=custom_logger,
                         average_plateaus=average_plateaus)
         gap = gap / 2
-        print(f"*****************************")
+        print(f"*****************************")average_plateaus
 
 
 if __name__ == "__main__":
