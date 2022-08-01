@@ -1,4 +1,3 @@
-import torchvision
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -41,11 +40,15 @@ class Logger:
 
     def log_performance(self, train_losses, val_losses, epoch):
         if val_losses == []:
-            self.log.add_scalar("Cost/train/" + self.gate, train_losses[-1], epoch)
+            self.log.add_scalar("Cost/train/" + self.gate, train_losses[-1],
+                                epoch)
         else:
             self.log.add_scalars(
                 "Cost/" + self.gate,
-                {"train": train_losses[-1], "dev": val_losses[-1]},
+                {
+                    "train": train_losses[-1],
+                    "dev": val_losses[-1]
+                },
                 epoch,
             )
 

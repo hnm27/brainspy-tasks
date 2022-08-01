@@ -14,11 +14,11 @@ from brainspy.utils.io import create_directory, create_directory_timestamp
 from bspytasks.utils.io import save
 from brainspy.utils.manager import get_optimizer
 
-from brainspy.algorithms.modules.performance.accuracy import (
+from brainspy.utils.performance.accuracy import (
     get_accuracy,
     plot_perceptron,
 )
-from brainspy.algorithms.modules.signal import pearsons_correlation
+from brainspy.utils.signal import pearsons_correlation
 
 
 def ring_task(
@@ -50,7 +50,7 @@ def ring_task(
     # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(
         model,
-        (dataloaders[0], dataloaders[1]),
+        [dataloaders[0], dataloaders[1]],
         criterion,
         optimizer,
         configs["algorithm"],

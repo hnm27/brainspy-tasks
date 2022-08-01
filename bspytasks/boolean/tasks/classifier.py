@@ -7,16 +7,15 @@ import matplotlib.pyplot as plt
 
 from bspytasks.boolean.data import BooleanGateDataset
 
-from brainspy.processors.processor import Processor
 from brainspy.utils.pytorch import TorchUtils
 from brainspy.utils.manager import get_optimizer
 from brainspy.utils.io import create_directory, create_directory_timestamp
 from bspytasks.utils.io import save
-from brainspy.algorithms.modules.performance.accuracy import (
+from brainspy.utils.performance.accuracy import (
     get_accuracy,
     plot_perceptron,
 )
-from brainspy.algorithms.modules.signal import pearsons_correlation
+from brainspy.utils.signal import pearsons_correlation
 
 
 def boolean_task(
@@ -25,7 +24,6 @@ def boolean_task(
     criterion,
     algorithm,
     data_transforms=None,
-    #waveform_transforms=None,
     logger=None,
     is_main=True,
 ):
@@ -242,7 +240,7 @@ if __name__ == "__main__":
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
-    from bspytasks.models.default_boolean import DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomSimulationModel
 
     configs = load_configs("configs/boolean.yaml")
 
@@ -260,7 +258,7 @@ if __name__ == "__main__":
     algorithm = manager.get_algorithm(configs["algorithm"]['optimizer'])
 
     boolean_task(configs,
-                 DefaultCustomModel,
+                 DefaultCustomSimulationModel,
                  criterion,
                  algorithm,
                  data_transforms=data_transforms,

@@ -113,7 +113,7 @@ if __name__ == "__main__":
     from bspytasks.boolean.logger import Logger
     from brainspy.utils.io import load_configs
     from bspytasks.utils.transforms import DataToTensor
-    from bspytasks.models.default_boolean import DefaultCustomHardwareModel as DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
     data_transforms = transforms.Compose([
@@ -123,11 +123,13 @@ if __name__ == "__main__":
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
     algorithm = manager.get_algorithm(configs["algorithm"]['optimizer'])
 
+    logger = Logger(f"tmp/output/logs/experiment" +
+                    str(d.datetime.now().timestamp()))
+
     configs["current_dimension"] = 4
-    results = vc_dimension_test(
-        configs,
-        DefaultCustomModel,
-        criterion,
-        algorithm,
-        data_transforms=data_transforms,
-    )
+    results = vc_dimension_test(configs,
+                                DefaultCustomModel,
+                                criterion,
+                                algorithm,
+                                data_transforms=data_transforms,
+                                logger=logger)
