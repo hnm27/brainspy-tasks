@@ -45,9 +45,14 @@ def init_results(runs, output_shape):
     return results
 
 
-def init_all_results(dataloaders, runs, waveform_plateau_length=1):
+def init_all_results(dataloaders,
+                     runs,
+                     waveform_plateau_length=1,
+                     average_plateaus=True):
     results = {}
     results["seeds"] = torch.zeros(runs)
+    if average_plateaus:
+        waveform_plateau_length = 1
     results["train_results"] = init_results(
         runs,
         len(dataloaders[0].sampler.indices) * waveform_plateau_length)
@@ -78,7 +83,8 @@ def search_solution(
     all_results = init_all_results(dataloaders,
                                    configs["runs"],
                                    waveform_plateau_length=configs['processor']
-                                   ['waveform']['plateau_length'])
+                                   ['waveform']['plateau_length'],
+                                   average_plateaus=True)
     best_run = None
 
     for run in range(configs["runs"]):
