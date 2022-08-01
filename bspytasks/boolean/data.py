@@ -1,7 +1,7 @@
 import numpy as np
 
 from torch.utils.data import Dataset
-
+from brainspy.utils.pytorch import TorchUtils
 # ZERO = -0.5
 # ONE = 0.5
 # QUARTER =  (abs(ZERO) + abs(ONE)) / 4
@@ -13,12 +13,8 @@ from torch.utils.data import Dataset
 # Y = [-0.7, 0.5, -0.7, 0.5, 0.0, 0.0, -0.35, 0.25, 0.35, -1.1]
 
 # Set of points in a scale from -1 to 1
-#X = [-0.5, -0.5, 1.0, 1.0, -0.0625, 0.6875, 0.375, 0.375, -1.0, 0.8125]
-#Y = [-0.5, 1.0, -0.5, 1.0, 0.375, 0.375, -0.0625, 0.6875, 0.8125, -1.0]
-
-X = [-1, -1, -1, -1, 1, 1, 1, 1]
-Y = [-1, -1, 1, 1, -1, -1, 1, 1]
-Z = [-1, 1, -1, 1, -1, 1, -1, 1]
+X = [-0.5, -0.5, 1.0, 1.0, -0.0625, 0.6875, 0.375, 0.375, -1.0, 0.8125]
+Y = [-0.5, 1.0, -0.5, 1.0, 0.375, 0.375, -0.0625, 0.6875, 0.8125, -1.0]
 
 
 class BooleanGateDataset(Dataset):
@@ -29,8 +25,8 @@ class BooleanGateDataset(Dataset):
 
     def __getitem__(self, index):
 
-        inputs = self.inputs[index, :]
-        targets = self.targets[index, :]
+        inputs = TorchUtils.format(self.inputs[index, :])
+        targets = TorchUtils.format(self.targets[index, :])
 
         sample = (inputs, targets)
 
@@ -43,13 +39,12 @@ class BooleanGateDataset(Dataset):
         return len(self.targets)
 
     def generate_inputs(self, vc_dimension):
-        # assert len(X) == len(
-        #     Y
-        # ), f"Number of data in both dimensions must be equal ({len(X)},{len(Y)})"
-        # assert vc_dimension <= len(
-        #     X), "VC Dimension exceeds the current number of points"
-        # return np.array([X[:vc_dimension], Y[:vc_dimension]]).T
-        return np.array([X, Y, Z]).T
+        assert len(X) == len(
+            Y
+        ), f"Number of data in both dimensions must be equal ({len(X)},{len(Y)})"
+        assert vc_dimension <= len(
+            X), "VC Dimension exceeds the current number of points"
+        return np.array([X[:vc_dimension], Y[:vc_dimension]]).T
 
 
 def generate_targets(vc_dimension, verbose=True):
