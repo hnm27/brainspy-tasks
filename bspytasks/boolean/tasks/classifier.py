@@ -31,7 +31,7 @@ def boolean_task(
                                               configs["results_dir"], is_main)
     gate = np.array(configs["gate"])
     loader = get_data(gate, data_transforms, configs)
-
+    assert configs["max_attempts"] > 0, "Maximum attempts should at least be 1"
     print(
         "=========================================================================================="
     )
@@ -47,8 +47,6 @@ def boolean_task(
             criterion,
             optimizer,
             configs["algorithm"],
-            #waveform_transforms=waveform_transforms,
-            # logger=logger,
             save_dir=reproducibility_dir,
         )
 
