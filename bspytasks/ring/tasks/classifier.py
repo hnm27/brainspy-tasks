@@ -167,19 +167,23 @@ def postprocess(configs,
         indices = torch.argsort(targets[:, 0], dim=0)
         inputs, targets = inputs[indices], targets[indices]
         predictions = model(inputs)
-        results["performance"] = criterion(predictions, targets)
+        targets_wvfrm = model.format_targets(targets)
+        inputs_wvfrm = model.format_targets(inputs)
+        results["performance"] = criterion(predictions, targets_wvfrm)
 
     # results['gap'] = dataset.gap
     results["inputs"] = inputs
+    results['inputs_wvfrm'] = inputs_wvfrm
     results["targets"] = targets
+    results['targets_wvfrm'] = targets_wvfrm
     results["best_output"] = predictions
     results["accuracy"] = get_accuracy(
-        predictions, targets, configs, node=node
+        predictions, targets_wvfrm, configs, node=node
     )  # accuracy(predictions.squeeze(), targets.squeeze(), plot=None, return_node=True)
     print(
         f"{name.capitalize()} accuracy: {results['accuracy']['accuracy_value']}"
     )
-    results["correlation"] = pearsons_correlation(predictions, targets)
+    results["correlation"] = pearsons_correlation(predictions, targets_wvfrm)
     # results['accuracy_fig'] = plot_perceptron(results['accuracy'], save_dir, name=name)
 
     return results

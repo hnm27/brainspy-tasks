@@ -74,16 +74,18 @@ def search_solution(configs,
                     transforms=None,
                     custom_logger=None,
                     is_main=True,
-                    average_plateaus=True):
+                    average_plateaus=True,
+                    dnpu_layer_no=1):
     main_dir, search_stats_dir, results_dir, reproducibility_dir = init_dirs(
         configs["data"]["gap"], configs["results_dir"], is_main=is_main)
     configs["results_dir"] = main_dir
     dataloaders = get_ring_data(configs, transforms)
-    all_results = init_all_results(dataloaders,
-                                   configs["runs"],
-                                   waveform_plateau_length=configs['processor']
-                                   ['waveform']['plateau_length'],
-                                   average_plateaus=average_plateaus)
+    all_results = init_all_results(
+        dataloaders,
+        configs["runs"],
+        waveform_plateau_length=configs['processor']['waveform']
+        ['plateau_length']**dnpu_layer_no,
+        average_plateaus=average_plateaus)
     best_run = None
 
     for run in range(configs["runs"]):
@@ -264,5 +266,7 @@ if __name__ == "__main__":
         algorithm,
         transforms=None,
         custom_logger=Logger,
-        average_plateaus=True
+        average_plateaus=False,  # Whether if to average plateaus or not.
+        dnpu_layer_no=
+        1  # Specifies the number of DNPU layers that you are using. It is used to calculate the plateau length of the output. It is only used  in case you are not averaging plateaus.
     )  # Set average_plateaus according to how you have declared your processor

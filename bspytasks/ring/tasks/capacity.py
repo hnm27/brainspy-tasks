@@ -8,7 +8,8 @@ def capacity_test(configs,
                   algorithm,
                   transforms=None,
                   custom_logger=None,
-                  average_plateaus=True):
+                  average_plateaus=True,
+                  dnpu_layer_no=1):
     base_dir = create_directory_timestamp(configs["results_dir"], "capacity")
     gap = configs["start_gap"]
     while gap >= configs["stop_gap"]:
@@ -22,9 +23,10 @@ def capacity_test(configs,
                         transforms=transforms,
                         is_main=False,
                         custom_logger=custom_logger,
-                        average_plateaus=average_plateaus)
+                        average_plateaus=average_plateaus,
+                        dnpu_layer_no=dnpu_layer_no)
         gap = gap / 2
-        print(f"*****************************")average_plateaus
+        print(f"*****************************")
 
 
 if __name__ == "__main__":
@@ -43,9 +45,13 @@ if __name__ == "__main__":
     criterion = manager.get_criterion(configs["algorithm"]['criterion'])
     algorithm = manager.get_algorithm(configs["algorithm"]['type'])
 
-    capacity_test(configs,
-                  DefaultCustomModel,
-                  criterion,
-                  algorithm,
-                  custom_logger=Logger
-                  average_plateaus=True)
+    capacity_test(
+        configs,
+        DefaultCustomModel,
+        criterion,
+        algorithm,
+        custom_logger=Logger,
+        average_plateaus=
+        False,  # Whether if to average plateaus or not. Set average_plateaus according to how you have declared in the constructor of the processor of your model.
+        dnpu_layer_no=1
+    )  # Specifies the number of DNPU layers that you are using. It is used to calculate the plateau length of the output. It is only used  in case you are not averaging plateaus.
