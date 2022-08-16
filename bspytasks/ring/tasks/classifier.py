@@ -38,7 +38,7 @@ def ring_task(
     )
     print("GAP: " + str(results["gap"]))
 
-    results_dir, reproducibility_dir = init_dirs(
+    main_dir, results_dir, reproducibility_dir = init_dirs(
         str(results["gap"]),
         configs["results_dir"],
         is_main=is_main,
@@ -100,7 +100,7 @@ def ring_task(
         "=========================================================================================="
     )
 
-    return results, model, results_dir
+    return results, model, main_dir
 
 
 def close(model, results, configs, reproducibility_dir, results_dir):
@@ -203,7 +203,7 @@ def init_dirs(gap, base_dir, is_main=False, save_data=False):
     create_directory(reproducibility_dir)
     results_dir = os.path.join(base_dir, results_dir)
     create_directory(results_dir)
-    return results_dir, reproducibility_dir
+    return base_dir, results_dir, reproducibility_dir
 
 
 def plot_results(results, plots_dir=None, show_plots=False, extension="png"):
