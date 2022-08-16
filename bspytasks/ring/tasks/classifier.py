@@ -100,7 +100,7 @@ def ring_task(
         "=========================================================================================="
     )
 
-    return results, model
+    return results, model, results_dir
 
 
 def close(model, results, configs, reproducibility_dir, results_dir):
