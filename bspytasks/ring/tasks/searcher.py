@@ -102,7 +102,7 @@ def search_solution(configs,
         else:
             logger = None
 
-        results, model = ring_task(
+        results, model, _ = ring_task(
             configs,
             dataloaders,
             custom_model,
