@@ -55,6 +55,7 @@ def boolean_task(
             loader.dataset,
             criterion  #, transforms=waveform_transforms
         )
+        results['main_dir'] = main_dir
         results["training_data"] = training_data
         results["threshold"] = configs["threshold"]
         results["gate"] = str(gate)
@@ -72,6 +73,7 @@ def boolean_task(
     print(
         "=========================================================================================="
     )
+
     return results
 
 
