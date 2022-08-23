@@ -129,8 +129,6 @@ if __name__ == "__main__":
     from bspytasks.models.default_boolean import DefaultCustomModel
 
     configs = load_configs("configs/boolean.yaml")
-    data_transforms = transforms.Compose(
-        [DataToTensor(device=torch.device('cpu'))])
 
     criterion = manager.get_criterion(configs["algorithm"])
     algorithm = manager.get_algorithm(configs["algorithm"])
@@ -142,6 +140,5 @@ if __name__ == "__main__":
         DefaultCustomModel,
         criterion,
         algorithm,
-        data_transforms=data_transforms,
         logger=logger,
     )
