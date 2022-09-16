@@ -1,0 +1,32 @@
+accuracy:
+  batch_size: 512
+  epochs: 600
+  learning_rate: 0.01
+algorithm:
+  constraint_control_voltages: regul
+  criterion: fisher
+  epochs: 500
+  learning_rate: 0.001
+  optimizer: adam
+  return_best_model: true
+  type: gradient
+data:
+  batch_size: 512
+  gap: 0.9
+  load: tmp\input_data_gap_0.9
+  pin_memory: true
+  split_percentages:
+  - 0.6
+  - 0.2
+  - 0.2
+  worker_no: 0
+processor:
+  input_indices:
+  - 0
+  - 6
+  model_dir: training_data.pt
+  processor_type: simulation
+  waveform:
+    plateau_length: 1
+    slope_length: 0
+results_dir: tmp
