@@ -1,6 +1,6 @@
 # brains-py tasks
 
-This package represent a set of examples on how the libraries of the brainspy framework (brainspy and brainspy-smg) can be used.
+This package shows a set of examples on how the libraries of the brainspy framework (brainspy and brainspy-smg) can be used.
 
 Visit https://github.com/BraiNEdarwin/brains-py/wiki for more information.
 
