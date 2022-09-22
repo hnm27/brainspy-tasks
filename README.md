@@ -1,37 +1,75 @@
+# brains-py tasks
 
-# brains-py tasks #
-A python package based on the brains-py library to peform benchmark tests and tasks for studying the capacity of the boron-doped silicon devices. The package is part of the brains-py project, a set of python libraries to support the development of nano-scale in-materio hardware neural-network accelerators.
+This package shows a set of examples on how the libraries of the brainspy framework (brainspy and brainspy-smg) can be used.
 
-*   [![Tools](https://img.shields.io/badge/brainspy--black.svg)](https://github.com/BraiNEdarwin/brains-py): A python package to support the study of Dopant Network Processing Units as hardware accelerators for non-linear operations. Its aim is to support key functions for hardware setups and algorithms related to searching functionality on DNPUs and DNPU architectures both in simulations and in hardware.
- *   [![Tools](https://img.shields.io/badge/brainspy-smg-darkblue.svg)](https://github.com/BraiNEdarwin/brainspy-smg): A python package for creating surrogate models of nano-electronic materials.
-
+Visit https://github.com/BraiNEdarwin/brains-py/wiki for more information.
 
 ![Insert image](https://raw.githubusercontent.com/BraiNEdarwin/brains-py/master/docs/figures/packages.png)
 
+## 1. General description
 
-## 1. General description ##
-This package supports the following tasks:
-* Boolean classifier:
-	* A single boolean gate classifier
-	* VC-Dimension tests
-	* Capacity tests for checking the performance on multiple VC-Dimensions
-* Ring classifier:
-	* A particular ring classifier with a given separation gap
-	* Multiple runs on a ring classifier with a given separation gap
-	* Capacity tests for checking the performance on multiple separation gaps for several runs
+The code offered in this package can perform the following tasks:
 
-## 2. Installation instructions ##
-The installation instructions differ depending on whether if you want to install as a developer or as a user of the library. Please follow the instructions that are most suitable for you:
-* [User instructions](https://github.com/BraiNEdarwin/brains-py/blob/master/doc/USER_INSTRUCTIONS.md)
-* [Developer instructions](https://github.com/BraiNEdarwin/brains-py/blob/master/doc/DEVELOPER_INSTRUCTIONS.md)
+- Boolean classifier:
+  - A single boolean gate classifier
+  - VC-Dimension tests
+  - Capacity tests for checking the performance on multiple VC-Dimensions
+- Ring classifier:
+  - A particular ring classifier with a given separation gap
+  - Multiple runs on a ring classifier with a given separation gap
+  - Capacity tests for checking the performance on multiple separation gaps for several runs
 
-## 3. License and libraries ##
+## 2. Jupyter notebooks
+
+This repository includes a set of jupyter notebooks in brainspy-tasks/notebooks. Make sure you have installed brainspy and brainspy-smg before running them.
+
+### 2.1 Installation
+
+You can prepare the code in conda as follows:
+
+`conda create -n bspy python==3.9`
+
+`conda activate bspy`
+
+`pip install brainspy brainspy-smg`
+
+`conda install jupyter`
+
+`cd brainspy-tasks/notebooks`
+
+After the installation, remember to get out the environment and back again:
+
+`conda deactivate`
+
+`conda activate bspy`
+
+Then, you can run:
+
+`jupyter-notebook`
+
+### 2.2 Examples available
+
+- Checking device functionality: Basic steps on how to characterise a DNPU device and how to find adequate IV curves.
+  
+- Finding functionality on hardware: An example on how to use the genetic algorithm for quickly benchmarking the performance of a single DNPU device directly in hardware.
+  
+- Finding functionality on software: A simple example on how to train a custom model with a single device, for resolving the ring classification task.
+  
+- Advanced examlple on software: A simple example on how to train a custom model to resolve MNIST, using an architecture that is based on LeNet.
+  
+
+## 3. License and libraries
+
 This code is released under the GNU GENERAL PUBLIC LICENSE Version 3. Click [here](https://github.com/BraiNEdarwin/brainspy-tasks/blob/master/doc/LICENSE) to see the full license.
 The package relies on the following libraries:
-* brainspy
-* matplotlib
+
+- brainspy
+- brainspy-smg
+- jupyter
+- tensorboard
 
 ## 4. Acknowledgements
+
 This package has been created and it is maintained by the [Brains](https://www.utwente.nl/en/brains/) team of the [NanoElectronics](https://www.utwente.nl/en/eemcs/ne/) research group at the University of Twente. It has been designed and developed by:
 This package has been created and it is maintained by the [Brains](https://www.utwente.nl/en/brains/) team of the [NanoElectronics](https://www.utwente.nl/en/eemcs/ne/) research group at the University of Twente. It has been designed by:
 
@@ -47,4 +85,14 @@ With the contribution of:
 - **Bram van de Ven**, [@bbroo1](https://github.com/bbroo1) ([b.vandeven@utwente.nl](mailto:b.vandeven@utwente.nl)) : General improvements and testing of the different hardware drivers and devices and documentation.
 - **Mohamadreza Zolfagharinejad** [@mamrez](https://github.com/mamrez) ([m.zolfagharinejad@utwente.nl](mailto:m.zolfagharinejad@utwente.nl)): Writing of some of the examples in Jupyter notebooks (IV curves and surrogate model generation).
 
-Some of the code present in this project has been refactored from the [skynet](https://github.com/BraiNEdarwin/SkyNEt) legacy project. The original contributions to the scripts, which are the base of this project, can be found at skynet, and the authorship remains of those people who collaborated in it. Using existing scripts from skynet, a whole new structure has been designed and developed to be used as a general purpose python library.  
+Some of the code present in this project has been refactored from the [skynet](https://github.com/BraiNEdarwin/SkyNEt) legacy project. The original contributions to the scripts, which are the base of this project, can be found at skynet, and the authorship remains of those people who collaborated in it. Using existing scripts from skynet, a whole new structure has been designed and developed to be used as a general purpose python library.
+
+This project has received financial support from:
+
+- **University of Twente**
+- **Dutch Research Council**
+  - HTSM grant no. 16237
+  - Natuurkunde Projectruimte grant no. 680-91-114
+- **Horizon Europe research and innovation programme**
+  - Grant no. 101046878
+- **Toyota Motor Europe N.V.**
