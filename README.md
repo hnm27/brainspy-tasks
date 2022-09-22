@@ -2,10 +2,7 @@
 
 This package represent a set of examples on how the libraries of the brainspy framework (brainspy and brainspy-smg) can be used.
 
-- [](https://github.com/BraiNEdarwin/brains-py): A python package to support the study of Dopant Network Processing Units as hardware accelerators for non-linear operations. Its aim is to support key functions for hardware setups and algorithms related to searching functionality on DNPUs and DNPU architectures both in simulations and in hardware.
-  
-  -  [](https://github.com/BraiNEdarwin/brainspy-smg): A python package for creating surrogate models of nano-electronic materials.
-    
+Visit https://github.com/BraiNEdarwin/brains-py/wiki for more information.
 
 ![Insert image](https://raw.githubusercontent.com/BraiNEdarwin/brains-py/master/docs/figures/packages.png)
 
@@ -26,7 +23,7 @@ The code offered in this package can perform the following tasks:
 
 This repository includes a set of jupyter notebooks in brainspy-tasks/notebooks. Make sure you have installed brainspy and brainspy-smg before running them.
 
-### 2.1 Preparing the code
+### 2.1 Installation
 
 You can prepare the code in conda as follows:
 
