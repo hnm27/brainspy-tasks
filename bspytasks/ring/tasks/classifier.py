@@ -4,6 +4,8 @@ import torch
 import pickle as p
 import matplotlib.pyplot as plt
 
+import bspytasks
+
 from bspytasks.ring.data import (
     RingDatasetGenerator,
     BalancedSubsetRandomSampler,
@@ -50,11 +52,11 @@ def ring_task(
     # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(
         model,
-        [dataloaders[0], dataloaders[1]],
+        (dataloaders[0], dataloaders[1]),
         criterion,
         optimizer,
         configs["algorithm"],
-        logger=logger,
+        # logger=logger,
         save_dir=reproducibility_dir,
     )
 
@@ -309,7 +311,9 @@ if __name__ == "__main__":
     from brainspy.utils import manager
     from brainspy.utils.io import load_configs
     from bspytasks.ring.logger import Logger
-    from bspytasks.models.default_ring import DefaultCustomModel
+    # from bspytasks.models.default_ring import DefaultCustomModel
+    from bspytasks.models.default_boolean import DefaultCustomHardwareModel as DefaultCustomModel
+
 
     configs = load_configs("configs/ring.yaml")
 

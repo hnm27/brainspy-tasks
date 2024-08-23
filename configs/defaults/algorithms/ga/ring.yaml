@@ -5,16 +5,4 @@ epochs: 100
 partition: # Genome partition
   - 4
   - 22
-stop_threshold: 1.0
-# This is now automatically obtained from the model
-#generange:
-#- - -1.2
-#  - 0.6
-#- - -1.2
-#  - 0.6
-#- - -1.2
-#  - 0.6
-#- - -0.7
-#  - 0.3
-#- - -0.7
-#  - 0.3
+stop_threshold: 0.85
