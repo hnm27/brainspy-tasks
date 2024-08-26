@@ -1,8 +1,8 @@
 type: genetic
 optimizer: genetic
-criterion: fisher_fit
+criterion: corrsig_fit
 epochs: 100
 partition: # Genome partition
   - 4
   - 22
-stop_threshold: 0.85
+stop_threshold: 0.25

@@ -4,7 +4,7 @@ import torch
 import pickle as p
 import matplotlib.pyplot as plt
 
-import bspytasks
+from bspytasks.models.default_boolean import DefaultCustomHardwareModel as DefaultCustomModel
 
 from bspytasks.ring.data import (
     RingDatasetGenerator,
@@ -46,10 +46,8 @@ def ring_task(
         is_main=is_main,
         save_data=save_data,
     )
-    # criterion = get_criterion(configs['algorithm'])
     model = TorchUtils.format(custom_model(configs['processor']))
     optimizer = get_optimizer(model, configs["algorithm"])
-    # algorithm = get_algorithm(configs['algorithm'])
     model, train_data = algorithm(
         model,
         (dataloaders[0], dataloaders[1]),
@@ -59,6 +57,13 @@ def ring_task(
         # logger=logger,
         save_dir=reproducibility_dir,
     )
+
+    # Re-opening the model from the driver
+    model = TorchUtils.format(custom_model(configs['processor']))
+    model.load_state_dict(
+                torch.load(
+                    os.path.join(reproducibility_dir,
+                                "training_data.pickle"))['model_state_dict'])
 
     results["train_results"] = postprocess(
         configs["accuracy"],
@@ -312,7 +317,7 @@ if __name__ == "__main__":
     from brainspy.utils.io import load_configs
     from bspytasks.ring.logger import Logger
     # from bspytasks.models.default_ring import DefaultCustomModel
-    from bspytasks.models.default_boolean import DefaultCustomHardwareModel as DefaultCustomModel
+    # from bspytasks.models.default_boolean import DefaultCustomHardwareModel as DefaultCustomModel
 
 
     configs = load_configs("configs/ring.yaml")
@@ -333,3 +338,5 @@ if __name__ == "__main__":
               criterion,
               algorithm,
               logger=logger)
+    
+    print("")

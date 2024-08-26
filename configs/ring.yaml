@@ -5,7 +5,7 @@ stop_gap: 0.85 # 0.00825
 data:
   gap: 0.7
   load: false # If load is false, it generates a new dataset. If load is a path to the data, it loads it to the data
-  sample_no: 256
+  sample_no: 64
   split_percentages: # The data is divided into training, validation and test datasets respectively
     - 0.6 # Percentage of the data used for training
     - 0.2 # Percentage of the data used for validation
@@ -15,7 +15,7 @@ data:
   pin_memory: True
 
 accuracy:
-  epochs: 1
+  epochs: 100
   learning_rate: 0.001
   batch_size: 64
 algorithm: !include defaults/algorithms/ga/ring.yaml
