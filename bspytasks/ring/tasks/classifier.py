@@ -59,11 +59,11 @@ def ring_task(
     )
 
     # Re-opening the model from the driver
-    model = TorchUtils.format(custom_model(configs['processor']))
-    model.load_state_dict(
-                torch.load(
-                    os.path.join(reproducibility_dir,
-                                "training_data.pickle"))['model_state_dict'])
+    # model = TorchUtils.format(custom_model(configs['processor']))
+    # model.load_state_dict(
+    #             torch.load(
+    #                 os.path.join(reproducibility_dir,
+    #                             "training_data.pickle"))['model_state_dict'])
 
     results["train_results"] = postprocess(
         configs["accuracy"],
