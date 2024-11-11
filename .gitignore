@@ -53,5 +53,6 @@ coverage.xml
 
 # Models
 *.pt
+!surrogate_model.pt
 .DS_Store
 .DS_Store

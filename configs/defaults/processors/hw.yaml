@@ -1,25 +1,49 @@
 processor_type: cdaq_to_cdaq
 input_indices: # It specifies the indices of the activation data array that will be considered as inputs
-  - 4 #AO2
-  - 0 #AO6
+  - 0 #AO2
+  - 5 #AO6
+
 waveform:
-  plateau_length: 40
-  slope_length: 40
+  plateau_length: 50
+  slope_length: 50
+  wait_length: 100
+
 driver:
   instrument_type: cdaq_to_cdaq
-  real_time_rack: False # Driver can be local or remote. Remote for the RT NI Rack (Pinky), and local for the regular one (Brains).
-  amplification: 41
-  inverted_output: True # Whether the amplification of the OP-Amp in the PCB is an inverting one.
+
+  amplification: [25] # Amplification factor of Amplifier;
+  # Maximum/Minimum measured current: +158/-158 nA
+  # Maximum/Minimum Op Amp. output voltage: +4/-4 V
+  # Amplification equation: abs(Maximum measured current)/abs(Maximum Op. Amp output voltage)
+  # Amplification: 158/4 = 39.5
+  # Note that amplification value should be re-calculated for each setup seperately.
+
+  inverted_output: True # If the amplifier circuitry is inverting amplifier
+
   instruments_setup: 
-    multiple_devices: False
-    trigger_source: cDAQ1/segment1
-    average_io_point_difference: True # If there is a difference in the number of readout points w.r.t. the written points, it will return the average. 
-    activation_sampling_frequency: 10000
-    readout_sampling_frequency: 10000
-    average_io_point_difference: False
-    activation_instrument: cDAQ1Mod3
-    activation_channels: [6,0,1,5,2,4,3] #ao
-    activation_voltage_ranges: [[-0.9,0.5],[-0.3,0.5],[-0.9,0.9],[-1,1],[-0.9,0.6],[-0.6,0.3],[-1,1]] #[[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08],[-0.08,0.08]]  
+    multiple_devices: False # If True, device names (e.g., A: ) should be specified
+    # If false, device names should be removed.
+
+    trigger_source: cDAQ3
+    activation_sampling_frequency: 10000 # Digital-to-Analogue Converter module update rate
+    readout_sampling_frequency: 10000 # Analogue-to-Digital Converter sampling rate
+    average_io_point_difference: True # Averaging mode of the ADC output;
+    #If true, the oversampled points will be averaged,
+    #If false, the oversampled points will be presented as they are.
+
+    
+    activation_instrument: cDAQ3Mod2
+    activation_channels: [1,2,3,4,5,6,7] # Analogue output channels of DAC, bg = 11
+    activation_voltage_ranges: [
+      [-0.7,0.7],
+      [-0.6,0.6],
+      [-1.5,1.5],
+      [-1.5,1.5],
+      [-1.5,1.5],
+      [-0.7,0.7],
+      [-0.5,0.3]
+    ] 
+                   
     activation_channel_mask: [1,1,1,1,1,1,1]
-    readout_instrument: cDAQ1Mod4
-    readout_channels: [0]
+    readout_instrument: cDAQ3Mod1
+    readout_channels: [4] # Analogue input channel(s) of ADC
